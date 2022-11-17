@@ -16,7 +16,7 @@ A default Markov Decision Process is defined such as:
 * P_a(S,S') = Transition probability from state S to state *S'* due *a*. 
 * R_a(S,S') = regard received after transitioning from state *S* to state S' due to *a*.
 
-Solving the MVP provide us with a policy which maximices reward.
+Solving the MDP provide us with a policy which maximices reward.
   
 ```math
 MDP=(S,A,P_a,R_a) 
