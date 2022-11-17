@@ -30,7 +30,7 @@ MDP=(S,A,P_a,R_a)
 
 ### Scenario 1+1:
 
-* S = { Lost, localized, arrivedDestination }
+* S = { (x,y,theta,Lost), (x,y,theta,localized)}
 * A = { MoveUp, MoveDown, MoveLeft, MoveRight, Stay }
 
 The initial default MDP data for P_a(S,S') and R_a(S,S') can be found [here](https://github.com/adrianLIrobotics/MDP/blob/main/MPD_Data/ThirdDafeultMDP.xlsx)
