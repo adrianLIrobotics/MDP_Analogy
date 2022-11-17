@@ -5,6 +5,9 @@ Given a robot standing in room with task reaching a destination under cartesian 
 ```math
 r_{t}=(X_{t},Z_{t},\theta_{t})
 ```
+
+The robot can move Up/Down/Left/Right one step at a time in a 2d grid. The robot has a localization algorithm (AMCL) active at all times.
+
 A default Markov Decision Process is defined such as:
 
 
@@ -25,9 +28,9 @@ MDP=(S,A,P_a,R_a)
 ### Scenario 1+1:
 
 * S = { Lost, localized, arrivedDestination }
-* A = { Move, Stay, LocalizeInMap, Slam, MoveSlam, StaySlam, MoveLocalizeInMap, StayLocalizeInMap }
+* A = { MoveUp, MoveDown, MoveLeft, MoveRight, Stay }
 
-The initial default MDP data for P_a(S,S') and R_a(S,S') can be found [here](https://github.com/adrianLIrobotics/MDP/blob/main/MPD_Data/Default_MDP_Data.xlsx)
+The initial default MDP data for P_a(S,S') and R_a(S,S') can be found [here](https://github.com/adrianLIrobotics/MDP/blob/main/MPD_Data/ThirdDafeultMDP.xlsx)
 _____
 
 
