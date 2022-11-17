@@ -3,7 +3,7 @@
 ### Scenario:
 Given a robot standing in room with task reaching a destination under cartesian coordinates, defined as:
 ```math
-r_{t}=(X_{t},Z_{t},\theta_{t})
+r_{t}=(X_{t},Z_{t})
 ```
 
 The robot can move Up/Down/Left/Right one step at a time in a 2d grid. The robot has a localization algorithm (AMCL) active at all times.
