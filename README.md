@@ -15,6 +15,8 @@ A default Markov Decision Process is defined such as:
 * A = Set of actions to transition from one state to another
 * P_a(S,S') = Transition probability from state S to state *S'* due *a*. 
 * R_a(S,S') = regard received after transitioning from state *S* to state S' due to *a*.
+
+Solving the MVP provide us with a policy which maximices reward.
   
 ```math
 MDP=(S,A,P_a,R_a) 
@@ -23,7 +25,8 @@ MDP=(S,A,P_a,R_a)
 
 ### Observations:
 * Probability transaction matrix depend on the context. 
-* Policies reflect a (hypothesis) reality.
+* Policies reflect a (hypothesis/context) reality.
+* There exists future states that are not defined at time t of the mdp.
 
 ### Scenario 1+1:
 
