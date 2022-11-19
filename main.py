@@ -3,6 +3,7 @@ import random
 import os
 from object import objectModel;
 from robot import robotModel;
+from Estimator import predictor;
  
 # Printing the Minesweeper Layout
 def print_grid():
@@ -231,8 +232,11 @@ if __name__ == "__main__":
     print("wheeledRobot.pos_x row ",wheeledRobot.pos_xt)
     print("wheeledRobot.pos_zt column " ,wheeledRobot.pos_zt)
     print("Number of detected objects: ",wheeledRobot.detectedObjects)
+    print("gps noise readings: ",wheeledRobot.gps())
 
     show_everything(wheeledRobot.pos_xt,wheeledRobot.pos_zt)
     print(map)
     print_grid()
+
+    kalmanObject = predictor(wheeledRobot)
 

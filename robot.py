@@ -1,4 +1,5 @@
 import random
+from numpy.random import randn
 
 class robotModel:
 
@@ -7,11 +8,11 @@ class robotModel:
         self.pos_xt = x # Position in x axes at time t.
         self.pos_zt = z # Position in z axes at time t.
         self.vel_xt = 0 # Velocity in x axes at time t.
-        self.vel_zt = 0 # Velocity in z axes at time t.
-        self.pos_x = [x] # Historical position in x axes.
-        self.pos_z = [z] # Historical position in z axes.
-        self.vel_x = [0] # Historical velocity in x axes.
-        self.vel_z = [0] # Historical velocity in z axes.
+        self.vel_zt = 0 # Voisy velocity in z axes at time t.
+        self.pos_x = [self.pos_xt] # Noisy historical position in x axes.
+        self.pos_z = [self.pos_zt] # Noisy historical position in z axes.
+        self.vel_x = [0] # Noisy historical velocity in x axes.
+        self.vel_z = [0] # Noisy historical velocity in z axes.
         self.localized = localized
         self.laserRange = 3
         self.detectedObjects = 0
@@ -40,17 +41,35 @@ class robotModel:
             if map[val_x][val_z] != -1:
                     return val_x,val_z
 
+    def gps(self):
+        """Noisy gps position readings"""
+        noise_std=0.1
+        return self.pos_xt + randn() * noise_std, self.pos_zt + randn() * noise_std
+        #return self.pos_xt,self.pos_zt
+
+    def imu(self):
+        """Noisy velocity readings"""
+        noise_std=0.1
+        return self.vel_xt + randn() * noise_std, self.vel_zt + randn() * noise_std 
 
     def moveUpOne(self):
+        """Move one unit up - prob(slip low)"""
+        self.pos_xt = self.pos_xt + 1
+
+    def moveUpTwo(self):
+        """Move one unit up - prob(slip high)"""
         self.pos_xt = self.pos_xt + 1
 
     def moveDownOne(self):
+        """Move one unit down"""
         self.pos_xt = self.pos_xt -1
 
     def moveLeftOne(self):
+        """Move one unit left"""
         self.pos_zt = self.pos_zt -1
 
     def moveRightOne(self):
+        """Move one unit right"""
         self.pos_zt = self.pos_zt +1
 
     def objectDetected(self,isObject,temp_x,temp_z):
@@ -85,4 +104,4 @@ class robotModel:
             self.localized = True
             return True
 
-    
+
