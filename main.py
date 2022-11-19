@@ -228,11 +228,11 @@ if __name__ == "__main__":
     wheeledRobot = robotModel(False,n,map)
     localized = wheeledRobot.amcl(map)
     print(localized)
-    print("wheeledRobot.pos_x row ",wheeledRobot.pos_x)
-    print("wheeledRobot.pos_z column " ,wheeledRobot.pos_z)
+    print("wheeledRobot.pos_x row ",wheeledRobot.pos_xt)
+    print("wheeledRobot.pos_zt column " ,wheeledRobot.pos_zt)
     print("Number of detected objects: ",wheeledRobot.detectedObjects)
 
-    show_everything(wheeledRobot.pos_x,wheeledRobot.pos_z)
+    show_everything(wheeledRobot.pos_xt,wheeledRobot.pos_zt)
     print(map)
     print_grid()
 

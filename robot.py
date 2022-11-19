@@ -4,11 +4,22 @@ class robotModel:
 
     def __init__(self,localized,mapSize,map):
         x,z = self.initialPoseRandom(mapSize,map) 
-        self.pos_x = x    
-        self.pos_z = z 
+        self.pos_xt = x # Position in x axes at time t.
+        self.pos_zt = z # Position in z axes at time t.
+        self.vel_xt = 0 # Velocity in x axes at time t.
+        self.vel_zt = 0 # Velocity in z axes at time t.
+        self.pos_x = [x] # Historical position in x axes.
+        self.pos_z = [z] # Historical position in z axes.
+        self.vel_x = [0] # Historical velocity in x axes.
+        self.vel_z = [0] # Historical velocity in z axes.
         self.localized = localized
         self.laserRange = 3
         self.detectedObjects = 0
+    
+    def robotkinematicEquation(self):
+        dt = 1
+        self.pos_xt = self.pos_xt+(self.vel_xt*dt)
+        self.pos_zt = self.pos_zt+(self.vel_zt*dt)
 
     def setLaserRange(self,rangeNumber):
         self.laserRange = rangeNumber
@@ -30,27 +41,22 @@ class robotModel:
                     return val_x,val_z
 
 
-
-        # Generating row and column from the number
-        
-
-
     def moveUpOne(self):
-        self.pos_x = self.pos_x + 1
+        self.pos_xt = self.pos_xt + 1
 
     def moveDownOne(self):
-        self.pos_x = self.pos_x -1
+        self.pos_xt = self.pos_xt -1
 
     def moveLeftOne(self):
-        self.pos_z = self.pos_z -1
+        self.pos_zt = self.pos_zt -1
 
     def moveRightOne(self):
-        self.pos_z = self.pos_z +1
+        self.pos_zt = self.pos_zt +1
 
     def objectDetected(self,isObject,temp_x,temp_z):
-        if ((temp_x < self.pos_x+self.laserRange) and (isObject==-1)):
+        if ((temp_x < self.pos_xt+self.laserRange) and (isObject==-1)):
             return True  
-        elif ((temp_z < self.pos_z+self.laserRange) and (isObject==-1)):
+        elif ((temp_z < self.pos_zt+self.laserRange) and (isObject==-1)):
             return True
         else:
             return False
@@ -58,7 +64,7 @@ class robotModel:
     def robotCrushed(self):
         return True
 
-    def amcl(self,map):
+    def amcl(self,map): # Define 0-100 not binary.
         # Needs at least detecting two objects for localization. If not, robot lost.
         numberDetectedObjects = 0
         temp_x = 0
