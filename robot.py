@@ -83,7 +83,7 @@ class robotModel:
     def robotCrushed(self):
         return True
 
-    def amcl(self,map): # Define 0-100 not binary.
+    def amcl(self,map): 
         # Needs at least detecting two objects for localization. If not, robot lost.
         numberDetectedObjects = 0
         temp_x = 0
