@@ -1,12 +1,14 @@
 import sys
 from tkinter import *
 from tkinter import filedialog
+from object import objectModel
+from cell import Cell
 
 # A simple colouring grid app, with load/save functionality.
 # Christian Hill, August 2018.
 
 # Maximum and default grid size
-MAX_N, DEFAULT_N = 26, 10
+MAX_N, DEFAULT_N = 50, 50#26, 10
 # The "default" colour for an unfilled grid cell
 UNFILLED = '#fff'
 
@@ -45,6 +47,8 @@ class GridApp:
                                      height=palette_height)
         self.palette_canvas.pack()
 
+        #
+
         # Add the colour selection rectangles to the palette canvas.
         self.palette_rects = []
         for i in range(self.ncolours):
@@ -53,7 +57,7 @@ class GridApp:
                             x+p_width, y+p_height, fill=self.colours[i])
             self.palette_rects.append(rect)
         # ics is the index of the currently selected colour.
-        self.ics = 0
+        self.ics = 9#0
         self.select_colour(self.ics)
 
         # The canvas onto which the grid is drawn.
@@ -68,7 +72,11 @@ class GridApp:
                 x, y = xpad + ix*xsize, ypad + iy*ysize
                 rect = self.w.create_rectangle(x, y, x+xsize,
                                            y+ysize, fill=UNFILLED)
-                self.cells.append(rect)
+                
+                cell = Cell(ix,iy,True,rect)
+                self.cells.append(cell)#self.cells.append(rect)
+               
+        
 
         # Load and save image buttons
         b_load = Button(frame, text='open', command=self.load_image)
@@ -108,7 +116,18 @@ class GridApp:
             yc = y - iy*(ysize + pad) - pad
             if ix < n and iy < n and 0 < xc < xsize and 0 < yc < ysize:
                 i = iy*n+ix
-                self.w.itemconfig(self.cells[i], fill=self.colours[self.ics])
+
+                # If cell is empty and colour palete is black, change cell state to not empty
+                if ((self.cells[i].empty == True) and (self.colours[self.ics]=='black')):
+                    self.cells[i].fill_cell()
+                    print(self.cells[i].empty)
+
+                # If cell is not empty adn colour palete is white, change cell state to empty.
+                if (self.cells[i].empty == False) and (self.colours[self.ics]==UNFILLED):
+                    self.cells[i].empty_cell()
+                    print(self.cells[i].empty)
+                
+                self.w.itemconfig(self.cells[i].tkinterCellIndex, fill=self.colours[self.ics])
         # Bind the grid click callback function to the left mouse button
         # press event on the grid canvas.
         self.w.bind('<ButtonPress-1>', w_click_callback)
@@ -128,6 +147,7 @@ class GridApp:
         # The horizontal axis is labelled A, B, C, ... left-to-right;
         # the vertical axis is labelled 1, 2, 3, ... bottom-to-top.
         iy, ix = divmod(i, self.n)
+       
         return '{}{}'.format(chr(ix+65), self.n-iy)
 
     def save_by_colour(self):
@@ -142,6 +162,9 @@ class GridApp:
 
             coloured_cell_cmds = {}
             for i, rect in enumerate(self.cells):
+                print(i)
+                print(rect)
+                print("========")
                 c = self.w.itemcget(rect, 'fill')
                 if c == UNFILLED:
                     continue
@@ -181,7 +204,7 @@ class GridApp:
         """Reset the grid to the background "UNFILLED" colour."""
 
         for cell in self.cells:
-            self.w.itemconfig(cell, fill=UNFILLED)
+            self.w.itemconfig(cell.tkinterCellIndex, fill=UNFILLED)
 
     def load_image(self):
         """Load an image from a provided file."""
@@ -218,7 +241,7 @@ class GridApp:
                     continue
                 for coord in coords:
                     i = _coords_to_index(coord.strip())
-                    self.w.itemconfig(self.cells[i], fill=this_colour)
+                    self.w.itemconfig(self.cells[i].tkinterCellIndex, fill=this_colour)
 
 # Get the grid size from the command line, if provided
 try:

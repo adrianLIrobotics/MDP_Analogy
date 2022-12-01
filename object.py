@@ -1,3 +1,4 @@
+from tkinter import *
 class objectModel:
 
     def __init__(self,pos_x,pos_z,objectType):
