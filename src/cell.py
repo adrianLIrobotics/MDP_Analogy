@@ -12,6 +12,7 @@ class Cell:
         self.pos_x = pos_x       
         self.pos_z = pos_z
         self.empty = empty
+        self.object = None
         self.tkinterCellIndex = indexTk
       
     def fill_cell(self):
