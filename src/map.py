@@ -2,6 +2,7 @@ from tkinter import filedialog
 from cell import Cell
 from object import objectModel
 import random
+from colour import Object_Colour
 
 UNFILLED = '#fff'
 colours = (UNFILLED, 'red', 'green', 'blue', 'cyan', 'orange', 'yellow',
@@ -34,7 +35,7 @@ class Map:
                 cell = Cell(ix,iy,True,rect)
                 self.map.append(cell)#gridMap.map.append(rect)
 
-    def createRamdomMap(self):
+    def createRamdomMap(self): # Of walls only
         """ Populate the grid map with obstacles in random cell positions """
         # Track of number of objects already set up
         count = 0
@@ -48,12 +49,12 @@ class Map:
                 count = count + 1
 
                 # Create an object of type Wall.
-                wallObject = objectModel(self.map[val].pos_x,self.map[val].pos_z,"Wall")
+                wallObject = objectModel(self.map[val].pos_x,self.map[val].pos_z,Object_Colour.Wall.name)
                 self.map[val].empty = False
                 self.map[val].object = wallObject
 
                 # Change the cell colour in the tkinter canvas
-                self.canvas.itemconfig(self.map[val].tkinterCellIndex, fill='black')
+                self.canvas.itemconfig(self.map[val].tkinterCellIndex, fill=self.map[val].object.colour)
 
     def clearMap(self):
         """Reset the grid to the background "UNFILLED" colour."""
@@ -99,6 +100,16 @@ class Map:
                 for coord in coords:
                     i = _coords_to_index(coord.strip())
                     self.canvas.itemconfig(self.map[i].tkinterCellIndex, fill=this_colour)
+
+                    # Attach object to the cell if it is not white
+                    if this_colour == Object_Colour.Wall.value:
+                        self.map[i].fill_cell(Object_Colour.Wall.name)
+
+                    if this_colour == Object_Colour.Fire.value:
+                        self.map[i].fill_cell(Object_Colour.Fire.name)
+
+                    if this_colour == Object_Colour.Water.value:
+                        self.map[i].fill_cell(Object_Colour.Water.name)
 
 
     def _get_cell_coords(self, i):

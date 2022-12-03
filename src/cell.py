@@ -1,5 +1,5 @@
 from tkinter import *
-from object import *
+from object import objectModel
 
 class Cell:
 
@@ -18,9 +18,11 @@ class Cell:
         self.object = None
         self.tkinterCellIndex = indexTk
       
-    def fill_cell(self,colour):
+    def fill_cell(self,objectType):
         self.empty = False
-        self.colour = colour
+        objectTemp = objectModel(self.pos_x,self.pos_z,objectType)
+        self.colour = objectTemp.colour
+        print("objectType: ",objectTemp.objectType)
 
     def empty_cell(self):
         self.empty = True

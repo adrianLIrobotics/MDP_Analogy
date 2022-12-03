@@ -2,6 +2,7 @@ import sys
 from tkinter import *
 from tkinter import filedialog
 from object import objectModel
+from colour import Object_Colour
 
 from map import Map
 
@@ -107,9 +108,16 @@ class GridApp:
                 i = iy*n+ix
 
                 # If cell is empty and colour palete is black, change cell state to not empty and color to black.
-                if ((gridMap.map[i].empty == True) and (self.colours[self.ics]=='black')):
-                    gridMap.map[i].fill_cell("black")
-                    print(gridMap.map[i].empty)
+                if ((gridMap.map[i].empty == True) and (self.colours[self.ics]==Object_Colour.Wall.value)):#
+                    gridMap.map[i].fill_cell(Object_Colour.Wall.name)
+
+                # If cell is empty and colour palete is blue, change cell state to not empty and color to blue.
+                if ((gridMap.map[i].empty == True) and (self.colours[self.ics]==Object_Colour.Water.value)):#
+                    gridMap.map[i].fill_cell(Object_Colour.Water.name)
+
+                # If cell is empty and colour palete is red, change cell state to not empty and color to blue.
+                if ((gridMap.map[i].empty == True) and (self.colours[self.ics]==Object_Colour.Fire.value)):#
+                    gridMap.map[i].fill_cell(Object_Colour.Fire.name)
 
                 # If cell is not empty adn colour palete is white, change cell state to empty.
                 if (gridMap.map[i].empty == False) and (self.colours[self.ics]==UNFILLED):
