@@ -2,7 +2,7 @@ import sys
 from tkinter import *
 from tkinter import filedialog
 from object import objectModel
-from cell import Cell
+
 from map import Map
 
 # A simple colouring grid app, with load/save functionality.
@@ -65,19 +65,6 @@ class GridApp:
 
         # Add the cell rectangles to the grid canvas.
         gridMap = Map(50,self.w)
-        
-        #gridMap.map = []
-        for iy in range(n):
-            for ix in range(n):
-                xpad, ypad = pad * (ix+1), pad * (iy+1) 
-                x, y = xpad + ix*xsize, ypad + iy*ysize
-                rect = self.w.create_rectangle(x, y, x+xsize,
-                                           y+ysize, fill=UNFILLED)
-                
-                cell = Cell(ix,iy,True,rect)
-                gridMap.map.append(cell)#gridMap.map.append(rect)
-               
-        
 
         # Load and save image buttons
         b_load = Button(frame, text='open', command=gridMap.loadMap)

@@ -1,8 +1,13 @@
 from tkinter import filedialog
+from cell import Cell
 
 UNFILLED = '#fff'
 colours = (UNFILLED, 'red', 'green', 'blue', 'cyan', 'orange', 'yellow',
                'magenta', 'brown', 'black')
+width=600
+height=600 
+pad=5
+
 class Map:
     
     def __init__(self,size,canvas):
@@ -10,6 +15,21 @@ class Map:
         self.mapMaxSize = 50
         self.canvas = canvas
         self.map = []  
+
+        npad = self.mapSize + 1
+        xsize = (width - npad*pad) / self.mapSize
+        ysize = (height - npad*pad) / self.mapSize
+
+        # Populate map with cells class objects which have tkinter rectangles.
+        for iy in range(self.mapSize):
+            for ix in range(self.mapSize):
+                xpad, ypad = pad * (ix+1), pad * (iy+1) 
+                x, y = xpad + ix*xsize, ypad + iy*ysize
+                rect = self.canvas.create_rectangle(x, y, x+xsize,
+                                           y+ysize, fill=UNFILLED)
+                
+                cell = Cell(ix,iy,True,rect)
+                self.map.append(cell)#gridMap.map.append(rect)
 
     def clearMap(self):
         """Reset the grid to the background "UNFILLED" colour."""
