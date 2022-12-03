@@ -44,8 +44,7 @@ class GridApp:
         frame.pack()
 
         # The palette for selecting colours.
-        self.palette_canvas = Canvas(master, width=c_width,
-                                     height=palette_height)
+        self.palette_canvas = Canvas(master, width=c_width, height=palette_height)
         self.palette_canvas.pack()
 
         # Add the colour selection rectangles to the palette canvas.
@@ -66,11 +65,13 @@ class GridApp:
         # Add the cell rectangles to the grid canvas.
         gridMap = Map(50,self.w)
 
-        # Load and save image buttons
+        # Load, save image and ramdom map generator buttons
         b_load = Button(frame, text='open', command=gridMap.loadMap)
         b_load.pack(side=RIGHT, padx=pad, pady=pad)
         b_save = Button(frame, text='save', command= gridMap.saveMap)
         b_save.pack(side=RIGHT, padx=pad, pady=pad)
+        b_random = Button(frame, text='random',command= gridMap.createRamdomMap)
+        b_random.pack(side=RIGHT, padx=pad, pady=pad)
         # Add a button to clear the grid
         b_clear = Button(frame, text='clear', command=gridMap.clearMap)
         b_clear.pack(side=LEFT, padx=pad, pady=pad)
@@ -105,9 +106,9 @@ class GridApp:
             if ix < n and iy < n and 0 < xc < xsize and 0 < yc < ysize:
                 i = iy*n+ix
 
-                # If cell is empty and colour palete is black, change cell state to not empty
+                # If cell is empty and colour palete is black, change cell state to not empty and color to black.
                 if ((gridMap.map[i].empty == True) and (self.colours[self.ics]=='black')):
-                    gridMap.map[i].fill_cell()
+                    gridMap.map[i].fill_cell("black")
                     print(gridMap.map[i].empty)
 
                 # If cell is not empty adn colour palete is white, change cell state to empty.

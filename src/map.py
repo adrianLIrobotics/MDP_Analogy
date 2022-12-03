@@ -1,5 +1,7 @@
 from tkinter import filedialog
 from cell import Cell
+from object import objectModel
+import random
 
 UNFILLED = '#fff'
 colours = (UNFILLED, 'red', 'green', 'blue', 'cyan', 'orange', 'yellow',
@@ -15,6 +17,7 @@ class Map:
         self.mapMaxSize = 50
         self.canvas = canvas
         self.map = []  
+        self.ObjectsNumber = 5
 
         npad = self.mapSize + 1
         xsize = (width - npad*pad) / self.mapSize
@@ -31,11 +34,34 @@ class Map:
                 cell = Cell(ix,iy,True,rect)
                 self.map.append(cell)#gridMap.map.append(rect)
 
+    def createRamdomMap(self):
+        """ Populate the grid map with obstacles in random cell positions """
+        # Track of number of objects already set up
+        count = 0
+        while count < self.ObjectsNumber:
+
+            # Random number from all possible grid positions 
+            val = random.randint(0, self.mapSize*self.mapSize-1)
+
+            # Place the object, if it doesn't already have one
+            if self.map[val].empty == True:
+                count = count + 1
+
+                # Create an object of type Wall.
+                wallObject = objectModel(self.map[val].pos_x,self.map[val].pos_z,"Wall")
+                self.map[val].empty = False
+                self.map[val].object = wallObject
+
+                # Change the cell colour in the tkinter canvas
+                self.canvas.itemconfig(self.map[val].tkinterCellIndex, fill='black')
+
     def clearMap(self):
         """Reset the grid to the background "UNFILLED" colour."""
 
         for cell in self.map:
             self.canvas.itemconfig(cell.tkinterCellIndex, fill=UNFILLED)
+            cell.empty = True
+            cell.object= None
 
     def loadMap(self):
         """Load an image from a provided file."""
