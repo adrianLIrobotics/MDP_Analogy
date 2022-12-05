@@ -1,10 +1,11 @@
 import random
 from numpy.random import randn
+from colour import Object_Colour
 
 class robotModel:
 
-    def __init__(self,localized,mapSize,map):
-        x,z = self.initialPoseRandom(mapSize,map) 
+    def __init__(self,localized,mapSize,gridMap):
+        x,z = self.initialPoseRandom(mapSize,gridMap) 
         self.pos_xt = x # Position in x axes at time t.
         self.pos_zt = z # Position in z axes at time t.
         self.vel_xt = 0 # Velocity in x axes at time t.
@@ -25,21 +26,18 @@ class robotModel:
     def setLaserRange(self,rangeNumber):
         self.laserRange = rangeNumber
     
-    def initialPoseRandom(self,mapSize,map):
+    def initialPoseRandom(self,mapSize,gridMap):
         pos_allowed = True
-        val_x = 0
-        val_z = 0
-
         while(pos_allowed):
             # Random number from all possible grid positions 
             val = random.randint(0, mapSize*mapSize-1)
             
-            # Check that we are not placing the robot in an already busy place.
-            val_x = (val // mapSize)
-            val_z = (val % mapSize)
-
-            if map[val_x][val_z] != -1:
-                    return val_x,val_z
+            if (gridMap.map[val].empty):
+                    gridMap.map[val].empty = False
+                    gridMap.map[val].object = self#Object_Colour.Robot.name
+                    # Put the color of the robot in the canvas.
+                    gridMap.canvas.itemconfig(gridMap.map[val].tkinterCellIndex, fill=Object_Colour.Robot.value)
+                    return gridMap.map[val].pos_x,gridMap.map[val].pos_z
 
     def gps(self):
         """Noisy gps position readings"""

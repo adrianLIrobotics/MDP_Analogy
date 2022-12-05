@@ -22,7 +22,7 @@ class Cell:
         self.empty = False
         objectTemp = objectModel(self.pos_x,self.pos_z,objectType)
         self.colour = objectTemp.colour
-        print("objectType: ",objectTemp.objectType)
+        self.object = objectTemp
 
     def empty_cell(self):
         self.empty = True

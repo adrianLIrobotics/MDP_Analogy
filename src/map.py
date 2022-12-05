@@ -3,7 +3,7 @@ from cell import Cell
 from object import objectModel
 import random
 from colour import Object_Colour
-
+from robot import robotModel
 UNFILLED = '#fff'
 colours = (UNFILLED, 'red', 'green', 'blue', 'cyan', 'orange', 'yellow',
                'magenta', 'brown', 'black')
@@ -60,9 +60,12 @@ class Map:
         """Reset the grid to the background "UNFILLED" colour."""
 
         for cell in self.map:
-            self.canvas.itemconfig(cell.tkinterCellIndex, fill=UNFILLED)
-            cell.empty = True
-            cell.object= None
+            if type(cell.object) == robotModel:
+                pass
+            if type(cell.object) == objectModel:
+                self.canvas.itemconfig(cell.tkinterCellIndex, fill=UNFILLED)
+                cell.empty = True
+                cell.object= None
 
     def loadMap(self):
         """Load an image from a provided file."""

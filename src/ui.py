@@ -3,7 +3,7 @@ from tkinter import *
 from tkinter import filedialog
 from object import objectModel
 from colour import Object_Colour
-
+from robot import robotModel
 from map import Map
 
 # A simple colouring grid app, with load/save functionality.
@@ -65,6 +65,9 @@ class GridApp:
 
         # Add the cell rectangles to the grid canvas.
         gridMap = Map(50,self.w)
+
+        # Add the robot
+        robot = robotModel(True,gridMap.mapSize,gridMap)
 
         # Load, save image and ramdom map generator buttons
         b_load = Button(frame, text='open', command=gridMap.loadMap)
