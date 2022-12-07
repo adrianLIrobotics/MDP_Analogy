@@ -35,9 +35,10 @@ class Map:
                 cell = Cell(ix,iy,True,rect)
                 self.map.append(cell)#gridMap.map.append(rect)
 
-    def createRamdomMap(self): # Of walls only
+    def createRamdomMap(self,a): # Of walls only
         """ Populate the grid map with obstacles in random cell positions """
         # Track of number of objects already set up
+        self.ObjectsNumber = int(a)
         count = 0
         while count < self.ObjectsNumber:
 

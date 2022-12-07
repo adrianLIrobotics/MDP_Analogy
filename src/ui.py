@@ -22,6 +22,10 @@ class GridApp:
                'magenta', 'brown', 'black')
     ncolours = len(colours)
 
+    def setNumberFeatures(self,event):
+            featureNumber = self.inputFeatures.get(1.0, "end-1c")
+            print(featureNumber)
+
     def __init__(self, master, n, width=600, height=600, pad=5):
         """Initialize a grid and the Tk Frame on which it is rendered."""
 
@@ -69,16 +73,22 @@ class GridApp:
         # Add the robot
         robot = robotModel(True,gridMap.mapSize,gridMap)
 
+        
+
         # Load, save image and ramdom map generator buttons
         b_load = Button(frame, text='open', command=gridMap.loadMap)
         b_load.pack(side=RIGHT, padx=pad, pady=pad)
         b_save = Button(frame, text='save', command= gridMap.saveMap)
         b_save.pack(side=RIGHT, padx=pad, pady=pad)
-        b_random = Button(frame, text='random',command= gridMap.createRamdomMap)
+        b_random = Button(frame, text='random',command= lambda: gridMap.createRamdomMap(self.inputFeatures.get("1.0","end-1c")))
         b_random.pack(side=RIGHT, padx=pad, pady=pad)
         # Add a button to clear the grid
         b_clear = Button(frame, text='clear', command=gridMap.clearMap)
         b_clear.pack(side=LEFT, padx=pad, pady=pad)
+
+        #input buttom
+        self.inputFeatures = Text(frame,height = 1.5,width = 5)
+        self.inputFeatures.pack()
 
         def palette_click_callback(event):
             """Function called when someone clicks on the palette canvas."""
