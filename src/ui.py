@@ -107,7 +107,7 @@ class GridApp:
         labelframe = LabelFrame(frame, text="Robot control")
         labelframe.pack(side=RIGHT, padx=pad, pady=pad)
 
-        b_up = Button(labelframe, text='UP')
+        b_up = Button(labelframe, text='UP', command=robot.moveUpOne)
         b_up.pack(side=RIGHT, padx=pad, pady=pad)
 
         b_down = Button(labelframe, text='DOWN')
@@ -149,6 +149,9 @@ class GridApp:
             yc = y - iy*(ysize + pad) - pad
             if ix < n and iy < n and 0 < xc < xsize and 0 < yc < ysize:
                 i = iy*n+ix
+
+                print("X pos: ",str(gridMap.map[i].pos_x))
+                print("Z pos: ",str(gridMap.map[i].pos_z))
 
                 # If cell is empty and colour palete is black, change cell state to not empty and color to black.
                 if ((gridMap.map[i].empty == True) and (self.colours[self.ics]==Object_Colour.Wall.value)):#

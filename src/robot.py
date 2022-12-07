@@ -17,7 +17,16 @@ class robotModel:
         self.localized = localized
         self.laserRange = 3
         self.detectedObjects = 0
+        self.gridRobot1DPosition = 0
+        self.gridMap = gridMap
+        self.mapSize = mapSize
     
+    def coordinateTranslationTo1D(self, x_pos, z_pos):
+        '''Convert 2D position array to 1D position array for TKinter canvas'''
+        position1D = z_pos * (self.mapSize) + x_pos
+        print("Translation: ",position1D)
+        return position1D
+
     def robotkinematicEquation(self):
         dt = 1
         self.pos_xt = self.pos_xt+(self.vel_xt*dt)
@@ -37,6 +46,8 @@ class robotModel:
                     gridMap.map[val].object = self#Object_Colour.Robot.name
                     # Put the color of the robot in the canvas.
                     gridMap.canvas.itemconfig(gridMap.map[val].tkinterCellIndex, fill=Object_Colour.Robot.value)
+                    self.gridPosition = val
+                    print(gridMap.map[val].pos_x,gridMap.map[val].pos_z)
                     return gridMap.map[val].pos_x,gridMap.map[val].pos_z
 
     def gps(self):
@@ -52,7 +63,17 @@ class robotModel:
 
     def moveUpOne(self):
         """Move one unit up - prob(slip low)"""
-        self.pos_xt = self.pos_xt + 1
+        oldPosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt)
+        newPosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt-1)
+        self.pos_zt -= 1
+        self.pos_x.append(self.pos_xt)
+        self.pos_z.append(self.pos_zt)
+
+        # Remove robot from canvas actual position
+        self.gridMap.canvas.itemconfig(self.gridMap.map[oldPosition].tkinterCellIndex, fill='#fff')
+
+        # Move robot in canvas
+        self.gridMap.canvas.itemconfig(self.gridMap.map[newPosition].tkinterCellIndex, fill=Object_Colour.Robot.value)
 
     def moveUpTwo(self):
         """Move one unit up - prob(slip high)"""
