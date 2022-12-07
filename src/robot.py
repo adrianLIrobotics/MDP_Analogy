@@ -72,7 +72,7 @@ class robotModel:
         # Remove robot from canvas actual position
         self.gridMap.canvas.itemconfig(self.gridMap.map[oldPosition].tkinterCellIndex, fill='#fff')
 
-        # Move robot in canvas
+        # Move robot in canvas one up.
         self.gridMap.canvas.itemconfig(self.gridMap.map[newPosition].tkinterCellIndex, fill=Object_Colour.Robot.value)
 
     def moveUpTwo(self):
@@ -81,15 +81,48 @@ class robotModel:
 
     def moveDownOne(self):
         """Move one unit down"""
-        self.pos_xt = self.pos_xt -1
+        oldPosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt)
+        newPosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt+1)
+        self.pos_zt += 1
+        self.pos_x.append(self.pos_xt)
+        self.pos_z.append(self.pos_zt)
+
+        # Remove robot from canvas actual position
+        self.gridMap.canvas.itemconfig(self.gridMap.map[oldPosition].tkinterCellIndex, fill='#fff')
+
+        # Move robot in canvas one up.
+        self.gridMap.canvas.itemconfig(self.gridMap.map[newPosition].tkinterCellIndex, fill=Object_Colour.Robot.value)
+
 
     def moveLeftOne(self):
         """Move one unit left"""
-        self.pos_zt = self.pos_zt -1
+        oldPosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt)
+        newPosition = self.coordinateTranslationTo1D(self.pos_xt-1,self.pos_zt)
+        self.pos_xt -= 1
+        self.pos_x.append(self.pos_xt)
+        self.pos_z.append(self.pos_zt)
+
+        # Remove robot from canvas actual position
+        self.gridMap.canvas.itemconfig(self.gridMap.map[oldPosition].tkinterCellIndex, fill='#fff')
+
+        # Move robot in canvas one up.
+        self.gridMap.canvas.itemconfig(self.gridMap.map[newPosition].tkinterCellIndex, fill=Object_Colour.Robot.value)
+
 
     def moveRightOne(self):
         """Move one unit right"""
-        self.pos_zt = self.pos_zt +1
+        oldPosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt)
+        newPosition = self.coordinateTranslationTo1D(self.pos_xt+1,self.pos_zt)
+        self.pos_xt += 1
+        self.pos_x.append(self.pos_xt)
+        self.pos_z.append(self.pos_zt)
+
+        # Remove robot from canvas actual position
+        self.gridMap.canvas.itemconfig(self.gridMap.map[oldPosition].tkinterCellIndex, fill='#fff')
+
+        # Move robot in canvas one up.
+        self.gridMap.canvas.itemconfig(self.gridMap.map[newPosition].tkinterCellIndex, fill=Object_Colour.Robot.value)
+
 
     def objectDetected(self,isObject,temp_x,temp_z):
         if ((temp_x < self.pos_xt+self.laserRange) and (isObject==-1)):

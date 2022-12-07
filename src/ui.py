@@ -110,13 +110,13 @@ class GridApp:
         b_up = Button(labelframe, text='UP', command=robot.moveUpOne)
         b_up.pack(side=RIGHT, padx=pad, pady=pad)
 
-        b_down = Button(labelframe, text='DOWN')
+        b_down = Button(labelframe, text='DOWN', command=robot.moveDownOne)
         b_down.pack(side=RIGHT, padx=pad, pady=pad)
 
-        b_left = Button(labelframe, text='LEFT')
+        b_left = Button(labelframe, text='LEFT', command=robot.moveLeftOne)
         b_left.pack(side=RIGHT, padx=pad, pady=pad)
 
-        b_right = Button(labelframe, text='RIGHT')
+        b_right = Button(labelframe, text='RIGHT', command=robot.moveRightOne)
         b_right.pack(side=RIGHT, padx=pad, pady=pad)
 
 
