@@ -22,6 +22,10 @@ class GridApp:
                'magenta', 'brown', 'black')
     ncolours = len(colours)
 
+    def key_pressed(self,event):
+        print("hola")
+        print(event.char)
+
     def setNumberFeatures(self,event):
             featureNumber = self.inputFeatures.get(1.0, "end-1c")
             print(featureNumber)
@@ -52,6 +56,9 @@ class GridApp:
         self.palette_canvas = Canvas(master, width=c_width, height=palette_height)
         self.palette_canvas.pack()
 
+        colorframe = LabelFrame(frame, text="Map control")
+        colorframe.pack(side=RIGHT, padx=pad, pady=pad)
+
         # Add the colour selection rectangles to the palette canvas.
         self.palette_rects = []
         for i in range(self.ncolours):
@@ -74,21 +81,44 @@ class GridApp:
         robot = robotModel(True,gridMap.mapSize,gridMap)
 
         
+        mapframe = LabelFrame(frame, text="Map control")
+        mapframe.pack(side=RIGHT, padx=pad, pady=pad)
+
+        systemframe = LabelFrame(frame, text="System control")
+        systemframe.pack(side=RIGHT, padx=pad, pady=pad)
 
         # Load, save image and ramdom map generator buttons
-        b_load = Button(frame, text='open', command=gridMap.loadMap)
+        b_load = Button(systemframe, text='open', command=gridMap.loadMap)
         b_load.pack(side=RIGHT, padx=pad, pady=pad)
-        b_save = Button(frame, text='save', command= gridMap.saveMap)
+        b_save = Button(systemframe, text='save', command= gridMap.saveMap)
         b_save.pack(side=RIGHT, padx=pad, pady=pad)
-        b_random = Button(frame, text='random',command= lambda: gridMap.createRamdomMap(self.inputFeatures.get("1.0","end-1c")))
+        b_random = Button(mapframe, text='random',command= lambda: gridMap.createRamdomMap(self.inputFeatures.get("1.0","end-1c")))
         b_random.pack(side=RIGHT, padx=pad, pady=pad)
         # Add a button to clear the grid
-        b_clear = Button(frame, text='clear', command=gridMap.clearMap)
-        b_clear.pack(side=LEFT, padx=pad, pady=pad)
+        b_clear = Button(mapframe, text='clear', command=gridMap.clearMap)
+        b_clear.pack(side=RIGHT, padx=pad, pady=pad)
 
         #input buttom
-        self.inputFeatures = Text(frame,height = 1.5,width = 5)
-        self.inputFeatures.pack()
+        self.inputFeatures = Text(mapframe,height = 1.5,width = 5)
+        self.inputFeatures.pack(side=RIGHT, padx=pad, pady=pad)
+
+        #frame.bind("<Key>",self.key_pressed)
+
+        labelframe = LabelFrame(frame, text="Robot control")
+        labelframe.pack(side=RIGHT, padx=pad, pady=pad)
+
+        b_up = Button(labelframe, text='UP')
+        b_up.pack(side=RIGHT, padx=pad, pady=pad)
+
+        b_down = Button(labelframe, text='DOWN')
+        b_down.pack(side=RIGHT, padx=pad, pady=pad)
+
+        b_left = Button(labelframe, text='LEFT')
+        b_left.pack(side=RIGHT, padx=pad, pady=pad)
+
+        b_right = Button(labelframe, text='RIGHT')
+        b_right.pack(side=RIGHT, padx=pad, pady=pad)
+
 
         def palette_click_callback(event):
             """Function called when someone clicks on the palette canvas."""
