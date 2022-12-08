@@ -20,6 +20,7 @@ class robotModel:
         self.gridRobot1DPosition = 0
         self.gridMap = gridMap
         self.mapSize = mapSize
+        self.collided = False
     
     def coordinateTranslationTo1D(self, x_pos, z_pos):
         '''Convert 2D position array to 1D position array for TKinter canvas'''
@@ -65,15 +66,22 @@ class robotModel:
         """Move one unit up - prob(slip low)"""
         oldPosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt)
         newPosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt-1)
-        self.pos_zt -= 1
-        self.pos_x.append(self.pos_xt)
-        self.pos_z.append(self.pos_zt)
 
-        # Remove robot from canvas actual position
-        self.gridMap.canvas.itemconfig(self.gridMap.map[oldPosition].tkinterCellIndex, fill='#fff')
+        if (self.gridMap.map[newPosition].empty == False):
+            self.collided = True
+            print("Collided: ",self.collided)
+        else:
+            self.collided = False
+            self.pos_zt -= 1
+            self.pos_x.append(self.pos_xt)
+            self.pos_z.append(self.pos_zt)
 
-        # Move robot in canvas one up.
-        self.gridMap.canvas.itemconfig(self.gridMap.map[newPosition].tkinterCellIndex, fill=Object_Colour.Robot.value)
+            # Remove robot from canvas actual position
+            self.gridMap.canvas.itemconfig(self.gridMap.map[oldPosition].tkinterCellIndex, fill='#fff')
+            self.gridMap.map[oldPosition].object = None
+            self.gridMap.map[oldPosition].empty = True
+            # Move robot in canvas one up.
+            self.gridMap.canvas.itemconfig(self.gridMap.map[newPosition].tkinterCellIndex, fill=Object_Colour.Robot.value)
 
     def moveUpTwo(self):
         """Move one unit up - prob(slip high)"""
@@ -83,45 +91,66 @@ class robotModel:
         """Move one unit down"""
         oldPosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt)
         newPosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt+1)
-        self.pos_zt += 1
-        self.pos_x.append(self.pos_xt)
-        self.pos_z.append(self.pos_zt)
 
-        # Remove robot from canvas actual position
-        self.gridMap.canvas.itemconfig(self.gridMap.map[oldPosition].tkinterCellIndex, fill='#fff')
+        if (self.gridMap.map[newPosition].empty == False):
+            self.collided = True
+            print("Collided: ",self.collided)
+        else:
+            self.collided = False
+            self.pos_zt += 1
+            self.pos_x.append(self.pos_xt)
+            self.pos_z.append(self.pos_zt)
 
-        # Move robot in canvas one up.
-        self.gridMap.canvas.itemconfig(self.gridMap.map[newPosition].tkinterCellIndex, fill=Object_Colour.Robot.value)
+            # Remove robot from canvas actual position
+            self.gridMap.canvas.itemconfig(self.gridMap.map[oldPosition].tkinterCellIndex, fill='#fff')
+            self.gridMap.map[oldPosition].object = None
+            self.gridMap.map[oldPosition].empty = True
+            # Move robot in canvas one up.
+            self.gridMap.canvas.itemconfig(self.gridMap.map[newPosition].tkinterCellIndex, fill=Object_Colour.Robot.value)
 
 
     def moveLeftOne(self):
         """Move one unit left"""
         oldPosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt)
         newPosition = self.coordinateTranslationTo1D(self.pos_xt-1,self.pos_zt)
-        self.pos_xt -= 1
-        self.pos_x.append(self.pos_xt)
-        self.pos_z.append(self.pos_zt)
 
-        # Remove robot from canvas actual position
-        self.gridMap.canvas.itemconfig(self.gridMap.map[oldPosition].tkinterCellIndex, fill='#fff')
+        if (self.gridMap.map[newPosition].empty == False):
+            self.collided = True
+            print("Collided: ",self.collided)
+        else:
+            self.collided = False
+            self.pos_xt -= 1
+            self.pos_x.append(self.pos_xt)
+            self.pos_z.append(self.pos_zt)
 
-        # Move robot in canvas one up.
-        self.gridMap.canvas.itemconfig(self.gridMap.map[newPosition].tkinterCellIndex, fill=Object_Colour.Robot.value)
+            # Remove robot from canvas actual position
+            self.gridMap.canvas.itemconfig(self.gridMap.map[oldPosition].tkinterCellIndex, fill='#fff')
+            self.gridMap.map[oldPosition].object = None
+            self.gridMap.map[oldPosition].empty = True
+            # Move robot in canvas one up.
+            self.gridMap.canvas.itemconfig(self.gridMap.map[newPosition].tkinterCellIndex, fill=Object_Colour.Robot.value)
 
 
     def moveRightOne(self):
         """Move one unit right"""
         oldPosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt)
         newPosition = self.coordinateTranslationTo1D(self.pos_xt+1,self.pos_zt)
-        self.pos_xt += 1
-        self.pos_x.append(self.pos_xt)
-        self.pos_z.append(self.pos_zt)
 
-        # Remove robot from canvas actual position
-        self.gridMap.canvas.itemconfig(self.gridMap.map[oldPosition].tkinterCellIndex, fill='#fff')
+        if (self.gridMap.map[newPosition].empty == False):
+            self.collided = True
+            print("Collided: ",self.collided)
+        else:
+            self.collided = False
+            self.pos_xt += 1
+            self.pos_x.append(self.pos_xt)
+            self.pos_z.append(self.pos_zt)
 
-        # Move robot in canvas one up.
-        self.gridMap.canvas.itemconfig(self.gridMap.map[newPosition].tkinterCellIndex, fill=Object_Colour.Robot.value)
+            # Remove robot from canvas actual position
+            self.gridMap.canvas.itemconfig(self.gridMap.map[oldPosition].tkinterCellIndex, fill='#fff')
+            self.gridMap.map[oldPosition].object = None
+            self.gridMap.map[oldPosition].empty = True
+            # Move robot in canvas one up.
+            self.gridMap.canvas.itemconfig(self.gridMap.map[newPosition].tkinterCellIndex, fill=Object_Colour.Robot.value)
 
 
     def objectDetected(self,isObject,temp_x,temp_z):
