@@ -4,4 +4,4 @@ class Object_Colour(Enum):
     Wall = 'black'
     Water = 'blue'
     Fire = 'red'
-    Robot = 'magenta'
+    Robot = 'green'
