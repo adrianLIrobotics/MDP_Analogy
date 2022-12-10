@@ -4,7 +4,7 @@ from colour import Object_Colour
 
 class robotModel:
 
-    def __init__(self,localized,mapSize,gridMap):
+    def __init__(self,localized,mapSize,gridMap,master):
         x,z = self.initialPoseRandom(mapSize,gridMap) 
         self.pos_xt = x # Position in x axes at time t.
         self.pos_zt = z # Position in z axes at time t.
@@ -21,6 +21,7 @@ class robotModel:
         self.gridMap = gridMap
         self.mapSize = mapSize
         self.collided = False
+        self.master = master
     
     def coordinateTranslationTo1D(self, x_pos, z_pos):
         '''Convert 2D position array to 1D position array for TKinter canvas'''
@@ -66,10 +67,12 @@ class robotModel:
         """Move one unit up - prob(slip low)"""
         oldPosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt)
         newPosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt-1)
+        
 
         if (self.gridMap.map[newPosition].empty == False):
             self.collided = True
             print("Collided: ",self.collided)
+            self.master.writeTextBox("Robot collided!")
         else:
             self.collided = False
             self.pos_zt -= 1
@@ -82,6 +85,8 @@ class robotModel:
             self.gridMap.map[oldPosition].empty = True
             # Move robot in canvas one up.
             self.gridMap.canvas.itemconfig(self.gridMap.map[newPosition].tkinterCellIndex, fill=Object_Colour.Robot.value)
+
+            self.master.writeTextBox("Moved 1 Up")
 
     def moveUpTwo(self):
         """Move one unit up - prob(slip high)"""

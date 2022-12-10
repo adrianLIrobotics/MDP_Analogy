@@ -30,6 +30,12 @@ class GridApp:
             featureNumber = self.inputFeatures.get(1.0, "end-1c")
             print(featureNumber)
 
+    def clearTextBox(self):
+        self.debug.delete(1.0, END)
+
+    def writeTextBox(self,text):
+        self.debug.insert(END,str(text)+"\n")
+
     def __init__(self, master, n, width=1000, height=1500, pad=5): # width=600, height=600
         """Initialize a grid and the Tk Frame on which it is rendered."""
 
@@ -53,10 +59,17 @@ class GridApp:
         frame.pack()
 
         # The Debug window.
+
         debugframe = LabelFrame(master, text="Debug control")
         debugframe.pack( padx=pad, pady=pad)
-        self.debug=Text(debugframe,height =palette_height/13,width = int(c_width/8))
+
+        scroll_bar = Scrollbar(debugframe)
+        scroll_bar.pack(side=RIGHT)
+
+
+        self.debug=Text(debugframe,height =palette_height/13,width = int(c_width/8),yscrollcommand=scroll_bar.set)
         self.debug.pack()
+        
 
         # The palette for selecting colours.
         
@@ -85,7 +98,7 @@ class GridApp:
         gridMap = Map(50,self.w)
 
         # Add the robot
-        robot = robotModel(True,gridMap.mapSize,gridMap)
+        robot = robotModel(True,gridMap.mapSize,gridMap,self)
 
         
         mapframe = LabelFrame(frame, text="Map control")
