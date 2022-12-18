@@ -5,3 +5,4 @@ class Object_Colour(Enum):
     Water = 'blue'
     Fire = 'red'
     Robot = 'green'
+    Goal = 'yellow'

@@ -23,7 +23,6 @@ class GridApp:
     ncolours = len(colours)
 
     def key_pressed(self,event):
-        print("hola")
         print(event.char)
 
     def setNumberFeatures(self,event):

@@ -112,7 +112,7 @@ class robotModel:
             self.gridMap.map[oldPosition].empty = True
             # Move robot in canvas one up.
             self.gridMap.canvas.itemconfig(self.gridMap.map[newPosition].tkinterCellIndex, fill=Object_Colour.Robot.value)
-
+            self.master.writeTextBox("Moved 1 down")
 
     def moveLeftOne(self):
         """Move one unit left"""
@@ -134,7 +134,7 @@ class robotModel:
             self.gridMap.map[oldPosition].empty = True
             # Move robot in canvas one up.
             self.gridMap.canvas.itemconfig(self.gridMap.map[newPosition].tkinterCellIndex, fill=Object_Colour.Robot.value)
-
+            self.master.writeTextBox("Moved 1 Left")
 
     def moveRightOne(self):
         """Move one unit right"""
@@ -156,7 +156,7 @@ class robotModel:
             self.gridMap.map[oldPosition].empty = True
             # Move robot in canvas one up.
             self.gridMap.canvas.itemconfig(self.gridMap.map[newPosition].tkinterCellIndex, fill=Object_Colour.Robot.value)
-
+            self.master.writeTextBox("Moved 1 Right")
 
     def objectDetected(self,isObject,temp_x,temp_z):
         if ((temp_x < self.pos_xt+self.laserRange) and (isObject==-1)):
@@ -165,6 +165,9 @@ class robotModel:
             return True
         else:
             return False
+
+    def get_robot_actions(self):
+        return ['moveUpOne','moveUpTwo','moveDownOne','moveDownTwo','moveLeftOne','moveLeftTwo','moveRightOne','moveRightTWo','stay']
 
     def robotCrushed(self):
         return True

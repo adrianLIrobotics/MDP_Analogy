@@ -14,7 +14,7 @@ pad=5
 class Map:
     
     def __init__(self,size,canvas):
-        self.mapSize = size
+        self.mapSize = size # Row size
         self.mapMaxSize = 50
         self.canvas = canvas
         self.map = []  
