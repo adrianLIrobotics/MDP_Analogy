@@ -36,7 +36,7 @@ class GridApp:
     def __init__(self, master, n, width=1000, height=1500, pad=5): # width=600, height=600
         """Initialize a grid and the Tk Frame on which it is rendered."""
 
-     
+        
         # Number of cells in each dimension.
         self.n = n
         # Some dimensions for the App in pixels.
@@ -67,26 +67,12 @@ class GridApp:
 
         self.debug=Text(debugframe,height =palette_height/13,width = int(c_width/8),yscrollcommand=scroll_bar.set)
         self.debug.pack()
+
+        self.openNewWindow(master,c_width,palette_height,frame)
         
 
-        # The palette for selecting colours.
-        
-        #self.palette_canvas = Canvas(master, width=c_width, height=palette_height)
-        #self.palette_canvas.pack()
-
-        #colorframe = LabelFrame(frame, text="Map control")
-        #colorframe.pack(side=RIGHT, padx=pad, pady=pad)
-
-        # Add the colour selection rectangles to the palette canvas.
-        #self.palette_rects = []
-        #for i in range(self.ncolours):
-        #    x, y = p_pad * (i+1) + i*p_width, p_pad
-        #    rect = self.palette_canvas.create_rectangle(x, y,
-        #                    x+p_width, y+p_height, fill=self.colours[i])
-        #    self.palette_rects.append(rect)
-        # ics is the index of the currently selected colour.
         self.ics = 9#0
-        #self.select_colour(self.ics)
+        self.select_colour(self.ics)
 
         # The canvas onto which the grid is drawn.
         self.w = Canvas(master, width=c_width, height=c_height)
@@ -170,7 +156,7 @@ class GridApp:
         # Bind the palette click callback function to the left mouse button
 
         # press event on the palette canvas.
-        #self.palette_canvas.bind('<ButtonPress-1>', palette_click_callback)
+        self.palette_canvas.bind('<ButtonPress-1>', palette_click_callback)
 
         def w_click_callback(event):
             """Function called when someone clicks on the grid canvas."""
@@ -218,6 +204,26 @@ class GridApp:
         self.ics = i
         self.palette_canvas.itemconfig(self.palette_rects[self.ics],
                                        outline='black', width=5)
+
+    def openNewWindow(self, master, c_width, palette_height,frame):
+        newWindow = Toplevel(master)
+        newWindow.title("New Window")
+        newWindow.geometry("400x50")
+        p_pad = 5
+        p_width = p_height = palette_height - 2*p_pad
+        
+        # The palette for selecting colours.
+        self.palette_canvas = Canvas(newWindow, width=c_width, height=palette_height)
+        self.palette_canvas.pack()
+
+        # Add the colour selection rectangles to the palette canvas.
+        self.palette_rects = []
+        for i in range(self.ncolours):
+            x, y = p_pad * (i+1) + i*p_width, p_pad
+            rect = self.palette_canvas.create_rectangle(x, y,
+                            x+p_width, y+p_height, fill=self.colours[i])
+            self.palette_rects.append(rect)
+        # ics is the index of the currently selected colour.
 
 '''    
 # Get the grid size from the command line, if provided
