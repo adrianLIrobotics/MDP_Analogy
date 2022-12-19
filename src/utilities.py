@@ -1,9 +1,11 @@
-import configparser
+from configparser import ConfigParser
+import pathlib
 from os.path import exists
 import os
 
-config = configparser.ConfigParser()
-config.read('data/config.ini')
+config_path = pathlib.Path(__file__).parent.absolute() / "config.ini"
+config = ConfigParser()
+config.read(config_path)
 num_cols = config['map']['mapSize']
 
 '''

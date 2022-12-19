@@ -38,6 +38,7 @@ class GridApp:
     def __init__(self, master, n, width=1000, height=1500, pad=5): # width=600, height=600
         """Initialize a grid and the Tk Frame on which it is rendered."""
 
+     
         # Number of cells in each dimension.
         self.n = n
         # Some dimensions for the App in pixels.
@@ -94,11 +95,10 @@ class GridApp:
         self.w.pack()
 
         # Add the cell rectangles to the grid canvas.
-        gridMap = Map(50,self.w)
+        self.gridMap = Map(50,self.w)
 
-        # Add the robot
-        robot = robotModel(True,gridMap.mapSize,gridMap,self)
-
+        # Add the self.robot
+        self.robot = robotModel(True,self.gridMap.mapSize,self.gridMap,self)
         
         mapframe = LabelFrame(frame, text="Map control")
         mapframe.pack(side=RIGHT, padx=pad, pady=pad)
@@ -107,14 +107,14 @@ class GridApp:
         systemframe.pack(side=RIGHT, padx=pad, pady=pad)
 
         # Load, save image and ramdom map generator buttons
-        b_load = Button(systemframe, text='open', command=gridMap.loadMap)
+        b_load = Button(systemframe, text='open', command=self.gridMap.loadMap)
         b_load.pack(side=RIGHT, padx=pad, pady=pad)
-        b_save = Button(systemframe, text='save', command= gridMap.saveMap)
+        b_save = Button(systemframe, text='save', command= self.gridMap.saveMap)
         b_save.pack(side=RIGHT, padx=pad, pady=pad)
-        b_random = Button(mapframe, text='random',command= lambda: gridMap.createRamdomMap(self.inputFeatures.get("1.0","end-1c")))
+        b_random = Button(mapframe, text='random',command= lambda: self.gridMap.createRamdomMap(self.inputFeatures.get("1.0","end-1c")))
         b_random.pack(side=RIGHT, padx=pad, pady=pad)
         # Add a button to clear the grid
-        b_clear = Button(mapframe, text='clear', command=gridMap.clearMap)
+        b_clear = Button(mapframe, text='clear', command=self.gridMap.clearMap)
         b_clear.pack(side=RIGHT, padx=pad, pady=pad)
 
         #input buttom
@@ -123,19 +123,19 @@ class GridApp:
 
         #frame.bind("<Key>",self.key_pressed)
 
-        labelframe = LabelFrame(frame, text="Robot control")
+        labelframe = LabelFrame(frame, text="self.robot control")
         labelframe.pack(side=RIGHT, padx=pad, pady=pad)
 
-        b_up = Button(labelframe, text='UP', command=robot.moveUpOne)
+        b_up = Button(labelframe, text='UP', command=self.robot.moveUpOne)
         b_up.pack(side=RIGHT, padx=pad, pady=pad)
 
-        b_down = Button(labelframe, text='DOWN', command=robot.moveDownOne)
+        b_down = Button(labelframe, text='DOWN', command=self.robot.moveDownOne)
         b_down.pack(side=RIGHT, padx=pad, pady=pad)
 
-        b_left = Button(labelframe, text='LEFT', command=robot.moveLeftOne)
+        b_left = Button(labelframe, text='LEFT', command=self.robot.moveLeftOne)
         b_left.pack(side=RIGHT, padx=pad, pady=pad)
 
-        b_right = Button(labelframe, text='RIGHT', command=robot.moveRightOne)
+        b_right = Button(labelframe, text='RIGHT', command=self.robot.moveRightOne)
         b_right.pack(side=RIGHT, padx=pad, pady=pad)
 
         #input buttom
@@ -175,27 +175,27 @@ class GridApp:
             if ix < n and iy < n and 0 < xc < xsize and 0 < yc < ysize:
                 i = iy*n+ix
 
-                print("X pos: ",str(gridMap.map[i].pos_x))
-                print("Z pos: ",str(gridMap.map[i].pos_z))
+                print("X pos: ",str(self.gridMap.map[i].pos_x))
+                print("Z pos: ",str(self.gridMap.map[i].pos_z))
 
                 # If cell is empty and colour palete is black, change cell state to not empty and color to black.
-                if ((gridMap.map[i].empty == True) and (self.colours[self.ics]==Object_Colour.Wall.value)):#
-                    gridMap.map[i].fill_cell(Object_Colour.Wall.name)
+                if ((self.gridMap.map[i].empty == True) and (self.colours[self.ics]==Object_Colour.Wall.value)):#
+                    self.gridMap.map[i].fill_cell(Object_Colour.Wall.name)
 
                 # If cell is empty and colour palete is blue, change cell state to not empty and color to blue.
-                if ((gridMap.map[i].empty == True) and (self.colours[self.ics]==Object_Colour.Water.value)):#
-                    gridMap.map[i].fill_cell(Object_Colour.Water.name)
+                if ((self.gridMap.map[i].empty == True) and (self.colours[self.ics]==Object_Colour.Water.value)):#
+                    self.gridMap.map[i].fill_cell(Object_Colour.Water.name)
 
                 # If cell is empty and colour palete is red, change cell state to not empty and color to blue.
-                if ((gridMap.map[i].empty == True) and (self.colours[self.ics]==Object_Colour.Fire.value)):#
-                    gridMap.map[i].fill_cell(Object_Colour.Fire.name)
+                if ((self.gridMap.map[i].empty == True) and (self.colours[self.ics]==Object_Colour.Fire.value)):#
+                    self.gridMap.map[i].fill_cell(Object_Colour.Fire.name)
 
                 # If cell is not empty adn colour palete is white, change cell state to empty.
-                if (gridMap.map[i].empty == False) and (self.colours[self.ics]==UNFILLED):
-                    gridMap.map[i].empty_cell()
-                    print(gridMap.map[i].empty)
+                if (self.gridMap.map[i].empty == False) and (self.colours[self.ics]==UNFILLED):
+                    self.gridMap.map[i].empty_cell()
+                    print(self.gridMap.map[i].empty)
                 
-                self.w.itemconfig(gridMap.map[i].tkinterCellIndex, fill=self.colours[self.ics])
+                self.w.itemconfig(self.gridMap.map[i].tkinterCellIndex, fill=self.colours[self.ics])
         # Bind the grid click callback function to the left mouse button
         # press event on the grid canvas.
         self.w.bind('<ButtonPress-1>', w_click_callback)
@@ -209,7 +209,7 @@ class GridApp:
         self.palette_canvas.itemconfig(self.palette_rects[self.ics],
                                        outline='black', width=5)
 
-    
+'''    
 # Get the grid size from the command line, if provided
 try:
     n = int(sys.argv[1])
@@ -226,3 +226,4 @@ if n < 1 or n > MAX_N:
 root = Tk()
 grid = GridApp(root, n, 600, 600, 5)
 root.mainloop()
+'''

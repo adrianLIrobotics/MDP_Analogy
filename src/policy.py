@@ -8,11 +8,11 @@ policy_file_name = "policies_stored.txt"
 
 class PolicyModel:
 
-    def __init__(self,num_actions,num_states,state_history, robot):
+    def __init__(self,num_actions,num_states, robot):
         self.num_actions = num_actions
         self.num_states = num_states
         #self.total_reward = 0 # Reward of policy
-        self.state_history = state_history
+        self.state_history = []
         self.robot = robot
 
     def read_policies(self):
@@ -22,7 +22,9 @@ class PolicyModel:
         lines = open(path_to_policies + policy_file_name, 'r').readlines()
         for line in lines:
             print(line)
-        
+            all_words = last_line.split()
+            policy_name = all_words[0]
+            
 
     '''
     Get the actual mathematical rule for a random generated policy data.
