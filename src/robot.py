@@ -1,11 +1,26 @@
 import random
 from numpy.random import randn
 from colour import Object_Colour
+from configparser import ConfigParser
+import pathlib
+import utilities
 
 class robotModel:
 
     def __init__(self,localized,mapSize,gridMap,master):
-        x,z = self.initialPoseRandom(mapSize,gridMap) 
+        # Read configuration file
+        config_path = pathlib.Path(__file__).parent.absolute() / "config.ini"
+        config = ConfigParser()
+        config.read(config_path)
+        initial_pose_x = config['robot']['initial_pose_x']
+        initial_pose_z = config['robot']['initial_pose_z']
+
+        # Configure robot initial position.
+        if (initial_pose_x == 'random') and (initial_pose_z == 'random'):
+            x,z = self.initialPoseRandom(mapSize,gridMap) 
+        else:
+           x,z = self.manual_robot_pose(int(initial_pose_x),int(initial_pose_z),gridMap)
+
         self.pos_xt = x # Position in x axes at time t.
         self.pos_zt = z # Position in z axes at time t.
         self.vel_xt = 0 # Velocity in x axes at time t.
@@ -22,6 +37,22 @@ class robotModel:
         self.mapSize = mapSize
         self.collided = False
         self.master = master
+
+    def manual_robot_pose(self,x,z,gridMap):
+        pos_allowed = True
+        
+        while(pos_allowed):
+            # Random number from all possible grid positions 
+            val = utilities.get_state_from_pos((x,z))
+            print("val ",val)
+            if (gridMap.map[val].empty):
+                gridMap.map[val].empty = False
+                gridMap.map[val].object = self #Object_Colour.Robot.name
+                # Put the color of the robot in the canvas.
+                gridMap.canvas.itemconfig(gridMap.map[val].tkinterCellIndex, fill=Object_Colour.Robot.value)
+                self.gridPosition = val
+                print(gridMap.map[val].pos_x,gridMap.map[val].pos_z)
+                return gridMap.map[val].pos_x,gridMap.map[val].pos_z
     
     def coordinateTranslationTo1D(self, x_pos, z_pos):
         '''Convert 2D position array to 1D position array for TKinter canvas'''

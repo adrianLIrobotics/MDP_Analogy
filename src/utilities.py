@@ -12,7 +12,8 @@ num_cols = config['map']['mapSize']
  Get the mdp state (tkinter index cell) from the 2d coordinates position.
 '''
 def get_state_from_pos(pos):
-     return pos[0] * num_cols + pos[1]
+    print(pos)
+    return pos[0] * int(num_cols) + pos[1]
 
 '''
  Get the 2d coordinates position from mdp state (tkinter index cell).

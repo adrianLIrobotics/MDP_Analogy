@@ -18,7 +18,3 @@ root = Tk()
 grid = GridApp(root, int(num_states), 600, 600, 5)
 root.mainloop()
 
-print("hola")
-
-#robot_object = robotModel()
-#policy_object = PolicyModel(num_robot_actions,num_states)

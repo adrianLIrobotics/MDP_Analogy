@@ -9,8 +9,6 @@ from map import Map
 # A simple colouring grid app, with load/save functionality.
 # Christian Hill, August 2018.
 
-# Maximum and default grid size
-MAX_N, DEFAULT_N = 50, 50#50,50 
 # The "default" colour for an unfilled grid cell
 UNFILLED = '#fff'
 
@@ -95,10 +93,13 @@ class GridApp:
         self.w.pack()
 
         # Add the cell rectangles to the grid canvas.
-        self.gridMap = Map(50,self.w)
+        self.gridMap = Map(n,self.w) # self.gridMap = Map(50,self.w)
 
-        # Add the self.robot
+        # Add the robot
         self.robot = robotModel(True,self.gridMap.mapSize,self.gridMap,self)
+
+        # Add policies
+        #policy_object = PolicyModel(num_robot_actions,num_states)
         
         mapframe = LabelFrame(frame, text="Map control")
         mapframe.pack(side=RIGHT, padx=pad, pady=pad)
@@ -123,7 +124,7 @@ class GridApp:
 
         #frame.bind("<Key>",self.key_pressed)
 
-        labelframe = LabelFrame(frame, text="self.robot control")
+        labelframe = LabelFrame(frame, text="robot control")
         labelframe.pack(side=RIGHT, padx=pad, pady=pad)
 
         b_up = Button(labelframe, text='UP', command=self.robot.moveUpOne)
@@ -137,6 +138,15 @@ class GridApp:
 
         b_right = Button(labelframe, text='RIGHT', command=self.robot.moveRightOne)
         b_right.pack(side=RIGHT, padx=pad, pady=pad)
+
+        mdpFrame = LabelFrame(frame, text="MDP")
+        mdpFrame.pack(side=RIGHT, padx=pad, pady=pad)
+
+        b_up = Button(mdpFrame, text='Generate policy')
+        b_up.pack(side=RIGHT, padx=pad, pady=pad)
+
+        inputPolicy = Text(mdpFrame,height = 1.5,width = 5)
+        inputPolicy.pack(side=RIGHT, padx=pad, pady=pad)
 
         #input buttom
         #debug_window = Text(frame,height = 1.5,width = 5)
