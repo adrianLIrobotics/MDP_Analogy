@@ -5,6 +5,7 @@ from object import objectModel
 from colour import Object_Colour
 from robot import robotModel
 from map import Map
+from policy import PolicyModel
 
 # A simple colouring grid app, with load/save functionality.
 # Christian Hill, August 2018.
@@ -85,7 +86,9 @@ class GridApp:
         self.robot = robotModel(True,self.gridMap.mapSize,self.gridMap,self)
 
         # Add policies
-        #policy_object = PolicyModel(num_robot_actions,num_states)
+        policy_object = PolicyModel(self.gridMap.mapSize**2,self.robot)
+        policy = policy_object.generate_random_policy()
+        print(policy)
         
         mapframe = LabelFrame(frame, text="Map control")
         mapframe.pack(side=RIGHT, padx=pad, pady=pad)

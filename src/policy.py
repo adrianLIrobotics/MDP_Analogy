@@ -2,14 +2,14 @@
 import numpy as np
 import utilities
 import random
+import pathlib
 
-path_to_policies = "/data/policies/"
+path_to_policies = "data/policies/"
 policy_file_name = "policies_stored.txt"
 
 class PolicyModel:
 
-    def __init__(self,num_actions,num_states, robot):
-        self.num_actions = num_actions
+    def __init__(self,num_states, robot):
         self.num_states = num_states
         #self.total_reward = 0 # Reward of policy
         self.state_history = []
@@ -34,10 +34,15 @@ class PolicyModel:
         raise NotImplementedError
 
     def get_last_policy_stored(self):
-
+      
+        #with open(path_to_policies + policy_file_name, 'r') as f:
         with open(path_to_policies + policy_file_name, 'r') as f:
-            last_line = f.readlines()[-1]
-            f.close()
+            try:
+                last_line = f.readlines()[-1]
+                f.close()
+            except:
+                f.close()
+                return None
         all_words = last_line.split()
         temp_last_policy_name = all_words[0]
         temp_last_policy_number = all_words[temp_last_policy_name.find("_"):]
@@ -117,14 +122,19 @@ class PolicyModel:
     '''
     def generate_random_policy(self):
         policy = np.zeros(self.num_states)
+        policy_list = []
         actions = self.robot.get_robot_actions()
         for index in range(0,len(policy)):
-                policy[index] = random.choice(actions)
+            #policy_list[index] = random.choice(actions)
+            print(random.choice(actions))
         # Check if this policy already exists
            
         # Put right name to new policy
-        last_policy = self.get_last_policy_stored()   
-        return 'policy_'+str(int(last_policy[1])+1), policy
+        last_policy = self.get_last_policy_stored() 
+        if last_policy == None:
+            return 'policy_1', policy
+        else:
+            return 'policy_'+str(int(last_policy[1])+1), policy
 
     def generate_set_of_policies(self, limit):
         counter = 0
