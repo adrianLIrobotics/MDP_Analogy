@@ -109,7 +109,7 @@ class PolicyModel:
             f = open(path_to_policies + policy_file_name, "w")
             f.close()
             f = open(path_to_policies + policy_file_name, "a")
-            f.write(policy_name + ":"  + str(score) +";"+ str(policy_data)+"\n")
+            f.write(policy_name + ":"  + str(score) +";"+ str(policy_data)+ '\n')
             f.close()
 
     '''
