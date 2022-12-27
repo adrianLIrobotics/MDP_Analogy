@@ -33,5 +33,5 @@ def check_file_exists(path_to_file, file_name):
     return exists(path_to_file + file_name)
 
 def check_file_is_empty(path_to_file, file_name):
-    return os.stat(path_to_file, file_name).st_size == 0
+    return os.stat(path_to_file + file_name).st_size == 0
 

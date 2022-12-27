@@ -44,10 +44,12 @@ class PolicyModel:
                 f.close()
                 return None
         all_words = last_line.split()
-        temp_last_policy_name = all_words[0]
-        temp_last_policy_number = all_words[temp_last_policy_name.find("_"):]
-
-        return (temp_last_policy_name,temp_last_policy_number)
+        print(all_words)
+        temp = all_words[0]
+        policy_name = temp[:temp.find(":")]
+        policy_number = policy_name[policy_name.find("_")+1:]
+        policy_data = all_words[1:]
+        return (policy_name,policy_number,policy_data)
 
     '''
     Add the score to a stored policy that does not have a score.
@@ -84,30 +86,30 @@ class PolicyModel:
     '''
     Store the policy in a file
     '''
-    def write_policy(self,policy_name, policy_data):
+    def write_policy_no_score(self,policy_name, policy_data):
         score = '' 
-        self.write_policy(self,policy_name, policy_data, score)
+        self.write_policy(policy_name, policy_data, score)
 
     '''
     Store the policy in a file
     '''
     def write_policy(self,policy_name, policy_data, score):
-
         exists = utilities.check_file_exists(path_to_policies,policy_file_name)
         if exists == True:
-            if utilities.check_file_is_empty():
+            if utilities.check_file_is_empty(path_to_policies,policy_file_name):
+                f = open(path_to_policies + policy_file_name, "w")
                 policy_name = 'policy_1'
-                f.write(policy_name + ":" + str(score) +";"+str(policy_data))
+                f.write(policy_name + ":" + str(score) +"; "+str(policy_data))
             else:
                 f = open(path_to_policies + policy_file_name, "a")
-                f.write(policy_name + ":"  + str(score) +";"+ str(policy_data))
+                f.write(policy_name + ":"  + str(score) +"; "+ str(policy_data)+ '\n')
                 f.close()
         else:
             policy_name = 'policy_1'
             f = open(path_to_policies + policy_file_name, "w")
             f.close()
             f = open(path_to_policies + policy_file_name, "a")
-            f.write(policy_name + ":"  + str(score) +";"+ str(policy_data))
+            f.write(policy_name + ":"  + str(score) +";"+ str(policy_data)+"\n")
             f.close()
 
     '''
@@ -124,17 +126,19 @@ class PolicyModel:
         policy = np.zeros(self.num_states)
         policy_list = []
         actions = self.robot.get_robot_actions()
-        for index in range(0,len(policy)):
-            #policy_list[index] = random.choice(actions)
-            print(random.choice(actions))
+        for index in range(0,len(policy)):   
+            policy_list.append(random.choice(actions))
         # Check if this policy already exists
-           
         # Put right name to new policy
         last_policy = self.get_last_policy_stored() 
         if last_policy == None:
-            return 'policy_1', policy
+            print('policy_1',policy_list)
+            self.write_policy_no_score('policy_1',policy_list)
+            return 'policy_1', policy_list
         else:
-            return 'policy_'+str(int(last_policy[1])+1), policy
+            print('policy_'+str(int(last_policy[1])+1), policy_list[2:])
+            self.write_policy_no_score('policy_'+str(int(last_policy[1])+1),policy_list[2:])
+            return 'policy_'+str(int(last_policy[1])+1), policy_list[2:]
 
     def generate_set_of_policies(self, limit):
         counter = 0

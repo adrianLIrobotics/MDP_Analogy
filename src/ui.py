@@ -87,8 +87,6 @@ class GridApp:
 
         # Add policies
         policy_object = PolicyModel(self.gridMap.mapSize**2,self.robot)
-        policy = policy_object.generate_random_policy()
-        print(policy)
         
         mapframe = LabelFrame(frame, text="Map control")
         mapframe.pack(side=RIGHT, padx=pad, pady=pad)
@@ -131,7 +129,7 @@ class GridApp:
         mdpFrame = LabelFrame(frame, text="MDP")
         mdpFrame.pack(side=RIGHT, padx=pad, pady=pad)
 
-        b_up = Button(mdpFrame, text='Generate policy')
+        b_up = Button(mdpFrame, text='Generate policy', command=policy_object.generate_random_policy)
         b_up.pack(side=RIGHT, padx=pad, pady=pad)
 
         inputPolicy = Text(mdpFrame,height = 1.5,width = 5)
