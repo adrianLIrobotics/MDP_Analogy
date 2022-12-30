@@ -30,6 +30,7 @@ class robotModel:
         self.vel_x = [0] # Noisy historical velocity in x axes.
         self.vel_z = [0] # Noisy historical velocity in z axes.
         self.localized = localized
+        self.localized_believe = 0
         self.laserRange = 3
         self.detectedObjects = 0
         self.gridRobot1DPosition = 0
@@ -199,6 +200,9 @@ class robotModel:
 
     def get_robot_actions(self):
         return ['moveUpOne','moveUpTwo','moveDownOne','moveDownTwo','moveLeftOne','moveLeftTwo','moveRightOne','moveRightTWo','stay']
+
+    def get_number_actions(self):
+        return 9
 
     def robotCrushed(self):
         return True

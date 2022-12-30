@@ -10,11 +10,15 @@ policy_file_name = "policies_stored.txt"
 class PolicyModel:
 
     def __init__(self,num_states, robot):
-        self.num_states = num_states
-        #self.total_reward = 0 # Reward of policy
-        self.state_history = []
-        self.robot = robot
-
+        self.policy_id = 'policy_x'
+        self.num_states = num_states # Number of states in the mdp.
+        self.state_history = [] # Trajectory over applied policy.
+        self.robot = robot # Agent
+        self.value = np.zeros(num_states) # Value table
+        self.value_function = sum(self.value) # policy value function
+        self.reward_t = 0 # Current reward at time t.
+        self.return_ = 0 # Cumulative reward with applies discount factor γ.
+        
     def read_policies(self):
         #TODO
         raise NotImplementedError
@@ -52,7 +56,7 @@ class PolicyModel:
         return (policy_name,policy_number,policy_data)
 
     '''
-    Add the score to a stored policy that does not have a score.
+    Add the score (return) to a stored policy that does not have a score.
     '''
     def add_score_of_policy(self,policy_name,score):
 
@@ -100,6 +104,7 @@ class PolicyModel:
                 f = open(path_to_policies + policy_file_name, "w")
                 policy_name = 'policy_1'
                 f.write(policy_name + ":" + str(score) +"; "+str(policy_data))
+                f.close()
             else:
                 f = open(path_to_policies + policy_file_name, "a")
                 f.write(policy_name + ":"  + str(score) +"; "+ str(policy_data)+ '\n')
@@ -115,10 +120,48 @@ class PolicyModel:
     '''
     max(π)
     '''
-    def get_best_policy(self):
+    def get_optimal_policy(self, set_of_all_policies):
+        raise NotImplementedError
+        for element in range(0,len(set_of_all_policies)):
+            pass # TODO
+        
+
+    '''
+    Compare two policies based on their policy value function.
+    '''
+    def compare_policies(self, policy1, policy2):
+        if (policy1.value_function  >= policy2.value_function):
+            return policy1
+        else:
+            return policy2
+
+    '''
+    Choose random policy
+    '''
+    def choose_random_policy(self):
         #TODO
         raise NotImplementedError
+
+    '''
+    Generates a rule to be applied to a policy
+    '''
+    def generate_random_rule(self, state_vector):
+        # state_vector [x: all posible states, y: all posible states ]
+        # All rules must provide an answer for all posible states. Use if then 
+
+        # Number of logical propositions
+        # state_vector = [robot.pos_xt, pos_zt, robot.localized_believe, robot.vel_x, vel_z, pos_x, pos_z ]
+
+        # Choose with states from the vector to consider for the rule
+        number_elements_considered = random.randint(0, len(state_vector))
+        considered_states = random.sample(state_vector, number_elements_considered)
+
+        considered_states = state_vector
+        actions = self.robot.get_robot_actions()
+        chosen_action = random.choice(actions)
     
+
+
     ''' 
     π(s)
     '''
@@ -141,11 +184,16 @@ class PolicyModel:
             return 'policy_'+str(int(last_policy[1])+1), policy_list[2:]
 
     def generate_set_of_policies(self, limit):
-        counter = 0
-        while(counter <= limit):
-            policy = self.generate_random_policy()
-            # Store the new policy in file.
-            self.write_policy(policy[0],policy[1])
+        print("Limit: ",limit)
+        try:
+            for x in range(0,int(limit)):
+                self.generate_random_policy()
+
+        except:
+            # If the content of limit is empty, do nothing.
+            print("error")
+            pass
+
 
     ''' 
     P(s'| s, π(s))

@@ -129,11 +129,11 @@ class GridApp:
         mdpFrame = LabelFrame(frame, text="MDP")
         mdpFrame.pack(side=RIGHT, padx=pad, pady=pad)
 
-        b_up = Button(mdpFrame, text='Generate policy', command=policy_object.generate_random_policy)
-        b_up.pack(side=RIGHT, padx=pad, pady=pad)
+        self.inputPolicy = Text(mdpFrame,height = 1.5,width = 5)
+        self.inputPolicy.pack(side=RIGHT, padx=pad, pady=pad)
 
-        inputPolicy = Text(mdpFrame,height = 1.5,width = 5)
-        inputPolicy.pack(side=RIGHT, padx=pad, pady=pad)
+        b_up = Button(mdpFrame, text='Generate policy', command=lambda: policy_object.generate_set_of_policies(self.inputPolicy.get("1.0","end-1c")))
+        b_up.pack(side=RIGHT, padx=pad, pady=pad)
 
         #input buttom
         #debug_window = Text(frame,height = 1.5,width = 5)
