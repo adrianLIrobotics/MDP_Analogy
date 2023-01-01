@@ -4,22 +4,20 @@ from robot import robotModel
 import random
 import utilities
 
-# Based upon Q Learning to get optimal policy.
+# Based upon Q-Learning to get optimal policy.
 class reinforment_learning():
 
     def __init__(self,robot,num_states):
         self.epsilon = 0.1 # ε-greedy value
         self.robot = robot
         self.num_states = num_states # Number of states in the mdp.
-        self.number_episodes = 0 # An episode is the path of agent until it reaches destination.
+        self.number_episodes = 20 # An episode is the path of agent until it reaches destination.
         self.max_episode_steps = 100 # Maximum number of actions before arriving to goal.
         self.min_alpha = 0.02 # Learning rate
-        self.discount_factor = 0.1 # γ Gamma discount factor for future accountability.
-
-        # Q Values table - init at zeros dim(map)
-        self.q_values = np.empty((0, robot.get_number_actions()), int)
-        for states in range(0, self.num_states):
-            self.q_values = np.vstack([self.q_values, np.zeros(robot.get_number_actions())])
+        self.discount_factor = 0.5 # γ Gamma discount factor for future accountability.
+        self.alphas = np.linspace(1.0, self.min_alpha, self.number_episodes) # Decay the learning rate, alpha, every episode 
+        self.q_table = dict() # Q-Values table
+        self.actions = self.robot.return_robot_actions_id() # Get array of ids of robot actions.
 
     ''' 
     P(s'| s, a)
@@ -33,22 +31,20 @@ class reinforment_learning():
     '''
     Update Q Value
     '''
-    def update_q_value(self,s,s_prime,r):
+    def update_q_value(self,state,next_state,reward,alpha):
         #Q(s,a) = Q(s,a) + α(R + γ * max Q(s',a) - Q(s,a))
-        raise NotImplementedError
+        self.q(state)[self.action] = self.q(state, self.action) + \
+                alpha * (reward + self.discount_factor *  np.max(self.q(next_state)) - self.q(state, self.action))
 
     '''
     Choose action based on epsilon greedy algorithm
     '''
     def epsilon_greedy_algorithm(self,s):
-    #TODO: needs to be improved to slowed decae ganma over time.
         def exploit(s):
-            # Choose action with highest Q value for state s.
-            values = self.q_values[int(s),:]
-            return self.robot.get_robot_actions()[values.index(max(values))]
+            return np.argmax(self.q(s)) # Choose action with highest Q value for state s.
         def explore():
             # Choose to explore other options.
-            return random.choice(self.robot.get_robot_actions())
+            return random.choice(self.actions)
 
         if random.random > self.epsilon:
             return exploit(s)
@@ -66,6 +62,18 @@ class reinforment_learning():
     '''
     def read_q_table(self):
         raise NotImplementedError
+
+    '''
+    Easy handle of the q_table dictionary
+    '''
+    def q(self,state, action=None):
+        if state not in self.q_table:
+            self.q_table[state] = np.zeros(len(self.actions))
+            
+        if action is None:
+            return self.q_table[state] # If an action is not specified as input param, return all possible actions for a given state.
+    
+        return self.q_table[state][action] # returns the q-value of the corresponding index of the given action.
 
     '''
     Generate from q learning max(π) and q table

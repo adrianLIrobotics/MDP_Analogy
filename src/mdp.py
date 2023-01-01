@@ -5,10 +5,11 @@ import matplotlib.patches as patches
 from time import time
 from policy import PolicyModel
 import utilities
+from state import state_model
 
 class Mdp:
 
-    def __init__(self,map_size,map,robot):
+    def __init__(self,map_size,robot,grid):
 
         self.robot = robot # Robot using mdp
         self.num_rows = map_size
@@ -19,8 +20,10 @@ class Mdp:
         self.reward = self.get_reward_value()
         self.transition_model = self.get_transition_model()
         self.total_reward = 0 # cumulative reward
-        self.state_history = [] # Historical state storage
+        self.state_history = [state_model(grid, robot)] # Historical state storage. Add initial state.
+        self.states = []
         
+        # Call q-learning to get best policy for the MDP.
         policy = PolicyModel(self.num_actions,self.num_states,self.state_history,robot)
  
 

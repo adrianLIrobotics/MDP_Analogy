@@ -1,4 +1,3 @@
-
 import numpy as np
 import utilities
 import random
@@ -9,7 +8,7 @@ policy_file_name = "policies_stored.txt"
 
 class PolicyModel:
 
-    def __init__(self,num_states, robot):
+    def __init__(self,num_states, robot, current_state):
         self.policy_id = 'policy_x'
         self.num_states = num_states # Number of states in the mdp.
         self.state_history = [] # Trajectory over applied policy.
@@ -18,6 +17,7 @@ class PolicyModel:
         self.value_function = sum(self.value) # policy value function
         self.reward_t = 0 # Current reward at time t.
         self.return_ = 0 # Cumulative reward with applies discount factor γ.
+        self.policy_data = self.get_optimal_policy(current_state) # Actual policy (list of actions to arrive to goal given current state)
         
     def read_policies(self):
         #TODO

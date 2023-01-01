@@ -39,6 +39,21 @@ class robotModel:
         self.collided = False
         self.master = master
 
+        # Id's of robot actions
+        moveUpOne = 0
+        moveUpTwo = 1
+        moveDownOne = 2
+        moveDownTwo = 3
+        moveLeftOne = 4
+        moveLeftTwo = 5
+        moveRightOne = 6
+        moveRightTWo = 7
+        stay = 8
+        self.actions = [moveUpOne, moveUpTwo, moveDownOne, moveDownTwo, moveLeftOne, moveLeftTwo, moveRightOne, moveRightTWo, stay]
+
+    def return_robot_actions_id(self):
+        return self.actions
+
     def manual_robot_pose(self,x,z,gridMap):
         pos_allowed = True
         

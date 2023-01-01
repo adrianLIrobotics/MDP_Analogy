@@ -6,6 +6,7 @@ from colour import Object_Colour
 from robot import robotModel
 from map import Map
 from policy import PolicyModel
+from mdp import Mdp
 
 # A simple colouring grid app, with load/save functionality.
 # Christian Hill, August 2018.
@@ -36,7 +37,6 @@ class GridApp:
 
     def __init__(self, master, n, width=1000, height=1500, pad=5): # width=600, height=600
         """Initialize a grid and the Tk Frame on which it is rendered."""
-
         
         # Number of cells in each dimension.
         self.n = n
@@ -85,8 +85,9 @@ class GridApp:
         # Add the robot
         self.robot = robotModel(True,self.gridMap.mapSize,self.gridMap,self)
 
-        # Add policies
-        policy_object = PolicyModel(self.gridMap.mapSize**2,self.robot)
+        # Add MDP
+        Mdp(n, self.robot, self.gridMap)
+        #policy_object = PolicyModel(self.gridMap.mapSize**2,self.robot)
         
         mapframe = LabelFrame(frame, text="Map control")
         mapframe.pack(side=RIGHT, padx=pad, pady=pad)

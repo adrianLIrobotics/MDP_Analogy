@@ -3,6 +3,8 @@
 from copy import deepcopy
 import numpy as np
 import random
+import pickle
+
 
 ZOMBIE = "z"
 CAR = "c"
@@ -119,6 +121,21 @@ def choose_action(state):
         val = q(state)
         return np.argmax(val) # Choose best possible action.
 
+def save_object(obj, filename):
+    with open(filename, 'wb') as outp:  # Overwrites any existing file.
+        pickle.dump(obj, outp, pickle.HIGHEST_PROTOCOL)
+
+def save_q_table(q_table_param):
+    states_list = []
+    for key in q_table_param:
+        states_list.append(key)
+    save_object(states_list, 'states.pkl')
+
+def restore_objects():
+    with open('states.pkl', 'rb') as inp:
+        states_pickle = pickle.load(inp)
+    return states_pickle
+
 for e in range(N_EPISODES):
     
     state = start_state
@@ -135,5 +152,7 @@ for e in range(N_EPISODES):
         print("update data:  ",q(state))
         state = next_state
         if done:
+            # save q-table.
+            save_q_table(q_table)
             break
     print(f"Episode {e + 1}: total reward -> {total_reward}")
