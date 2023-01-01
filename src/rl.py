@@ -3,11 +3,16 @@ from policy import PolicyModel
 from robot import robotModel
 import random
 import utilities
+from state import state_model
+from colour import Object_Colour
+
+path_to_policies = "data/policies/"
+policy_file_name = "action_q_values.txt"
 
 # Based upon Q-Learning to get optimal policy.
 class reinforment_learning():
 
-    def __init__(self,robot,num_states):
+    def __init__(self,robot,num_states,gridMap):
         self.epsilon = 0.1 # ε-greedy value
         self.robot = robot
         self.num_states = num_states # Number of states in the mdp.
@@ -18,15 +23,9 @@ class reinforment_learning():
         self.alphas = np.linspace(1.0, self.min_alpha, self.number_episodes) # Decay the learning rate, alpha, every episode 
         self.q_table = dict() # Q-Values table
         self.actions = self.robot.return_robot_actions_id() # Get array of ids of robot actions.
-
-    ''' 
-    P(s'| s, a)
-    ''' 
-    def execute_action(self, robot, a): 
-        start_robot_pos = (robot.pos_x[0],robot.pos_z[0])
-        s = utilities.get_state_from_pos(start_robot_pos)
-        s_prime_cell = self.get_transitionted_state(s, a)
-        self.update_q_value(s,s_prime_cell,s_prime_cell.reward)
+        self.grid = gridMap
+        self.start_state = state_model(grid=self.grid, robotPose=[self.robot.pos_xt, self.robot.pos_zt]) # Start state.
+        self.total_reward = 0 
 
     '''
     Update Q Value
@@ -55,7 +54,22 @@ class reinforment_learning():
     Save in local file the q table for specific map
     '''
     def save_q_table(self):
-        raise NotImplementedError
+
+        def save_q_values_per_action():
+            for key in self.q_table:
+                f = open(path_to_policies + policy_file_name, "w")
+                f.write(self.q_table[key]+'\n')
+                f.close()
+        
+        def save_states():
+            states_list = []
+            for key in self.q_table:
+                states_list.append(key)
+            utilities.save_object(states_list,'states.pkl')
+
+        save_q_values_per_action()
+        save_states()
+
 
     '''
     Read from local file the q table from specific map.
@@ -79,32 +93,50 @@ class reinforment_learning():
     Generate from q learning max(π) and q table
     '''
     def q_learning(self):
-        #TODO 
-        optimal_policy =  PolicyModel()
-        return optimal_policy
+        for e in range(self.number_episodes):
+    
+            state = self.start_state
+            total_reward = 0
+            alpha = self.alphas[e]
+
+            for _ in range(self.max_episode_steps):
+                action = self.epsilon_greedy_algorithm(state)
+                next_state, reward, done = self.get_transitionted_state(state, action)
+                total_reward += reward
+                # Update the q value associated with the given state and action.
+                self.update_q_value(state,next_state,reward,alpha)
+                state = next_state
+                if done:
+                    # save q-table.
+                    self.save_q_table()
+                    break
+            # Reset map and robot position --> TODO
+            print(f"Episode {e + 1}: total reward -> {total_reward}")
+
+
 
     ''' 
     P(s' | s, a)
     '''
     def get_transitionted_state(self,current_state,action):
         # Run action in robot
-        if "moveUpOne" in action:
+        if self.actions[0] == action:
             self.robot.moveUpOne() 
-        if "moveUpTwo" in action:
+        if self.actions[1] == action:
             self.robot.moveUpTwo()
-        if "moveDownOne" in action:
+        if self.actions[2] in action:
             self.robot.moveDownOne()
-        if "moveDownTwo" in action:
+        if self.actions[3] == action:
             self.robot.moveDownTwo()
-        if "moveLeftOne" in action:
+        if self.actions[4] == action:
             self.robot.moveLeftOne()
-        if "moveLeftTwo" in action:
+        if self.actions[5] == action:
             self.robot.moveLeftTwo()
-        if "moveRightOne" in action:
+        if self.actions[6] == action:
             self.robot.moveRightOne()
-        if "moveRightTWo" in action:
+        if self.actions[7] == action:
             self.robot.moveRightTWo()
-        if "stay" in action:
+        if self.actions[8] == action:
             pass
         
         # return s' 
@@ -114,5 +146,18 @@ class reinforment_learning():
         if (current_state == s_prime) and (self.robot.collided == True):
             self.robot.gridMap.map[s_prime].reward = -0.1
             
-        # return cell class object in map from new s'
-        return self.robot.gridMap.map[s_prime]
+        # Check if robot has arrived to destination
+        if (self.grid.map[s_prime].colour == Object_Colour.Goal.value):
+            is_done = True
+        else:
+            is_done = False
+
+        return state_model(grid=self.grid, robotPose=[self.robot.pos_xt, self.robot.pos_zt]), self.grid.map[s_prime].reward, is_done
+
+    '''
+    max(π) | s
+    '''
+    def get_optimal_policy(self, current_state):          
+        return np.argmax(self.q(current_state))
+
+    

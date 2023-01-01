@@ -1,11 +1,9 @@
-from ui import GridApp
-from robot import robotModel
-
 class state_model:
 
     def __init__(self,gridMap,robot):
         self.grid = gridMap
         self.robotPose = robot.pos_xt, robot.pos_zt
+        # Add robot localization estimate as: high, mediumn, low
         
     def __eq__(self, other):
         return isinstance(other, state_model) and self.grid == other.grid and self.robotPose == other.robotPose

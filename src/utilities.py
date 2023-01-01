@@ -2,6 +2,8 @@ from configparser import ConfigParser
 import pathlib
 from os.path import exists
 import os
+import pickle
+
 
 config_path = pathlib.Path(__file__).parent.absolute() / "config.ini"
 config = ConfigParser()
@@ -35,3 +37,17 @@ def check_file_exists(path_to_file, file_name):
 def check_file_is_empty(path_to_file, file_name):
     return os.stat(path_to_file + file_name).st_size == 0
 
+'''
+Save python object as byte file
+'''
+def save_object(obj, filename):
+    with open(filename, 'wb') as outp:  # Overwrites any existing file.
+        pickle.dump(obj, outp, pickle.HIGHEST_PROTOCOL)
+
+'''
+Restore pickle file to python object
+'''
+def restore_objects(filename):
+    with open(filename, 'rb') as inp:
+        states_pickle = pickle.load(inp)
+    return states_pickle

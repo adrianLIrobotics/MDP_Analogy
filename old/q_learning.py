@@ -89,7 +89,7 @@ def act(state, action):
 random.seed(42) # for reproducibility
 
 N_STATES = 4
-N_EPISODES = 20
+N_EPISODES = 200
 
 MAX_EPISODE_STEPS = 100
 
@@ -109,9 +109,7 @@ def q(state, action=None):
     if action is None:
         return q_table[state] # Si no especifico la accion, devuelvo todas las acciones posibles del estado.
     
-    print(q_table[state])
-    something = q_table[state][action] # action = 0
-    print(something) # 0.0 (float)
+    
     return q_table[state][action] # returns the q-value of the corresponding index of the given action.
 
 def choose_action(state):
@@ -128,8 +126,9 @@ def save_object(obj, filename):
 def save_q_table(q_table_param):
     states_list = []
     for key in q_table_param:
-        states_list.append(key)
-    save_object(states_list, 'states.pkl')
+
+        states_list.append(q_table_param[key])
+    #save_object(states_list, 'states.pkl')
 
 def restore_objects():
     with open('states.pkl', 'rb') as inp:
@@ -149,10 +148,11 @@ for e in range(N_EPISODES):
         # Update the q value associated with the given state and action.
         q(state)[action] = q(state, action) + \
                 alpha * (reward + gamma *  np.max(q(next_state)) - q(state, action))
-        print("update data:  ",q(state))
+        #print("update data:  ",q(state))
         state = next_state
         if done:
             # save q-table.
             save_q_table(q_table)
             break
-    print(f"Episode {e + 1}: total reward -> {total_reward}")
+    #print(f"Episode {e + 1}: total reward -> {total_reward}")
+    print(q_table)

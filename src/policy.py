@@ -8,16 +8,29 @@ policy_file_name = "policies_stored.txt"
 
 class PolicyModel:
 
-    def __init__(self,num_states, robot, current_state):
-        self.policy_id = 'policy_x'
+    def __init__(self,num_states, robot):
         self.num_states = num_states # Number of states in the mdp.
         self.state_history = [] # Trajectory over applied policy.
         self.robot = robot # Agent
-        self.value = np.zeros(num_states) # Value table
-        self.value_function = sum(self.value) # policy value function
-        self.reward_t = 0 # Current reward at time t.
-        self.return_ = 0 # Cumulative reward with applies discount factor γ.
-        self.policy_data = self.get_optimal_policy(current_state) # Actual policy (list of actions to arrive to goal given current state)
+        self.policy_data = [] # Actual policy (list of actions to arrive to goal given current state)
+
+    ''' 
+    P(s'| s, π(s))
+    ''' 
+    def execute_policy(self, robot, policy):
+        total_reward = 0
+        start_robot_pos = (robot.pos_x[0],robot.pos_z[0])
+        s = utilities.get_state_from_pos(start_robot_pos)
+        self.state_history = [s]
+        while True:
+            s_prime_cell = self.get_transitionted_state(s, policy[s])
+            self.state_history.append(s_prime_cell.tkinterCellIndex)
+            total_reward += s_prime_cell.reward
+            # if s' is the goal (maximum reward), break
+            if s_prime_cell.reward == 1:
+                break
+
+        return total_reward
         
     def read_policies(self):
         #TODO
@@ -116,14 +129,6 @@ class PolicyModel:
             f = open(path_to_policies + policy_file_name, "a")
             f.write(policy_name + ":"  + str(score) +";"+ str(policy_data)+ '\n')
             f.close()
-
-    '''
-    max(π)
-    '''
-    def get_optimal_policy(self, set_of_all_policies):
-        raise NotImplementedError
-        for element in range(0,len(set_of_all_policies)):
-            pass # TODO
         
 
     '''
@@ -193,25 +198,6 @@ class PolicyModel:
             # If the content of limit is empty, do nothing.
             print("error")
             pass
-
-
-    ''' 
-    P(s'| s, π(s))
-    ''' 
-    def execute_policy(self, robot, policy):
-        total_reward = 0
-        start_robot_pos = (robot.pos_x[0],robot.pos_z[0])
-        s = utilities.get_state_from_pos(start_robot_pos)
-        self.state_history = [s]
-        while True:
-            s_prime_cell = self.get_transitionted_state(s, policy[s])
-            self.state_history.append(s_prime_cell.tkinterCellIndex)
-            total_reward += s_prime_cell.reward
-            # if s' is the goal (maximum reward), break
-            if s_prime_cell.reward == 1:
-                break
-
-        return total_reward
 
     ''' 
     P(s' | s, a)

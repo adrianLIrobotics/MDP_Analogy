@@ -33,7 +33,7 @@ class robotModel:
         self.localized_believe = 0
         self.laserRange = 3
         self.detectedObjects = 0
-        self.gridRobot1DPosition = 0
+        self.gridRobot1DPosition = utilities.get_state_from_pos([self.pos_xt,self.pos_zt])
         self.gridMap = gridMap
         self.mapSize = mapSize
         self.collided = False
