@@ -9,7 +9,7 @@ class Mdp:
         self.robot = robot # Robot using mdp
         self.num_states = map_size**2
         self.num_actions = self.robot.get_number_actions()
-        self.state_history = [state_model(grid, robot)] # Historical state storage. Add initial state.
+        self.state_history = [state_model(grid.map, robot)] # Historical state storage. Add initial state.
         self.actions = self.robot.return_robot_actions_id() # Get array of ids of robot actions.
         self.learning = reinforment_learning(self.robot,self.num_states,grid)
         self.total_reward = 0 # Total reward of agent.

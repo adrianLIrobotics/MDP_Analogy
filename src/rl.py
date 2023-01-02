@@ -24,7 +24,7 @@ class reinforment_learning():
         self.q_table = dict() # Q-Values table
         self.actions = self.robot.return_robot_actions_id() # Get array of ids of robot actions.
         self.grid = gridMap
-        self.start_state = state_model(grid=self.grid, robotPose=[self.robot.pos_xt, self.robot.pos_zt]) # Start state.
+        self.start_state = state_model(self.grid.map, self.robot) # Start state.
         self.total_reward = 0 
 
     '''
@@ -88,6 +88,13 @@ class reinforment_learning():
             return self.q_table[state] # If an action is not specified as input param, return all possible actions for a given state.
     
         return self.q_table[state][action] # returns the q-value of the corresponding index of the given action.
+
+    '''
+    Reset the system for new episode of training.
+    '''
+    def reset_simulation(self):
+        # Teleport the robot to initial position.
+        self.robot.manual_robot_pose(self.robot.pos_x[0], self.robot.pos_z[0], self.grid )
 
     '''
     Generate from q learning max(π) and q table

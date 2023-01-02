@@ -130,11 +130,11 @@ class GridApp:
         mdpFrame = LabelFrame(frame, text="MDP")
         mdpFrame.pack(side=RIGHT, padx=pad, pady=pad)
 
-        self.inputPolicy = Text(mdpFrame,height = 1.5,width = 5)
-        self.inputPolicy.pack(side=RIGHT, padx=pad, pady=pad)
+        b_run = Button(mdpFrame, text='RUN')
+        b_run.pack(side=RIGHT, padx=pad, pady=pad)
 
-        b_up = Button(mdpFrame, text='Generate policy', command=lambda: policy_object.generate_set_of_policies(self.inputPolicy.get("1.0","end-1c")))
-        b_up.pack(side=RIGHT, padx=pad, pady=pad)
+        b_train = Button(mdpFrame, text='Train')
+        b_train.pack(side=RIGHT, padx=pad, pady=pad)
 
         #input buttom
         #debug_window = Text(frame,height = 1.5,width = 5)
@@ -175,6 +175,7 @@ class GridApp:
 
                 print("X pos: ",str(self.gridMap.map[i].pos_x))
                 print("Z pos: ",str(self.gridMap.map[i].pos_z))
+                print("1D pos: ", str(self.gridMap.map[i].tkinterCellIndex))
 
                 # If cell is empty and colour palete is black, change cell state to not empty and color to black.
                 if ((self.gridMap.map[i].empty == True) and (self.colours[self.ics]==Object_Colour.Wall.value)):#
@@ -188,12 +189,16 @@ class GridApp:
                 if ((self.gridMap.map[i].empty == True) and (self.colours[self.ics]==Object_Colour.Fire.value)):#
                     self.gridMap.map[i].fill_cell(Object_Colour.Fire.name)
 
-                # If cell is not empty adn colour palete is white, change cell state to empty.
+                # If cell is not empty and colour palete is white, change cell state to empty.
                 if (self.gridMap.map[i].empty == False) and (self.colours[self.ics]==UNFILLED):
                     self.gridMap.map[i].empty_cell()
                     print(self.gridMap.map[i].empty)
                 
                 self.w.itemconfig(self.gridMap.map[i].tkinterCellIndex, fill=self.colours[self.ics])
+                print(self.gridMap.map[i].border)
+                print("Border edge: ", self.gridMap.map[i].border_edge)
+                print("first_column: ", self.gridMap.map[i].first_column)
+                print("last_column: ", self.gridMap.map[i].last_column)
         # Bind the grid click callback function to the left mouse button
         # press event on the grid canvas.
         self.w.bind('<ButtonPress-1>', w_click_callback)

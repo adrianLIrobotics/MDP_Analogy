@@ -54,6 +54,9 @@ class robotModel:
     def return_robot_actions_id(self):
         return self.actions
 
+    '''
+    Teleport robot to given coordinates.
+    '''
     def manual_robot_pose(self,x,z,gridMap):
         pos_allowed = True
         
@@ -116,7 +119,7 @@ class robotModel:
         newPosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt-1)
         
 
-        if (self.gridMap.map[newPosition].empty == False):
+        if (self.gridMap.map[newPosition].empty == False) | (newPosition < 0):
             self.collided = True
             print("Collided: ",self.collided)
             self.master.writeTextBox("Robot collided!")
@@ -144,9 +147,18 @@ class robotModel:
         oldPosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt)
         newPosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt+1)
 
-        if (self.gridMap.map[newPosition].empty == False):
+        try: 
+            self.gridMap.map[newPosition].empty
+        except:
             self.collided = True
             print("Collided: ",self.collided)
+            self.master.writeTextBox("Robot collided!")
+            return
+
+        if (self.gridMap.map[newPosition].empty == False) | (newPosition < 0):
+            self.collided = True
+            print("Collided: ",self.collided)
+            self.master.writeTextBox("Robot collided!")
         else:
             self.collided = False
             self.pos_zt += 1
@@ -166,9 +178,13 @@ class robotModel:
         oldPosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt)
         newPosition = self.coordinateTranslationTo1D(self.pos_xt-1,self.pos_zt)
 
-        if (self.gridMap.map[newPosition].empty == False):
+        #self.gridMap.map[oldPosition].border and oldPosition ==1
+        stop = self.gridMap.map[oldPosition].first_column and self.gridMap.map[newPosition].last_column
+
+        if (self.gridMap.map[newPosition].empty == False) | (newPosition < 0) | stop:
             self.collided = True
             print("Collided: ",self.collided)
+            self.master.writeTextBox("Robot collided!")
         else:
             self.collided = False
             self.pos_xt -= 1
@@ -188,9 +204,23 @@ class robotModel:
         oldPosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt)
         newPosition = self.coordinateTranslationTo1D(self.pos_xt+1,self.pos_zt)
 
-        if (self.gridMap.map[newPosition].empty == False):
+        try: 
+            self.gridMap.map[newPosition].empty
+        except:
             self.collided = True
             print("Collided: ",self.collided)
+            self.master.writeTextBox("Robot collided!")
+            return
+
+        
+        #self.gridMap.map[oldPosition].border and oldPosition ==1
+        stop = self.gridMap.map[oldPosition].last_column and self.gridMap.map[newPosition].first_column
+
+
+        if (self.gridMap.map[newPosition].empty == False) | (newPosition < 0) | stop:
+            self.collided = True
+            print("Collided: ",self.collided)
+            self.master.writeTextBox("Robot collided!")
         else:
             self.collided = False
             self.pos_xt += 1
