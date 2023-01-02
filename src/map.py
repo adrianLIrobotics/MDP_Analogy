@@ -34,6 +34,29 @@ class Map:
                 
                 cell = Cell(ix,iy,True,rect)
                 self.map.append(cell)#gridMap.map.append(rect)
+        
+        # Spawn goal
+        self.spawn_goal(self.mapSize,self)
+
+    '''
+    Spawn goal in the map
+    '''
+    def spawn_goal(self,mapSize,gridMap):
+        pos_allowed = True
+        while(pos_allowed):
+            # Random number from all possible grid positions 
+            val = random.randint(0, mapSize*mapSize-1)
+            goalObject = objectModel(self.map[val].pos_x,self.map[val].pos_z,Object_Colour.Goal.name)
+            if (gridMap.map[val].empty):
+                    gridMap.map[val].empty = True # So the robot can be placed in the goal cell
+                    gridMap.map[val].object = goalObject
+                    gridMap.map[val].update_colour(Object_Colour.Goal.value) # Update the colour attribute of the cell 
+                    gridMap.map[val].update_reward() # Update the reard of the cell with new object
+                    # Put the color of the robot in the canvas.
+                    gridMap.canvas.itemconfig(gridMap.map[val].tkinterCellIndex, fill=Object_Colour.Goal.value)
+                    self.gridPosition = val
+                    print(gridMap.map[val].pos_x,gridMap.map[val].pos_z)
+                    return gridMap.map[val].pos_x,gridMap.map[val].pos_z
 
     def createRamdomMap(self,a): # Of walls only
         """ Populate the grid map with obstacles in random cell positions """

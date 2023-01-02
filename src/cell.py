@@ -25,16 +25,27 @@ class Cell:
         self.first_column = self.check_first_column()
         self.last_column = self.check_last_column()
 
+    '''
+    Constructor for a cell with no object. Empty white cell.
+    '''
     def __init__(self,pos_x,pos_z,empty,indexTk):
         self.pos_x = pos_x       
         self.pos_z = pos_z
         self.empty = empty
         self.object = None
+        self.reward = -0.04
+        self.colour = '#fff' # By default the cell is white -none object Cell constructor-
         self.tkinterCellIndex = indexTk
         self.border = self.check_if_border() # If None --> no border tile
         self.border_edge = self.check_if_border_edge()
         self.first_column = self.check_first_column()
         self.last_column = self.check_last_column()
+       
+    def update_reward(self):
+        self.calculate_reward()
+
+    def update_colour(self, colour_param):
+        self.colour = colour_param
 
     '''
     Cells with property of been in the first column.
@@ -95,6 +106,7 @@ class Cell:
         objectTemp = objectModel(self.pos_x,self.pos_z,objectType)
         self.colour = objectTemp.colour
         self.object = objectTemp
+        self.reward = self.calculate_reward()
 
     def empty_cell(self):
         self.empty = True
@@ -108,4 +120,4 @@ class Cell:
         if self.colour == Object_Colour.Wall.value:
             self.reward = -0.1
         if self.colour == Object_Colour.Goal.value:
-            self.reward = 1
+            self.reward = 1000

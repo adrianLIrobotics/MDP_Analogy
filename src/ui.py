@@ -32,6 +32,16 @@ class GridApp:
     def clearTextBox(self):
         self.debug.delete(1.0, END)
 
+    '''
+    Update robot reward value
+    '''
+    def updateRewardTextBox(self,text):
+        self.t_reward.delete(1.0, END) # Clear old value
+        self.t_reward.insert(END,str(text))
+
+    '''
+    Update the debug text window with inputed data.
+    '''
     def writeTextBox(self,text):
         self.debug.insert(END,str(text)+"\n")
 
@@ -135,6 +145,9 @@ class GridApp:
 
         b_train = Button(mdpFrame, text='Train')
         b_train.pack(side=RIGHT, padx=pad, pady=pad)
+
+        self.t_reward = Text(mdpFrame,height = 1.5,width = 5)
+        self.t_reward.pack( side= RIGHT, padx=pad, pady=pad)# , expand= True
 
         #input buttom
         #debug_window = Text(frame,height = 1.5,width = 5)

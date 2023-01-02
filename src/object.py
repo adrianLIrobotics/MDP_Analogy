@@ -15,3 +15,5 @@ class objectModel:
             self.colour = Object_Colour.Water.value
         if self.objectType == 'Fire':
             self.colour = Object_Colour.Fire.value
+        if self.objectType == 'Goal':
+            self.colour = Object_Colour.Goal.value

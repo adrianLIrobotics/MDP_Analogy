@@ -38,6 +38,7 @@ class robotModel:
         self.mapSize = mapSize
         self.collided = False
         self.master = master
+        self.cumulative_reward = 0
 
         # Id's of robot actions
         moveUpOne = 0
@@ -117,7 +118,7 @@ class robotModel:
         """Move one unit up - prob(slip low)"""
         oldPosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt)
         newPosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt-1)
-        
+        self.cumulative_reward += self.gridMap.map[newPosition].reward
 
         if (self.gridMap.map[newPosition].empty == False) | (newPosition < 0):
             self.collided = True
@@ -137,6 +138,7 @@ class robotModel:
             self.gridMap.canvas.itemconfig(self.gridMap.map[newPosition].tkinterCellIndex, fill=Object_Colour.Robot.value)
 
             self.master.writeTextBox("Moved 1 Up")
+        self.master.updateRewardTextBox(self.cumulative_reward)
 
     def moveUpTwo(self):
         """Move one unit up - prob(slip high)"""
@@ -146,6 +148,7 @@ class robotModel:
         """Move one unit down"""
         oldPosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt)
         newPosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt+1)
+        self.cumulative_reward += self.gridMap.map[newPosition].reward
 
         try: 
             self.gridMap.map[newPosition].empty
@@ -172,11 +175,14 @@ class robotModel:
             # Move robot in canvas one up.
             self.gridMap.canvas.itemconfig(self.gridMap.map[newPosition].tkinterCellIndex, fill=Object_Colour.Robot.value)
             self.master.writeTextBox("Moved 1 down")
+        
+        self.master.updateRewardTextBox(self.cumulative_reward)
 
     def moveLeftOne(self):
         """Move one unit left"""
         oldPosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt)
         newPosition = self.coordinateTranslationTo1D(self.pos_xt-1,self.pos_zt)
+        self.cumulative_reward += self.gridMap.map[newPosition].reward
 
         #self.gridMap.map[oldPosition].border and oldPosition ==1
         stop = self.gridMap.map[oldPosition].first_column and self.gridMap.map[newPosition].last_column
@@ -199,10 +205,13 @@ class robotModel:
             self.gridMap.canvas.itemconfig(self.gridMap.map[newPosition].tkinterCellIndex, fill=Object_Colour.Robot.value)
             self.master.writeTextBox("Moved 1 Left")
 
+        self.master.updateRewardTextBox(self.cumulative_reward)
+
     def moveRightOne(self):
         """Move one unit right"""
         oldPosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt)
         newPosition = self.coordinateTranslationTo1D(self.pos_xt+1,self.pos_zt)
+        self.cumulative_reward += self.gridMap.map[newPosition].reward
 
         try: 
             self.gridMap.map[newPosition].empty
@@ -212,10 +221,7 @@ class robotModel:
             self.master.writeTextBox("Robot collided!")
             return
 
-        
-        #self.gridMap.map[oldPosition].border and oldPosition ==1
         stop = self.gridMap.map[oldPosition].last_column and self.gridMap.map[newPosition].first_column
-
 
         if (self.gridMap.map[newPosition].empty == False) | (newPosition < 0) | stop:
             self.collided = True
@@ -234,6 +240,8 @@ class robotModel:
             # Move robot in canvas one up.
             self.gridMap.canvas.itemconfig(self.gridMap.map[newPosition].tkinterCellIndex, fill=Object_Colour.Robot.value)
             self.master.writeTextBox("Moved 1 Right")
+        
+        self.master.updateRewardTextBox(self.cumulative_reward)
 
     def objectDetected(self,isObject,temp_x,temp_z):
         if ((temp_x < self.pos_xt+self.laserRange) and (isObject==-1)):
