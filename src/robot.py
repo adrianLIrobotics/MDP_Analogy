@@ -52,6 +52,8 @@ class robotModel:
         stay = 8
         self.actions = [moveUpOne, moveUpTwo, moveDownOne, moveDownTwo, moveLeftOne, moveLeftTwo, moveRightOne, moveRightTWo, stay]
 
+        # Update Control panel with initial data of robot:
+        
     def return_robot_actions_id(self):
         return self.actions
 
@@ -138,7 +140,10 @@ class robotModel:
             self.gridMap.canvas.itemconfig(self.gridMap.map[newPosition].tkinterCellIndex, fill=Object_Colour.Robot.value)
 
             self.master.writeTextBox("Moved 1 Up")
+
+        # Update control panel UI
         self.master.updateRewardTextBox(self.cumulative_reward)
+        self.master.update_control_panel(self.pos_zt)
 
     def moveUpTwo(self):
         """Move one unit up - prob(slip high)"""

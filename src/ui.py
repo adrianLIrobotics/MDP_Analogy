@@ -33,6 +33,10 @@ class GridApp:
     def clearTextBox(self):
         self.debug.delete(1.0, END)
 
+    def update_control_panel(self,x_real_pose):
+        self.z_real_pose.delete(1.0,END)
+        self.z_real_pose.insert(END, str(x_real_pose))
+
     '''
     Update robot reward value
     '''
@@ -229,16 +233,16 @@ class GridApp:
         oneDimensionPose = Label(robot_info, text='Real 1D Pose: ')
         oneDimensionPose.pack(side=LEFT, padx=pad, pady=pad)
 
-        self.oneDimensionPosevalue = Text(robot_info,height = 1.5,width = 5)
-        self.oneDimensionPosevalue.pack( side= RIGHT, padx=pad, pady=pad)
+        self.z_real_pose = Text(robot_info,height = 1.5,width = 5)
+        self.z_real_pose.pack( side= RIGHT, padx=pad, pady=pad)
 
-        robot_real_pos_x = Label(robot_info, text='Real X pose: ')
-        robot_real_pos_x.pack(side=RIGHT, padx=pad, pady=pad)
+        self.robot_real_pos_x = Label(robot_info, text='Real Z pose: ')
+        self.robot_real_pos_x.pack(side=RIGHT, padx=pad, pady=pad)
 
         robot_real_pos_x_value = Text(robot_info,height = 1.5,width = 5)
         robot_real_pos_x_value.pack( side= LEFT, padx=pad, pady=pad)
 
-        robot_real_pos_z = Label(robot_info, text='Real Z pose: ')
+        robot_real_pos_z = Label(robot_info, text='Real X pose: ')
         robot_real_pos_z.pack(side=LEFT, padx=pad, pady=pad)
 
         robot_real_pos_z_value = Text(robot_info,height = 1.5,width = 5)
@@ -319,6 +323,9 @@ class GridApp:
         #self.debug=Text(debugframe,height =palette_height/13,width = int(c_width/8),yscrollcommand=scroll_bar.set)
         self.debug=Text(debugframe,height =palette_height/10,width = int(c_width/8),yscrollcommand=scroll_bar.set)
         self.debug.pack()
+
+        # Update control grid with initial conditions:
+        self.update_control_panel(self.robot.pos_zt)
 
 '''    
 # Get the grid size from the command line, if provided
