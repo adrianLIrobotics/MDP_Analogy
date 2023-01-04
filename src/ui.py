@@ -7,6 +7,7 @@ from robot import robotModel
 from map import Map
 from policy import PolicyModel
 from mdp import Mdp
+from tkinter import ttk
 
 # A simple colouring grid app, with load/save functionality.
 # Christian Hill, August 2018.
@@ -67,23 +68,8 @@ class GridApp:
         frame = Frame(master)
         frame.pack()
 
-        # The Debug window.
-
-        debugframe = LabelFrame(master, text="Debug control")
-        debugframe.pack( padx=pad, pady=pad)
-
-        scroll_bar = Scrollbar(debugframe)
-        scroll_bar.pack(side=RIGHT)
 
 
-        self.debug=Text(debugframe,height =palette_height/13,width = int(c_width/8),yscrollcommand=scroll_bar.set)
-        self.debug.pack()
-
-        self.openNewWindow(master,c_width,palette_height,frame)
-        
-
-        self.ics = 9#0
-        self.select_colour(self.ics)
 
         # The canvas onto which the grid is drawn.
         self.w = Canvas(master, width=c_width, height=c_height)
@@ -98,57 +84,17 @@ class GridApp:
         # Add MDP
         Mdp(n, self.robot, self.gridMap)
         #policy_object = PolicyModel(self.gridMap.mapSize**2,self.robot)
+
+        self.openNewWindow(master,c_width,palette_height,frame,self.robot)
+
+        self.ics = 9#0
+        self.select_colour(self.ics)
         
-        mapframe = LabelFrame(frame, text="Map control")
-        mapframe.pack(side=RIGHT, padx=pad, pady=pad)
 
-        systemframe = LabelFrame(frame, text="System control")
-        systemframe.pack(side=RIGHT, padx=pad, pady=pad)
-
-        # Load, save image and ramdom map generator buttons
-        b_load = Button(systemframe, text='open', command=self.gridMap.loadMap)
-        b_load.pack(side=RIGHT, padx=pad, pady=pad)
-        b_save = Button(systemframe, text='save', command= self.gridMap.saveMap)
-        b_save.pack(side=RIGHT, padx=pad, pady=pad)
-        b_random = Button(mapframe, text='random',command= lambda: self.gridMap.createRamdomMap(self.inputFeatures.get("1.0","end-1c")))
-        b_random.pack(side=RIGHT, padx=pad, pady=pad)
-        # Add a button to clear the grid
-        b_clear = Button(mapframe, text='clear', command=self.gridMap.clearMap)
-        b_clear.pack(side=RIGHT, padx=pad, pady=pad)
-
-        #input buttom
-        self.inputFeatures = Text(mapframe,height = 1.5,width = 5)
-        self.inputFeatures.pack(side=RIGHT, padx=pad, pady=pad)
 
         #frame.bind("<Key>",self.key_pressed)
 
-        labelframe = LabelFrame(frame, text="robot control")
-        labelframe.pack(side=RIGHT, padx=pad, pady=pad)
-
-        b_up = Button(labelframe, text='UP', command=self.robot.moveUpOne)
-        b_up.pack(side=RIGHT, padx=pad, pady=pad)
-
-        b_down = Button(labelframe, text='DOWN', command=self.robot.moveDownOne)
-        b_down.pack(side=RIGHT, padx=pad, pady=pad)
-
-        b_left = Button(labelframe, text='LEFT', command=self.robot.moveLeftOne)
-        b_left.pack(side=RIGHT, padx=pad, pady=pad)
-
-        b_right = Button(labelframe, text='RIGHT', command=self.robot.moveRightOne)
-        b_right.pack(side=RIGHT, padx=pad, pady=pad)
-
-        mdpFrame = LabelFrame(frame, text="MDP")
-        mdpFrame.pack(side=RIGHT, padx=pad, pady=pad)
-
-        b_run = Button(mdpFrame, text='RUN')
-        b_run.pack(side=RIGHT, padx=pad, pady=pad)
-
-        b_train = Button(mdpFrame, text='Train')
-        b_train.pack(side=RIGHT, padx=pad, pady=pad)
-
-        self.t_reward = Text(mdpFrame,height = 1.5,width = 5)
-        self.t_reward.pack( side= RIGHT, padx=pad, pady=pad)# , expand= True
-
+        
         #input buttom
         #debug_window = Text(frame,height = 1.5,width = 5)
         #debug_window.pack( side= BOTTOM, padx=pad, pady=pad)# , expand= True
@@ -225,11 +171,12 @@ class GridApp:
         self.palette_canvas.itemconfig(self.palette_rects[self.ics],
                                        outline='black', width=5)
 
-    def openNewWindow(self, master, c_width, palette_height,frame):
+    def openNewWindow(self, master, c_width, palette_height,frame,robot):
         newWindow = Toplevel(master)
         newWindow.title("New Window")
-        newWindow.geometry("400x50")
+        newWindow.geometry("460x500") # newWindow.geometry("400x50")  
         p_pad = 5
+        pad = 5
         p_width = p_height = palette_height - 2*p_pad
         
         # The palette for selecting colours.
@@ -244,6 +191,134 @@ class GridApp:
                             x+p_width, y+p_height, fill=self.colours[i])
             self.palette_rects.append(rect)
         # ics is the index of the currently selected colour.
+
+        # ROBOT INFO 
+        labelframe = LabelFrame(newWindow)
+        labelframe.pack(side=TOP, padx=pad*2, pady=pad)
+
+        labelframe2 = LabelFrame(labelframe, text="Robot-actions")
+        labelframe2.pack(side=TOP, padx=pad*2, pady=pad)
+
+        b_up = Button(labelframe2, text='UP', command=robot.moveUpOne)
+        b_up.pack(side=RIGHT, padx=pad, pady=pad)
+
+        b_down = Button(labelframe2, text='DOWN', command=robot.moveDownOne)
+        b_down.pack(side=RIGHT, padx=pad, pady=pad)
+
+        b_left = Button(labelframe2, text='LEFT', command=robot.moveLeftOne)
+        b_left.pack(side=RIGHT, padx=pad, pady=pad)
+
+        b_right = Button(labelframe2, text='RIGHT', command=robot.moveRightOne)
+        b_right.pack(side=RIGHT, padx=pad, pady=pad)
+
+        b_reset = Button(labelframe2, text='RESET')
+        b_reset.pack(side=RIGHT, padx=pad, pady=pad)
+
+        #self.num_steps = Text(labelframe2,height = 1.5,width = 5)
+        #self.num_steps.pack( side= RIGHT, padx=pad, pady=pad)
+
+        combo = ttk.Combobox(labelframe2,
+        state="readonly",
+        values=["1", "2"]
+        )
+        combo.pack(side=RIGHT, padx=pad, pady=pad)
+
+        robot_info = LabelFrame(labelframe, text="Robot-real-state-info")
+        robot_info.pack(side=TOP, padx=pad*2, pady=pad)
+
+        oneDimensionPose = Label(robot_info, text='Real 1D Pose: ')
+        oneDimensionPose.pack(side=LEFT, padx=pad, pady=pad)
+
+        self.oneDimensionPosevalue = Text(robot_info,height = 1.5,width = 5)
+        self.oneDimensionPosevalue.pack( side= RIGHT, padx=pad, pady=pad)
+
+        robot_real_pos_x = Label(robot_info, text='Real X pose: ')
+        robot_real_pos_x.pack(side=RIGHT, padx=pad, pady=pad)
+
+        robot_real_pos_x_value = Text(robot_info,height = 1.5,width = 5)
+        robot_real_pos_x_value.pack( side= LEFT, padx=pad, pady=pad)
+
+        robot_real_pos_z = Label(robot_info, text='Real Z pose: ')
+        robot_real_pos_z.pack(side=LEFT, padx=pad, pady=pad)
+
+        robot_real_pos_z_value = Text(robot_info,height = 1.5,width = 5)
+        robot_real_pos_z_value.pack( side= LEFT, padx=pad, pady=pad)
+
+        robot_estimate_info = LabelFrame(labelframe, text="Robot-estimate-info")
+        robot_estimate_info.pack(side=TOP, padx=pad*2, pady=pad)
+
+        localization_label = Label(robot_estimate_info, text='Localization: ')
+        localization_label.pack(side=LEFT, padx=pad, pady=pad)
+
+        self.localization_label_value = Text(robot_estimate_info,height = 1.5,width = 5)
+        self.localization_label_value.pack( side= RIGHT, padx=pad, pady=pad)
+
+        num_observation_label = Label(robot_estimate_info, text='Nº Observations: ')
+        num_observation_label.pack(side=RIGHT, padx=pad, pady=pad)
+
+        self.num_observation_value = Text(robot_estimate_info,height = 1.5,width = 5)
+        self.num_observation_value.pack( side= RIGHT, padx=pad, pady=pad)
+
+        robot_estimate_localization = LabelFrame(labelframe, text="Robot-estimate-localization")
+        robot_estimate_localization.pack(side=TOP, padx=pad*2, pady=pad)
+
+        pose_oneD_label = Label(robot_estimate_localization, text='1D Pose: ')
+        pose_oneD_label.pack(side=LEFT, padx=pad, pady=pad)
+
+        self.pose_oneD_value = Text(robot_estimate_localization,height = 1.5,width = 5)
+        self.pose_oneD_value.pack( side= RIGHT, padx=pad, pady=pad)
+
+        z_pose_label = Label(robot_estimate_localization, text='Z Pose: ')
+        z_pose_label.pack(side=RIGHT, padx=pad, pady=pad)
+
+        self.z_pose_value = Text(robot_estimate_localization,height = 1.5,width = 5)
+        self.z_pose_value.pack( side= RIGHT, padx=pad, pady=pad)
+
+        x_pose_label = Label(robot_estimate_localization, text='X Pose: ')
+        x_pose_label.pack(side=RIGHT, padx=pad, pady=pad)
+
+        self.x_pose_value = Text(robot_estimate_localization,height = 1.5,width = 5)
+        self.x_pose_value.pack( side= RIGHT, padx=pad, pady=pad)
+
+        # MDP CONTROL
+        mdp_map_frame = LabelFrame(labelframe, text="MDP & MAP")
+        mdp_map_frame.pack(side=TOP, padx=pad*2, pady=pad)
+
+        b_run = Button(mdp_map_frame, text='RUN')
+        b_run.pack(side=RIGHT, padx=pad, pady=pad)
+
+        b_train = Button(mdp_map_frame, text='Train')
+        b_train.pack(side=RIGHT, padx=pad, pady=pad)
+
+        self.t_reward = Text(mdp_map_frame,height = 1.5,width = 5)
+        self.t_reward.pack( side= RIGHT, padx=pad, pady=pad)# , expand= True
+
+        b_random = Button(mdp_map_frame, text='random',command= lambda: self.gridMap.createRamdomMap(self.inputFeatures.get("1.0","end-1c")))
+        b_random.pack(side=RIGHT, padx=pad, pady=pad)
+        # Add a button to clear the grid
+        b_clear = Button(mdp_map_frame, text='clear', command=self.gridMap.clearMap)
+        b_clear.pack(side=RIGHT, padx=pad, pady=pad)
+
+        #input buttom
+        self.inputFeatures = Text(mdp_map_frame,height = 1.5,width = 5)
+        self.inputFeatures.pack(side=RIGHT, padx=pad, pady=pad)
+
+        # Load, save image and ramdom map generator buttons
+        b_load = Button(mdp_map_frame, text='open', command=self.gridMap.loadMap)
+        b_load.pack(side=RIGHT, padx=pad, pady=pad)
+        b_save = Button(mdp_map_frame, text='save', command= self.gridMap.saveMap)
+        b_save.pack(side=RIGHT, padx=pad, pady=pad)
+
+        # The Debug window.
+        debugframe = LabelFrame(newWindow, text="Debug control")
+        debugframe.pack( padx=pad, pady=pad)
+
+        scroll_bar = Scrollbar(debugframe)
+        scroll_bar.pack(side=RIGHT)
+
+        #self.debug=Text(debugframe,height =palette_height/13,width = int(c_width/8),yscrollcommand=scroll_bar.set)
+        self.debug=Text(debugframe,height =palette_height/10,width = int(c_width/8),yscrollcommand=scroll_bar.set)
+        self.debug.pack()
 
 '''    
 # Get the grid size from the command line, if provided
