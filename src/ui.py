@@ -33,9 +33,11 @@ class GridApp:
     def clearTextBox(self):
         self.debug.delete(1.0, END)
 
-    def update_control_panel(self,x_real_pose):
+    def update_control_panel(self,x_real_pose,oneD_pose_real):
         self.z_real_pose.delete(1.0,END)
+        self.robot_1d_real_pose.delete(1.0,END)
         self.z_real_pose.insert(END, str(x_real_pose))
+        self.robot_1d_real_pose.insert(END, str(oneD_pose_real))
 
     '''
     Update robot reward value
@@ -239,8 +241,8 @@ class GridApp:
         self.robot_real_pos_x = Label(robot_info, text='Real Z pose: ')
         self.robot_real_pos_x.pack(side=RIGHT, padx=pad, pady=pad)
 
-        robot_real_pos_x_value = Text(robot_info,height = 1.5,width = 5)
-        robot_real_pos_x_value.pack( side= LEFT, padx=pad, pady=pad)
+        self.robot_1d_real_pose = Text(robot_info,height = 1.5,width = 5)
+        self.robot_1d_real_pose.pack( side= LEFT, padx=pad, pady=pad)
 
         robot_real_pos_z = Label(robot_info, text='Real X pose: ')
         robot_real_pos_z.pack(side=LEFT, padx=pad, pady=pad)
@@ -325,7 +327,7 @@ class GridApp:
         self.debug.pack()
 
         # Update control grid with initial conditions:
-        self.update_control_panel(self.robot.pos_zt)
+        self.update_control_panel(self.robot.pos_zt, self.robot.gridRobot1DPosition)
 
 '''    
 # Get the grid size from the command line, if provided

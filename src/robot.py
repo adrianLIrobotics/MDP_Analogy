@@ -120,13 +120,16 @@ class robotModel:
         """Move one unit up - prob(slip low)"""
         oldPosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt)
         newPosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt-1)
-        self.cumulative_reward += self.gridMap.map[newPosition].reward
-
+        
         if (self.gridMap.map[newPosition].empty == False) | (newPosition < 0):
             self.collided = True
+            self.cumulative_reward += -0.1
             print("Collided: ",self.collided)
             self.master.writeTextBox("Robot collided!")
+            # If collided, robot position is the same
+            newPosition = oldPosition
         else:
+            self.cumulative_reward += self.gridMap.map[newPosition].reward
             self.collided = False
             self.pos_zt -= 1
             self.pos_x.append(self.pos_xt)
@@ -138,12 +141,14 @@ class robotModel:
             self.gridMap.map[oldPosition].empty = True
             # Move robot in canvas one up.
             self.gridMap.canvas.itemconfig(self.gridMap.map[newPosition].tkinterCellIndex, fill=Object_Colour.Robot.value)
-
             self.master.writeTextBox("Moved 1 Up")
 
         # Update control panel UI
-        self.master.updateRewardTextBox(self.cumulative_reward)
-        self.master.update_control_panel(self.pos_zt)
+        try:
+            self.master.updateRewardTextBox(self.cumulative_reward)
+        except:
+            pass
+        self.master.update_control_panel(self.pos_zt, newPosition)
 
     def moveUpTwo(self):
         """Move one unit up - prob(slip high)"""
@@ -153,21 +158,8 @@ class robotModel:
         """Move one unit down"""
         oldPosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt)
         newPosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt+1)
-        self.cumulative_reward += self.gridMap.map[newPosition].reward
-
-        try: 
-            self.gridMap.map[newPosition].empty
-        except:
-            self.collided = True
-            print("Collided: ",self.collided)
-            self.master.writeTextBox("Robot collided!")
-            return
-
-        if (self.gridMap.map[newPosition].empty == False) | (newPosition < 0):
-            self.collided = True
-            print("Collided: ",self.collided)
-            self.master.writeTextBox("Robot collided!")
-        else:
+        try:
+            self.cumulative_reward += self.gridMap.map[newPosition].reward
             self.collided = False
             self.pos_zt += 1
             self.pos_x.append(self.pos_xt)
@@ -180,22 +172,40 @@ class robotModel:
             # Move robot in canvas one up.
             self.gridMap.canvas.itemconfig(self.gridMap.map[newPosition].tkinterCellIndex, fill=Object_Colour.Robot.value)
             self.master.writeTextBox("Moved 1 down")
-        
-        self.master.updateRewardTextBox(self.cumulative_reward)
+        except:
+            self.collided = True
+            self.master.writeTextBox("Robot collided!")
+            self.cumulative_reward += -0.1
+            # If collided, robot position is the same
+            newPosition = oldPosition
+        try:
+            self.master.updateRewardTextBox(self.cumulative_reward)
+        except:
+            pass
+        self.master.update_control_panel(self.pos_zt, newPosition)
 
     def moveLeftOne(self):
         """Move one unit left"""
         oldPosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt)
         newPosition = self.coordinateTranslationTo1D(self.pos_xt-1,self.pos_zt)
-        self.cumulative_reward += self.gridMap.map[newPosition].reward
+        try:
+            self.cumulative_reward += self.gridMap.map[newPosition].reward
+        except:
+            pass
 
-        #self.gridMap.map[oldPosition].border and oldPosition ==1
-        stop = self.gridMap.map[oldPosition].first_column and self.gridMap.map[newPosition].last_column
+        try:
+            stop = self.gridMap.map[oldPosition].first_column and self.gridMap.map[newPosition].last_column
+        except:
+            newPosition = oldPosition
+            stop = True
 
         if (self.gridMap.map[newPosition].empty == False) | (newPosition < 0) | stop:
             self.collided = True
             print("Collided: ",self.collided)
             self.master.writeTextBox("Robot collided!")
+            self.cumulative_reward += -0.1
+            # If collided, robot position is the same
+            newPosition = oldPosition
         else:
             self.collided = False
             self.pos_xt -= 1
@@ -209,29 +219,35 @@ class robotModel:
             # Move robot in canvas one up.
             self.gridMap.canvas.itemconfig(self.gridMap.map[newPosition].tkinterCellIndex, fill=Object_Colour.Robot.value)
             self.master.writeTextBox("Moved 1 Left")
-
-        self.master.updateRewardTextBox(self.cumulative_reward)
+        
+        try:
+            self.master.updateRewardTextBox(self.cumulative_reward)
+        except:
+            pass
+        self.master.update_control_panel(self.pos_zt, newPosition)
 
     def moveRightOne(self):
         """Move one unit right"""
         oldPosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt)
         newPosition = self.coordinateTranslationTo1D(self.pos_xt+1,self.pos_zt)
-        self.cumulative_reward += self.gridMap.map[newPosition].reward
-
-        try: 
-            self.gridMap.map[newPosition].empty
+        try:
+            self.cumulative_reward += self.gridMap.map[newPosition].reward
         except:
-            self.collided = True
-            print("Collided: ",self.collided)
-            self.master.writeTextBox("Robot collided!")
-            return
+            pass
 
-        stop = self.gridMap.map[oldPosition].last_column and self.gridMap.map[newPosition].first_column
+        try:
+            stop = self.gridMap.map[oldPosition].last_column and self.gridMap.map[newPosition].first_column
+        except:
+            newPosition = oldPosition
+            stop = True
 
         if (self.gridMap.map[newPosition].empty == False) | (newPosition < 0) | stop:
             self.collided = True
             print("Collided: ",self.collided)
             self.master.writeTextBox("Robot collided!")
+            self.cumulative_reward += -0.1
+            # If collided, robot position is the same
+            newPosition = oldPosition
         else:
             self.collided = False
             self.pos_xt += 1
@@ -246,7 +262,13 @@ class robotModel:
             self.gridMap.canvas.itemconfig(self.gridMap.map[newPosition].tkinterCellIndex, fill=Object_Colour.Robot.value)
             self.master.writeTextBox("Moved 1 Right")
         
-        self.master.updateRewardTextBox(self.cumulative_reward)
+        try:
+            self.master.updateRewardTextBox(self.cumulative_reward)
+        except:
+            pass
+        if (newPosition < 0):
+            newPosition = oldPosition
+        self.master.update_control_panel(self.pos_zt, newPosition)
 
     def objectDetected(self,isObject,temp_x,temp_z):
         if ((temp_x < self.pos_xt+self.laserRange) and (isObject==-1)):
