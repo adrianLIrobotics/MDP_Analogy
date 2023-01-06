@@ -164,6 +164,7 @@ class GridApp:
                 print("Border edge: ", self.gridMap.map[i].border_edge)
                 print("first_column: ", self.gridMap.map[i].first_column)
                 print("last_column: ", self.gridMap.map[i].last_column)
+                print("First row: ", self.gridMap.map[i].first_row)
         # Bind the grid click callback function to the left mouse button
         # press event on the grid canvas.
         self.w.bind('<ButtonPress-1>', w_click_callback)
@@ -205,7 +206,8 @@ class GridApp:
         labelframe2 = LabelFrame(labelframe, text="Robot-actions")
         labelframe2.pack(side=TOP, padx=pad*2, pady=pad)
 
-        b_up = Button(labelframe2, text='UP', command=robot.moveUpOne)
+        # command= lambda: self.gridMap.createRamdomMap(self.inputFeatures.get("1.0","end-1c"))
+        b_up = Button(labelframe2, text='UP', command = lambda: robot.moveUpOne(get_index()))
         b_up.pack(side=RIGHT, padx=pad, pady=pad)
 
         b_down = Button(labelframe2, text='DOWN', command=robot.moveDownOne)
@@ -220,14 +222,17 @@ class GridApp:
         b_reset = Button(labelframe2, text='RESET')
         b_reset.pack(side=RIGHT, padx=pad, pady=pad)
 
-        #self.num_steps = Text(labelframe2,height = 1.5,width = 5)
-        #self.num_steps.pack( side= RIGHT, padx=pad, pady=pad)
+        def get_index(*arg):
+            print("combo: ", str(var.get()))
+            return int(var.get())
 
-        combo = ttk.Combobox(labelframe2,
-        state="readonly",
-        values=["1", "2"]
-        )
+        var = StringVar()
+        combo = ttk.Combobox(labelframe2, textvariable=var)
+        combo['state']="readonly",
+        combo['values']=["1", "2"]
         combo.pack(side=RIGHT, padx=pad, pady=pad)
+        combo.set('1') # Default number of steps per move is 1.
+        var.trace('w', get_index)
 
         robot_info = LabelFrame(labelframe, text="Robot-real-state-info")
         robot_info.pack(side=TOP, padx=pad*2, pady=pad)

@@ -20,10 +20,11 @@ class Cell:
         self.tkinterCellIndex = indexTk
         self.colour = '#fff' # White
         self.reward = self.calculate_reward()
-        self.border = self.check_if_border() # If None --> no border tile
+        self.border = self.check_if_border() 
         self.border_edge = self.check_if_border_edge()
         self.first_column = self.check_first_column()
         self.last_column = self.check_last_column()
+        self.first_row = self.check_if_first_row()
 
     '''
     Constructor for a cell with no object. Empty white cell.
@@ -40,12 +41,22 @@ class Cell:
         self.border_edge = self.check_if_border_edge()
         self.first_column = self.check_first_column()
         self.last_column = self.check_last_column()
+        self.first_row = self.check_if_first_row()
        
     def update_reward(self):
         self.calculate_reward()
 
     def update_colour(self, colour_param):
         self.colour = colour_param
+
+    '''
+    Cells with property of been in the first row
+    '''
+    def check_if_first_row(self):
+        for x in range (0,int(mapSize)): 
+            if self.tkinterCellIndex <= int(mapSize):
+                return True
+        return False
 
     '''
     Cells with property of been in the first column.

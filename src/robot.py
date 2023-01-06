@@ -116,22 +116,53 @@ class robotModel:
         noise_std=0.1
         return self.vel_xt + randn() * noise_std, self.vel_zt + randn() * noise_std 
 
-    def moveUpOne(self):
-        """Move one unit up - prob(slip low)"""
+    '''
+    Control command to move the robot in the up direction with
+    parameter number of steps.
+    '''
+    def moveUpOne(self, num_steps):
         oldPosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt)
-        newPosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt-1)
+        collidedPlusOnePosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt-1)
+        if (num_steps == 1):
+            newPosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt-1)
+        else:
+            newPosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt-2)
         
         if (self.gridMap.map[newPosition].empty == False) | (newPosition < 0):
             self.collided = True
-            self.cumulative_reward += -0.1
+            if (num_steps == 1):
+                self.cumulative_reward += -0.1
+                # If collided, robot position is the same
+                newPosition = oldPosition
+            else:
+                # Collided act is worse if going faster
+                self.cumulative_reward += -0.2 
             print("Collided: ",self.collided)
             self.master.writeTextBox("Robot collided!")
-            # If collided, robot position is the same
-            newPosition = oldPosition
+            # Check if robot can move at least one up.
+            if (self.gridMap.map[collidedPlusOnePosition].empty == True) and (self.gridMap.map[collidedPlusOnePosition].first_row) :
+                print("Moving only 1...")
+                newPosition = collidedPlusOnePosition
+                # Remove robot from canvas actual position
+                self.gridMap.canvas.itemconfig(self.gridMap.map[oldPosition].tkinterCellIndex, fill='#fff')
+                self.gridMap.map[oldPosition].object = None
+                self.gridMap.map[oldPosition].empty = True
+                # Move robot in canvas one up.
+                self.gridMap.canvas.itemconfig(self.gridMap.map[newPosition].tkinterCellIndex, fill=Object_Colour.Robot.value)
+                # Update robot internal pose
+                self.pos_zt -= 1
+                # Update history
+                self.pos_x.append(self.pos_xt)
+                self.pos_z.append(self.pos_zt)
         else:
-            self.cumulative_reward += self.gridMap.map[newPosition].reward
+            if (num_steps == 1):
+                self.cumulative_reward += self.gridMap.map[newPosition].reward
+                self.pos_zt -= 1
+            else:
+                self.cumulative_reward += self.gridMap.map[newPosition].reward / 2
+                self.pos_zt -= 2
+
             self.collided = False
-            self.pos_zt -= 1
             self.pos_x.append(self.pos_xt)
             self.pos_z.append(self.pos_zt)
 
@@ -141,7 +172,7 @@ class robotModel:
             self.gridMap.map[oldPosition].empty = True
             # Move robot in canvas one up.
             self.gridMap.canvas.itemconfig(self.gridMap.map[newPosition].tkinterCellIndex, fill=Object_Colour.Robot.value)
-            self.master.writeTextBox("Moved 1 Up")
+            self.master.writeTextBox("Moved Up "+ str(num_steps))
 
         # Update control panel UI
         try:
