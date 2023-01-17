@@ -165,6 +165,7 @@ class GridApp:
                 print("first_column: ", self.gridMap.map[i].first_column)
                 print("last_column: ", self.gridMap.map[i].last_column)
                 print("First row: ", self.gridMap.map[i].first_row)
+                print("Last row: ",self.gridMap.map[i].last_row)
         # Bind the grid click callback function to the left mouse button
         # press event on the grid canvas.
         self.w.bind('<ButtonPress-1>', w_click_callback)
@@ -210,7 +211,7 @@ class GridApp:
         b_up = Button(labelframe2, text='UP', command = lambda: robot.moveUpOne(get_index()))
         b_up.pack(side=RIGHT, padx=pad, pady=pad)
 
-        b_down = Button(labelframe2, text='DOWN', command=robot.moveDownOne)
+        b_down = Button(labelframe2, text='DOWN', command = lambda: robot.moveDownOne(get_index()))
         b_down.pack(side=RIGHT, padx=pad, pady=pad)
 
         b_left = Button(labelframe2, text='LEFT', command=robot.moveLeftOne)

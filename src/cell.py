@@ -42,6 +42,7 @@ class Cell:
         self.first_column = self.check_first_column()
         self.last_column = self.check_last_column()
         self.first_row = self.check_if_first_row()
+        self.last_row = self.check_if_last_row()
        
     def update_reward(self):
         self.calculate_reward()
@@ -49,6 +50,14 @@ class Cell:
     def update_colour(self, colour_param):
         self.colour = colour_param
 
+    '''
+    Cells with property of been in the last row
+    '''
+    def check_if_last_row(self):
+        for x in range (0,int(mapSize)): 
+            if ((int(mapSize)**2)-int(mapSize)) < self.tkinterCellIndex <= int(mapSize)**2:
+                return True
+        return False
     '''
     Cells with property of been in the first row
     '''
