@@ -74,9 +74,6 @@ class GridApp:
         frame = Frame(master)
         frame.pack()
 
-
-
-
         # The canvas onto which the grid is drawn.
         self.w = Canvas(master, width=c_width, height=c_height)
         self.w.pack()
@@ -95,17 +92,12 @@ class GridApp:
 
         self.ics = 9#0
         self.select_colour(self.ics)
-        
-
-
+    
         #frame.bind("<Key>",self.key_pressed)
-
-        
         #input buttom
         #debug_window = Text(frame,height = 1.5,width = 5)
         #debug_window.pack( side= BOTTOM, padx=pad, pady=pad)# , expand= True
         #debug_window.place(relx=0.8, rely=0.2, relwidth=0.5, anchor='nw')
-
 
         def palette_click_callback(event):
             """Function called when someone clicks on the palette canvas."""
@@ -214,7 +206,7 @@ class GridApp:
         b_down = Button(labelframe2, text='DOWN', command = lambda: robot.moveDownOne(get_index()))
         b_down.pack(side=RIGHT, padx=pad, pady=pad)
 
-        b_left = Button(labelframe2, text='LEFT', command=robot.moveLeftOne)
+        b_left = Button(labelframe2, text='LEFT', command = lambda: robot.moveLeftOne(get_index()))
         b_left.pack(side=RIGHT, padx=pad, pady=pad)
 
         b_right = Button(labelframe2, text='RIGHT', command=robot.moveRightOne)
