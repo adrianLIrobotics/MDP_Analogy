@@ -29,10 +29,11 @@ class robotModel:
         self.pos_z = [self.pos_zt] # Noisy historical position in z axes.
         self.vel_x = [0] # Noisy historical velocity in x axes.
         self.vel_z = [0] # Noisy historical velocity in z axes.
+        self.found_goal = False # By default the robot hasnt found the goal.
         self.localized = localized
         self.localized_believe = 0
         self.laserRange = 3
-        self.detectedObjects = 0
+        self.detectedObjects = self.num_objects_detected()
         self.gridRobot1DPosition = utilities.get_state_from_pos([self.pos_xt,self.pos_zt])
         self.gridMap = gridMap
         self.mapSize = mapSize
@@ -53,6 +54,9 @@ class robotModel:
         self.actions = [moveUpOne, moveUpTwo, moveDownOne, moveDownTwo, moveLeftOne, moveLeftTwo, moveRightOne, moveRightTWo, stay]
 
         # Update Control panel with initial data of robot:
+
+    def return_num_detected_objects(self):
+        return self.detectedObjects
         
     def return_robot_actions_id(self):
         return self.actions
@@ -120,7 +124,7 @@ class robotModel:
     Control command to move the robot in the up direction with
     parameter number of steps.
     '''
-    def moveUpOne(self, num_steps):
+    def moveUp(self, num_steps):
         oldPosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt)
         collidedPlusOnePosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt-1)
         if (num_steps == 1):
@@ -136,11 +140,13 @@ class robotModel:
                 newPosition = oldPosition
             else:
                 # Collided act is worse if going faster
-                self.cumulative_reward += -0.2 
+                self.cumulative_reward += -0.2
+                # If collided, robot position is the same
+                newPosition = oldPosition
             print("Collided: ",self.collided)
             self.master.writeTextBox("Robot collided!")
             # Check if robot can move at least one up.
-            if (self.gridMap.map[collidedPlusOnePosition].empty == True) and (self.gridMap.map[collidedPlusOnePosition].first_row):
+            if ((self.gridMap.map[collidedPlusOnePosition].empty == True) and (self.gridMap.map[collidedPlusOnePosition].first_row)) or ((self.gridMap.map[collidedPlusOnePosition].empty == True) and not (self.gridMap.map[oldPosition].first_row)):
                 print("Moving only 1...")
                 newPosition = collidedPlusOnePosition
                 # Remove robot from canvas actual position
@@ -180,9 +186,13 @@ class robotModel:
             self.master.updateRewardTextBox(self.cumulative_reward)
         except:
             pass
-        self.master.update_control_panel(self.pos_zt, newPosition)
+        self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition)
 
-    def moveDownOne(self, num_steps):
+    '''
+    Control command to move the robot in the down direction with
+    parameter number of steps.
+    '''
+    def moveDown(self, num_steps):
         """Move one unit down"""
         oldPosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt)
         collidedPlusOnePosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt+1)
@@ -208,10 +218,12 @@ class robotModel:
             else:
                 # Collided act is worse if going faster
                 self.cumulative_reward += -0.2 
+                # If collided, robot position is the same
+                newPosition = oldPosition
 
             # Check if robot can move at least one down.
             try: 
-                move_one = (self.gridMap.map[collidedPlusOnePosition].empty == True) and (self.gridMap.map[collidedPlusOnePosition].last_row)
+                move_one = ((self.gridMap.map[collidedPlusOnePosition].empty == True) and (self.gridMap.map[collidedPlusOnePosition].last_row)) or ((self.gridMap.map[collidedPlusOnePosition].empty == True) and not (self.gridMap.map[oldPosition].last_row))
             except: # out of scope number from grid, means robot is trying to exit natural limits of grid.
                 move_one = False
             if move_one:
@@ -255,9 +267,13 @@ class robotModel:
             self.master.updateRewardTextBox(self.cumulative_reward)
         except:
             pass
-        self.master.update_control_panel(self.pos_zt, newPosition)
+        self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition)
 
-    def moveLeftOne(self, num_steps):
+    '''
+    Control command to move the robot in the left direction with
+    parameter number of steps.
+    '''
+    def moveLeft(self, num_steps):
         """Move left"""
         oldPosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt)
         collidedPlusOnePosition = self.coordinateTranslationTo1D(self.pos_xt-1,self.pos_zt)
@@ -283,10 +299,12 @@ class robotModel:
             else:
                 # Collided act is worse if going faster
                 self.cumulative_reward += -0.2 
+                # If collided, robot position is the same
+                newPosition = oldPosition
 
             # Check if robot can move at least one left.
             try: 
-                move_one = (self.gridMap.map[collidedPlusOnePosition].empty == True) and (self.gridMap.map[collidedPlusOnePosition].first_column)
+                move_one = ((self.gridMap.map[collidedPlusOnePosition].empty == True) and (self.gridMap.map[collidedPlusOnePosition].first_column)) or ((self.gridMap.map[collidedPlusOnePosition].empty == True) and not (self.gridMap.map[oldPosition].first_column))
             except: # out of scope number from grid, means robot is trying to exit natural limits of grid.
                 move_one = False
 
@@ -331,33 +349,74 @@ class robotModel:
             self.master.updateRewardTextBox(self.cumulative_reward)
         except:
             pass
-        self.master.update_control_panel(self.pos_zt, newPosition)
-        
-    def moveRightOne(self):
-        """Move one unit right"""
+        self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition)
+
+    '''
+    Control command to move the robot in the right direction with
+    parameter number of steps.
+    '''  
+    def moveRight(self, num_steps):
+        """Moves right"""
+        print("num_steps ", str(num_steps))
         oldPosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt)
-        newPosition = self.coordinateTranslationTo1D(self.pos_xt+1,self.pos_zt)
-        try:
-            self.cumulative_reward += self.gridMap.map[newPosition].reward
-        except:
-            pass
+        collidedPlusOnePosition = self.coordinateTranslationTo1D(self.pos_xt+1,self.pos_zt)
 
-        try:
-            stop = self.gridMap.map[oldPosition].last_column and self.gridMap.map[newPosition].first_column
-        except:
-            newPosition = oldPosition
-            stop = True
-
-        if (self.gridMap.map[newPosition].empty == False) | (newPosition < 0) | stop:
-            self.collided = True
-            print("Collided: ",self.collided)
-            self.master.writeTextBox("Robot collided!")
-            self.cumulative_reward += -0.1
-            # If collided, robot position is the same
-            newPosition = oldPosition
+        if (num_steps == 1):
+            newPosition = self.coordinateTranslationTo1D(self.pos_xt+1,self.pos_zt)
         else:
+            newPosition = self.coordinateTranslationTo1D(self.pos_xt+2,self.pos_zt)
+
+        # Robot collided
+        try:
+            robot_collided = (self.gridMap.map[newPosition].empty == False) or (self.gridMap.map[oldPosition].last_column) or (self.gridMap.map[collidedPlusOnePosition].last_column and num_steps == 2)
+        except: # out of scope number from grid, means robot is trying to exit natural limits of grid.
+            robot_collided = True
+        if robot_collided:
+            self.collided = True
+            print("Robot collided!")
+            self.master.writeTextBox("Robot collided!")
+            if (num_steps == 1):
+                self.cumulative_reward += -0.1
+                # If collided, robot position is the same
+                newPosition = oldPosition
+            else:
+                # Collided act is worse if going faster
+                self.cumulative_reward += -0.2 
+                # If collided, robot position is the same
+                newPosition = oldPosition
+
+            # Check if robot can move at least one left.
+            try: 
+                move_one = ((self.gridMap.map[collidedPlusOnePosition].empty == True) and (self.gridMap.map[collidedPlusOnePosition].last_column)) or ((self.gridMap.map[collidedPlusOnePosition].empty == True) and not (self.gridMap.map[oldPosition].last_column))
+            except: # out of scope number from grid, means robot is trying to exit natural limits of grid.
+                move_one = False
+
+            if move_one:
+                print("Moving only 1")
+                newPosition = collidedPlusOnePosition
+                # Remove robot from canvas actual position
+                self.gridMap.canvas.itemconfig(self.gridMap.map[oldPosition].tkinterCellIndex, fill='#fff')
+                self.gridMap.map[oldPosition].object = None
+                self.gridMap.map[oldPosition].empty = True
+                # Move robot in canvas one down.
+                self.gridMap.canvas.itemconfig(self.gridMap.map[newPosition].tkinterCellIndex, fill=Object_Colour.Robot.value)
+                # Update robot internal pose
+                self.pos_xt += 1
+                # Update history
+                self.pos_x.append(self.pos_xt)
+                self.pos_z.append(self.pos_zt)
+
+        # Robot did not collide
+        else:
+            if (num_steps == 1):
+                self.cumulative_reward += self.gridMap.map[newPosition].reward
+                self.pos_xt += 1
+            else:
+                self.cumulative_reward += self.gridMap.map[newPosition].reward / 2
+                self.pos_xt += 2
+
             self.collided = False
-            self.pos_xt += 1
+            # Append to historical path
             self.pos_x.append(self.pos_xt)
             self.pos_z.append(self.pos_zt)
 
@@ -365,17 +424,63 @@ class robotModel:
             self.gridMap.canvas.itemconfig(self.gridMap.map[oldPosition].tkinterCellIndex, fill='#fff')
             self.gridMap.map[oldPosition].object = None
             self.gridMap.map[oldPosition].empty = True
-            # Move robot in canvas one up.
+            # Move robot in canvas.
             self.gridMap.canvas.itemconfig(self.gridMap.map[newPosition].tkinterCellIndex, fill=Object_Colour.Robot.value)
-            self.master.writeTextBox("Moved 1 Right")
-        
+            self.master.writeTextBox("Moved left "+ str(num_steps))
+
         try:
             self.master.updateRewardTextBox(self.cumulative_reward)
         except:
             pass
-        if (newPosition < 0):
-            newPosition = oldPosition
-        self.master.update_control_panel(self.pos_zt, newPosition)
+        self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition)
+
+    '''
+    Get number of objects detected and check if goal found.
+    '''
+    def num_objects_detected(self):
+        num_objects_detected = 0
+        # Check up
+        for x in range(1, self.laserRange):
+            try:
+                if self.gridMap.map[self.gridRobot1DPosition-self.mapSize*x].empty == False:
+                    num_objects_detected += 1
+                    break # If there are further objects behind the one detected by robot, they will not be seen.
+                if self.gridMap.map[self.gridRobot1DPosition-self.mapSize*x].colour == Object_Colour.Goal.value:
+                    self.found_goal = True
+            except:
+                pass
+        # Check down
+        for x in range(1, self.laserRange):
+            try:
+                if self.gridMap.map[self.gridRobot1DPosition+self.mapSize*x].empty == False:
+                    num_objects_detected += 1
+                    break # If there are further objects behind the one detected by robot, they will not be seen.
+                if self.gridMap.map[self.gridRobot1DPosition+self.mapSize*x].colour == Object_Colour.Goal.value:
+                    self.found_goal = True
+            except:
+                pass
+        # Check right
+        for x in range(1, self.laserRange):
+            try:
+                if self.gridMap.map[self.gridRobot1DPosition+x].empty == False:
+                    num_objects_detected += 1
+                    break # If there are further objects behind the one detected by robot, they will not be seen.
+                if self.gridMap.map[self.gridRobot1DPosition+x].colour == Object_Colour.Goal.value:
+                    self.found_goal = True
+            except:
+                pass
+        # Check left
+        for x in range(1, self.laserRange):
+            try:
+                if self.gridMap.map[self.gridRobot1DPosition-x].empty == False:
+                    num_objects_detected += 1
+                    break # If there are further objects behind the one detected by robot, they will not be seen.
+                if self.gridMap.map[self.gridRobot1DPosition+x].colour == Object_Colour.Goal.value:
+                    self.found_goal = True
+            except:
+                pass
+        return num_objects_detected
+
 
     def objectDetected(self,isObject,temp_x,temp_z):
         if ((temp_x < self.pos_xt+self.laserRange) and (isObject==-1)):

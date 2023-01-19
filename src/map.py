@@ -4,6 +4,15 @@ from object import objectModel
 import random
 from colour import Object_Colour
 from robot import robotModel
+from configparser import ConfigParser
+import pathlib
+
+# Get general configuration data
+config_path = pathlib.Path(__file__).parent.absolute() / "config.ini"
+config = ConfigParser()
+config.read(config_path)
+randomMap = config['map']['randomMap']
+
 UNFILLED = '#fff'
 colours = (UNFILLED, 'red', 'green', 'blue', 'cyan', 'orange', 'yellow',
                'magenta', 'brown', 'black')
@@ -37,6 +46,14 @@ class Map:
         
         # Spawn goal
         self.spawn_goal(self.mapSize,self)
+
+        # Create random map if config.ini establishes that.
+        if int(randomMap) != 0:
+            if int(randomMap) > (self.mapSize**2)-2:
+                raise Exception("Cannot create a map, not enough cells")
+            else:
+                self.createRamdomMap(int(randomMap)) #TODO: It cannot overlap with goal cell.
+
 
     '''
     Spawn goal in the map

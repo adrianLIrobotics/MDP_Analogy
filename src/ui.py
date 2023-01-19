@@ -33,11 +33,13 @@ class GridApp:
     def clearTextBox(self):
         self.debug.delete(1.0, END)
 
-    def update_control_panel(self,x_real_pose,oneD_pose_real):
+    def update_control_panel(self,num_object_detected, x_real_pose,oneD_pose_real):
         self.z_real_pose.delete(1.0,END)
         self.robot_1d_real_pose.delete(1.0,END)
         self.z_real_pose.insert(END, str(x_real_pose))
         self.robot_1d_real_pose.insert(END, str(oneD_pose_real))
+        self.num_observation_value.delete(1.0,END)
+        self.num_observation_value.insert(END, str(num_object_detected))
 
     '''
     Update robot reward value
@@ -192,7 +194,7 @@ class GridApp:
             self.palette_rects.append(rect)
         # ics is the index of the currently selected colour.
 
-        # ROBOT INFO 
+        # Robot info 
         labelframe = LabelFrame(newWindow)
         labelframe.pack(side=TOP, padx=pad*2, pady=pad)
 
@@ -200,16 +202,16 @@ class GridApp:
         labelframe2.pack(side=TOP, padx=pad*2, pady=pad)
 
         # command= lambda: self.gridMap.createRamdomMap(self.inputFeatures.get("1.0","end-1c"))
-        b_up = Button(labelframe2, text='UP', command = lambda: robot.moveUpOne(get_index()))
+        b_up = Button(labelframe2, text='UP', command = lambda: robot.moveUp(get_index()))
         b_up.pack(side=RIGHT, padx=pad, pady=pad)
 
-        b_down = Button(labelframe2, text='DOWN', command = lambda: robot.moveDownOne(get_index()))
+        b_down = Button(labelframe2, text='DOWN', command = lambda: robot.moveDown(get_index()))
         b_down.pack(side=RIGHT, padx=pad, pady=pad)
 
-        b_left = Button(labelframe2, text='LEFT', command = lambda: robot.moveLeftOne(get_index()))
+        b_left = Button(labelframe2, text='LEFT', command = lambda: robot.moveLeft(get_index()))
         b_left.pack(side=RIGHT, padx=pad, pady=pad)
 
-        b_right = Button(labelframe2, text='RIGHT', command=robot.moveRightOne)
+        b_right = Button(labelframe2, text='RIGHT', command = lambda: robot.moveRight(get_index()))
         b_right.pack(side=RIGHT, padx=pad, pady=pad)
 
         b_reset = Button(labelframe2, text='RESET')
@@ -325,7 +327,7 @@ class GridApp:
         self.debug.pack()
 
         # Update control grid with initial conditions:
-        self.update_control_panel(self.robot.pos_zt, self.robot.gridRobot1DPosition)
+        self.update_control_panel(self.robot.return_num_detected_objects(), self.robot.pos_zt, self.robot.gridRobot1DPosition)
 
 '''    
 # Get the grid size from the command line, if provided
