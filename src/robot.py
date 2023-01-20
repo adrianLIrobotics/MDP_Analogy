@@ -132,7 +132,7 @@ class robotModel:
         else:
             newPosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt-2)
         
-        if (self.gridMap.map[newPosition].empty == False) | (newPosition < 0):
+        if (self.gridMap.map[newPosition].empty == False) | (newPosition < 0) | (self.gridMap.map[collidedPlusOnePosition].empty == False):
             self.collided = True
             if (num_steps == 1):
                 self.cumulative_reward += -0.1
@@ -204,7 +204,7 @@ class robotModel:
 
         # Robot collided
         try:
-            robot_collided = (self.gridMap.map[newPosition].empty == False) # | (newPosition < (self.mapSize**2))
+            robot_collided = (self.gridMap.map[newPosition].empty == False) | (self.gridMap.map[collidedPlusOnePosition].empty == False)# | (newPosition < (self.mapSize**2))
         except: # out of scope number from grid, means robot is trying to exit natural limits of grid.
             robot_collided = True
         if robot_collided:
@@ -285,7 +285,7 @@ class robotModel:
 
         # Robot collided
         try:
-            robot_collided = (self.gridMap.map[newPosition].empty == False) or (self.gridMap.map[oldPosition].first_column) or (self.gridMap.map[collidedPlusOnePosition].first_column and num_steps == 2)
+            robot_collided = (self.gridMap.map[newPosition].empty == False) or (self.gridMap.map[oldPosition].first_column) or (self.gridMap.map[collidedPlusOnePosition].first_column and num_steps == 2) | (self.gridMap.map[collidedPlusOnePosition].empty == False)
         except: # out of scope number from grid, means robot is trying to exit natural limits of grid.
             robot_collided = True
         if robot_collided:
@@ -368,7 +368,7 @@ class robotModel:
 
         # Robot collided
         try:
-            robot_collided = (self.gridMap.map[newPosition].empty == False) or (self.gridMap.map[oldPosition].last_column) or (self.gridMap.map[collidedPlusOnePosition].last_column and num_steps == 2)
+            robot_collided = (self.gridMap.map[newPosition].empty == False) or (self.gridMap.map[oldPosition].last_column) or (self.gridMap.map[collidedPlusOnePosition].last_column and num_steps == 2) | (self.gridMap.map[collidedPlusOnePosition].empty == False)
         except: # out of scope number from grid, means robot is trying to exit natural limits of grid.
             robot_collided = True
         if robot_collided:
@@ -447,6 +447,7 @@ class robotModel:
                     break # If there are further objects behind the one detected by robot, they will not be seen.
                 if self.gridMap.map[self.gridRobot1DPosition-self.mapSize*x].colour == Object_Colour.Goal.value:
                     self.found_goal = True
+                    self.master.writeTextBox("Goal found!")
             except:
                 pass
         # Check down
@@ -457,6 +458,7 @@ class robotModel:
                     break # If there are further objects behind the one detected by robot, they will not be seen.
                 if self.gridMap.map[self.gridRobot1DPosition+self.mapSize*x].colour == Object_Colour.Goal.value:
                     self.found_goal = True
+                    self.master.writeTextBox("Goal found!")
             except:
                 pass
         # Check right
@@ -467,6 +469,7 @@ class robotModel:
                     break # If there are further objects behind the one detected by robot, they will not be seen.
                 if self.gridMap.map[self.gridRobot1DPosition+x].colour == Object_Colour.Goal.value:
                     self.found_goal = True
+                    self.master.writeTextBox("Goal found!")
             except:
                 pass
         # Check left
@@ -477,6 +480,7 @@ class robotModel:
                     break # If there are further objects behind the one detected by robot, they will not be seen.
                 if self.gridMap.map[self.gridRobot1DPosition+x].colour == Object_Colour.Goal.value:
                     self.found_goal = True
+                    self.master.writeTextBox("Goal found!")
             except:
                 pass
         return num_objects_detected
