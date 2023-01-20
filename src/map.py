@@ -12,6 +12,7 @@ config_path = pathlib.Path(__file__).parent.absolute() / "config.ini"
 config = ConfigParser()
 config.read(config_path)
 randomMap = config['map']['randomMap']
+loadMap = config['map']['loadMap']
 
 UNFILLED = '#fff'
 colours = (UNFILLED, 'red', 'green', 'blue', 'cyan', 'orange', 'yellow',
@@ -44,11 +45,16 @@ class Map:
                 cell = Cell(ix,iy,True,rect)
                 self.map.append(cell)#gridMap.map.append(rect)
         
-        # Spawn goal
-        self.spawn_goal(self.mapSize,self)
+        if loadMap != '':
+            # Load a custom map at initialization. 
+            pass
+        
+        # Spawn random goal if no map is provided at init time.
+        if loadMap == '':
+            self.spawn_random_goal(self.mapSize,self)
 
         # Create random map if config.ini establishes that.
-        if int(randomMap) != 0:
+        if int(randomMap) != 0 and loadMap == '':
             if int(randomMap) > (self.mapSize**2)-2:
                 raise Exception("Cannot create a map, not enough cells")
             else:
@@ -58,7 +64,7 @@ class Map:
     '''
     Spawn goal in the map
     '''
-    def spawn_goal(self,mapSize,gridMap):
+    def spawn_random_goal(self,mapSize,gridMap):
         pos_allowed = True
         while(pos_allowed):
             # Random number from all possible grid positions 
@@ -96,6 +102,7 @@ class Map:
                 wallObject = objectModel(self.map[val].pos_x,self.map[val].pos_z,Object_Colour.Wall.name)
                 self.map[val].empty = False
                 self.map[val].object = wallObject
+                self.map[val].update_colour(Object_Colour.Wall.value)
 
                 # Change the cell colour in the tkinter canvas
                 self.canvas.itemconfig(self.map[val].tkinterCellIndex, fill=self.map[val].object.colour)

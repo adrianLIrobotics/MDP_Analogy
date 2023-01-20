@@ -57,6 +57,8 @@ class GridApp:
     def __init__(self, master, n, width=1000, height=1500, pad=5): # width=600, height=600
         """Initialize a grid and the Tk Frame on which it is rendered."""
         
+        self.inspect = False
+
         # Number of cells in each dimension.
         self.n = n
         # Some dimensions for the App in pixels.
@@ -131,35 +133,63 @@ class GridApp:
             yc = y - iy*(ysize + pad) - pad
             if ix < n and iy < n and 0 < xc < xsize and 0 < yc < ysize:
                 i = iy*n+ix
+                if self.inspect == False:
+                    print("X pos: ",str(self.gridMap.map[i].pos_x))
+                    print("Z pos: ",str(self.gridMap.map[i].pos_z))
+                    print("1D pos: ", str(self.gridMap.map[i].tkinterCellIndex))
 
-                print("X pos: ",str(self.gridMap.map[i].pos_x))
-                print("Z pos: ",str(self.gridMap.map[i].pos_z))
-                print("1D pos: ", str(self.gridMap.map[i].tkinterCellIndex))
+                    # If cell is empty and colour palete is black, change cell state to not empty and color to black.
+                    if ((self.gridMap.map[i].empty == True) and (self.colours[self.ics]==Object_Colour.Wall.value)):#
+                        self.gridMap.map[i].fill_cell(Object_Colour.Wall.name)
 
-                # If cell is empty and colour palete is black, change cell state to not empty and color to black.
-                if ((self.gridMap.map[i].empty == True) and (self.colours[self.ics]==Object_Colour.Wall.value)):#
-                    self.gridMap.map[i].fill_cell(Object_Colour.Wall.name)
+                    # If cell is empty and colour palete is blue, change cell state to not empty and color to blue.
+                    if ((self.gridMap.map[i].empty == True) and (self.colours[self.ics]==Object_Colour.Water.value)):#
+                        self.gridMap.map[i].fill_cell(Object_Colour.Water.name)
 
-                # If cell is empty and colour palete is blue, change cell state to not empty and color to blue.
-                if ((self.gridMap.map[i].empty == True) and (self.colours[self.ics]==Object_Colour.Water.value)):#
-                    self.gridMap.map[i].fill_cell(Object_Colour.Water.name)
+                    # If cell is empty and colour palete is red, change cell state to not empty and color to blue.
+                    if ((self.gridMap.map[i].empty == True) and (self.colours[self.ics]==Object_Colour.Fire.value)):#
+                        self.gridMap.map[i].fill_cell(Object_Colour.Fire.name)
 
-                # If cell is empty and colour palete is red, change cell state to not empty and color to blue.
-                if ((self.gridMap.map[i].empty == True) and (self.colours[self.ics]==Object_Colour.Fire.value)):#
-                    self.gridMap.map[i].fill_cell(Object_Colour.Fire.name)
+                    # If cell is not empty and colour palete is white, change cell state to empty.
+                    if (self.gridMap.map[i].empty == False) and (self.colours[self.ics]==UNFILLED):
+                        self.gridMap.map[i].empty_cell()
+                        print(self.gridMap.map[i].empty)
+                    
+                    self.w.itemconfig(self.gridMap.map[i].tkinterCellIndex, fill=self.colours[self.ics])
 
-                # If cell is not empty and colour palete is white, change cell state to empty.
-                if (self.gridMap.map[i].empty == False) and (self.colours[self.ics]==UNFILLED):
-                    self.gridMap.map[i].empty_cell()
-                    print(self.gridMap.map[i].empty)
-                
-                self.w.itemconfig(self.gridMap.map[i].tkinterCellIndex, fill=self.colours[self.ics])
-                print(self.gridMap.map[i].border)
-                print("Border edge: ", self.gridMap.map[i].border_edge)
-                print("first_column: ", self.gridMap.map[i].first_column)
-                print("last_column: ", self.gridMap.map[i].last_column)
-                print("First row: ", self.gridMap.map[i].first_row)
-                print("Last row: ",self.gridMap.map[i].last_row)
+                    print(self.gridMap.map[i].border)
+                    print("Border edge: ", self.gridMap.map[i].border_edge)
+                    print("first_column: ", self.gridMap.map[i].first_column)
+                    print("last_column: ", self.gridMap.map[i].last_column)
+                    print("First row: ", self.gridMap.map[i].first_row)
+                    print("Last row: ",self.gridMap.map[i].last_row)
+
+                if self.inspect == True:
+                    print("Border edge: ", self.gridMap.map[i].border_edge)
+                    self.writeTextBox("Border edge: "+str(self.gridMap.map[i].border_edge))
+                    print("first_column: ", self.gridMap.map[i].first_column)
+                    self.writeTextBox("first_column: "+str(self.gridMap.map[i].first_column))
+                    print("last_column: ", self.gridMap.map[i].last_column)
+                    self.writeTextBox("last_column: "+str(self.gridMap.map[i].last_column))
+                    print("First row: ", self.gridMap.map[i].first_row)
+                    self.writeTextBox("First row: "+str(self.gridMap.map[i].first_row))
+                    print("Last row: ", self.gridMap.map[i].last_row)
+                    self.writeTextBox("Last row: "+str(self.gridMap.map[i].last_row))
+                    print("pos_x ", self.gridMap.map[i].pos_x)
+                    self.writeTextBox("pos_x: "+str(self.gridMap.map[i].pos_x))
+                    print("pos_z ", self.gridMap.map[i].pos_z)
+                    self.writeTextBox("pos_z: "+str(self.gridMap.map[i].pos_z))
+                    print("1D Pose ", self.gridMap.map[i].tkinterCellIndex)
+                    self.writeTextBox("1D Pose: "+str(self.gridMap.map[i].tkinterCellIndex))
+                    print("colour", self.gridMap.map[i].colour)
+                    self.writeTextBox("colour: "+str(self.gridMap.map[i].colour))
+                    print("lighting_condition", self.gridMap.map[i].lighting_condition)
+                    self.writeTextBox("lighting_condition: "+str(self.gridMap.map[i].lighting_condition))
+                    try:
+                        print("Object type", self.gridMap.map[i].object.objectType)
+                        self.writeTextBox("Object type: "+str(self.gridMap.map[i].object.objectType))
+                    except:
+                        pass
         # Bind the grid click callback function to the left mouse button
         # press event on the grid canvas.
         self.w.bind('<ButtonPress-1>', w_click_callback)
@@ -172,6 +202,12 @@ class GridApp:
         self.ics = i
         self.palette_canvas.itemconfig(self.palette_rects[self.ics],
                                        outline='black', width=5)
+        self.inspect = False
+
+    def inspect_cell(self):
+        print("Cell properties: ")
+        if self.inspect == False:
+            self.inspect = True
 
     def openNewWindow(self, master, c_width, palette_height,frame,robot):
         newWindow = Toplevel(master)
@@ -214,8 +250,8 @@ class GridApp:
         b_right = Button(labelframe2, text='RIGHT', command = lambda: robot.moveRight(get_index()))
         b_right.pack(side=RIGHT, padx=pad, pady=pad)
 
-        b_reset = Button(labelframe2, text='RESET')
-        b_reset.pack(side=RIGHT, padx=pad, pady=pad)
+        b_inspect = Button(labelframe2, text='INSPECT', command = self.inspect_cell)
+        b_inspect.pack(side=RIGHT, padx=pad, pady=pad)
 
         def get_index(*arg):
             print("combo: ", str(var.get()))

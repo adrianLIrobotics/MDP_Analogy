@@ -25,6 +25,7 @@ class Cell:
         self.first_column = self.check_first_column()
         self.last_column = self.check_last_column()
         self.first_row = self.check_if_first_row()
+        self.lighting_condition = 0
 
     '''
     Constructor for a cell with no object. Empty white cell.
@@ -43,6 +44,7 @@ class Cell:
         self.last_column = self.check_last_column()
         self.first_row = self.check_if_first_row()
         self.last_row = self.check_if_last_row()
+        self.lighting_condition = 0
        
     def update_reward(self):
         self.calculate_reward()
