@@ -103,6 +103,7 @@ class robotModel:
             if (gridMap.map[val].empty):
                     gridMap.map[val].empty = False
                     gridMap.map[val].object = self#Object_Colour.Robot.name
+                    gridMap.map[val].object.objectType = Object_Colour.Robot.name
                     # Put the color of the robot in the canvas.
                     gridMap.canvas.itemconfig(gridMap.map[val].tkinterCellIndex, fill=Object_Colour.Robot.value)
                     self.gridPosition = val
@@ -187,6 +188,10 @@ class robotModel:
         except:
             pass
         self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition)
+        # Update new cell with object type robot and old cell of type #fff
+        self.gridMap.map[newPosition].object = self
+        self.gridMap.map[newPosition].object.objectType = Object_Colour.Robot.name
+
 
     '''
     Control command to move the robot in the down direction with
@@ -268,6 +273,9 @@ class robotModel:
         except:
             pass
         self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition)
+        # Update new cell with object type robot and old cell of type #fff
+        self.gridMap.map[newPosition].object = self
+        self.gridMap.map[newPosition].object.objectType = Object_Colour.Robot.name
 
     '''
     Control command to move the robot in the left direction with
@@ -350,6 +358,9 @@ class robotModel:
         except:
             pass
         self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition)
+        # Update new cell with object type robot and old cell of type #fff
+        self.gridMap.map[newPosition].object = self
+        self.gridMap.map[newPosition].object.objectType = Object_Colour.Robot.name
 
     '''
     Control command to move the robot in the right direction with
@@ -433,6 +444,9 @@ class robotModel:
         except:
             pass
         self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition)
+        # Update new cell with object type robot and old cell of type #fff
+        self.gridMap.map[newPosition].object = self
+        self.gridMap.map[newPosition].object.objectType = Object_Colour.Robot.name
 
     '''
     Get number of objects detected and check if goal found.

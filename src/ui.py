@@ -41,6 +41,33 @@ class GridApp:
         self.num_observation_value.delete(1.0,END)
         self.num_observation_value.insert(END, str(num_object_detected))
 
+    def show_cells_information(self, i):
+        print("Border edge: ", self.gridMap.map[i].border_edge)
+        self.writeTextBox("Border edge: "+str(self.gridMap.map[i].border_edge))
+        print("first_column: ", self.gridMap.map[i].first_column)
+        self.writeTextBox("first_column: "+str(self.gridMap.map[i].first_column))
+        print("last_column: ", self.gridMap.map[i].last_column)
+        self.writeTextBox("last_column: "+str(self.gridMap.map[i].last_column))
+        print("First row: ", self.gridMap.map[i].first_row)
+        self.writeTextBox("First row: "+str(self.gridMap.map[i].first_row))
+        print("Last row: ", self.gridMap.map[i].last_row)
+        self.writeTextBox("Last row: "+str(self.gridMap.map[i].last_row))
+        print("pos_x ", self.gridMap.map[i].pos_x)
+        self.writeTextBox("pos_x: "+str(self.gridMap.map[i].pos_x))
+        print("pos_z ", self.gridMap.map[i].pos_z)
+        self.writeTextBox("pos_z: "+str(self.gridMap.map[i].pos_z))
+        print("1D Pose ", self.gridMap.map[i].tkinterCellIndex)
+        self.writeTextBox("1D Pose: "+str(self.gridMap.map[i].tkinterCellIndex))
+        print("colour", self.gridMap.map[i].colour)
+        self.writeTextBox("colour: "+str(self.gridMap.map[i].colour))
+        print("lighting_condition", self.gridMap.map[i].lighting_condition)
+        self.writeTextBox("lighting_condition: "+str(self.gridMap.map[i].lighting_condition))
+        try:
+            print("Object type", self.gridMap.map[i].object.objectType)
+            self.writeTextBox("Object type: "+str(self.gridMap.map[i].object.objectType))
+        except:
+            pass
+
     '''
     Update robot reward value
     '''
@@ -165,31 +192,8 @@ class GridApp:
                     print("Last row: ",self.gridMap.map[i].last_row)
 
                 if self.inspect == True:
-                    print("Border edge: ", self.gridMap.map[i].border_edge)
-                    self.writeTextBox("Border edge: "+str(self.gridMap.map[i].border_edge))
-                    print("first_column: ", self.gridMap.map[i].first_column)
-                    self.writeTextBox("first_column: "+str(self.gridMap.map[i].first_column))
-                    print("last_column: ", self.gridMap.map[i].last_column)
-                    self.writeTextBox("last_column: "+str(self.gridMap.map[i].last_column))
-                    print("First row: ", self.gridMap.map[i].first_row)
-                    self.writeTextBox("First row: "+str(self.gridMap.map[i].first_row))
-                    print("Last row: ", self.gridMap.map[i].last_row)
-                    self.writeTextBox("Last row: "+str(self.gridMap.map[i].last_row))
-                    print("pos_x ", self.gridMap.map[i].pos_x)
-                    self.writeTextBox("pos_x: "+str(self.gridMap.map[i].pos_x))
-                    print("pos_z ", self.gridMap.map[i].pos_z)
-                    self.writeTextBox("pos_z: "+str(self.gridMap.map[i].pos_z))
-                    print("1D Pose ", self.gridMap.map[i].tkinterCellIndex)
-                    self.writeTextBox("1D Pose: "+str(self.gridMap.map[i].tkinterCellIndex))
-                    print("colour", self.gridMap.map[i].colour)
-                    self.writeTextBox("colour: "+str(self.gridMap.map[i].colour))
-                    print("lighting_condition", self.gridMap.map[i].lighting_condition)
-                    self.writeTextBox("lighting_condition: "+str(self.gridMap.map[i].lighting_condition))
-                    try:
-                        print("Object type", self.gridMap.map[i].object.objectType)
-                        self.writeTextBox("Object type: "+str(self.gridMap.map[i].object.objectType))
-                    except:
-                        pass
+                    self.show_cells_information(i)
+
         # Bind the grid click callback function to the left mouse button
         # press event on the grid canvas.
         self.w.bind('<ButtonPress-1>', w_click_callback)

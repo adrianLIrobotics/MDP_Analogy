@@ -44,7 +44,7 @@ class Cell:
         self.last_column = self.check_last_column()
         self.first_row = self.check_if_first_row()
         self.last_row = self.check_if_last_row()
-        self.lighting_condition = 0
+        self.lighting_condition = 100
        
     def update_reward(self):
         self.calculate_reward()
