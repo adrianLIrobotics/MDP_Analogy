@@ -1,3 +1,36 @@
+# Config of simulation:
+
+
+[map]
+
+mapSize = 6
+
+mapMaxSize = 50 
+
+randomMap = 1
+
+loadMap = experience1
+
+[robot]
+
+initial_pose_x = random
+
+initial_pose_z = random
+
+number_of_actions = 9
+
+sensor_noise = 0
+
+[general]
+
+record_robot_path = Yes
+
+record_state_history = Yes
+
+___
+
+
+
 # MDP 1+1 Scenario:
 
 ### Scenario:
