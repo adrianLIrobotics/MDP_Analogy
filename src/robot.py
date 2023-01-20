@@ -20,6 +20,7 @@ class robotModel:
             x,z = self.initialPoseRandom(mapSize,gridMap) 
         else:
            x,z = self.manual_robot_pose(int(initial_pose_x),int(initial_pose_z),gridMap)
+           #x += 1 # Off set 
 
         self.pos_xt = x # Position in x axes at time t.
         self.pos_zt = z # Position in z axes at time t.
@@ -32,9 +33,10 @@ class robotModel:
         self.found_goal = False # By default the robot hasnt found the goal.
         self.localized = localized
         self.localized_believe = 0
-        self.laserRange = 3
-        self.detectedObjects = self.num_objects_detected()
-        self.gridRobot1DPosition = utilities.get_state_from_pos([self.pos_xt,self.pos_zt])
+        self.laserRange = 1
+
+        #self.gridRobot1DPosition = utilities.get_state_from_pos([self.pos_xt,self.pos_zt])
+        self.gridRobot1DPosition = utilities.get_state_from_pos([self.pos_zt,self.pos_xt])# x 2, z 0   
         self.gridMap = gridMap
         self.mapSize = mapSize
         self.collided = False
@@ -54,9 +56,7 @@ class robotModel:
         self.actions = [moveUpOne, moveUpTwo, moveDownOne, moveDownTwo, moveLeftOne, moveLeftTwo, moveRightOne, moveRightTWo, stay]
 
         # Update Control panel with initial data of robot:
-
-    def return_num_detected_objects(self):
-        return self.detectedObjects
+    
         
     def return_robot_actions_id(self):
         return self.actions
@@ -191,7 +191,10 @@ class robotModel:
         # Update new cell with object type robot and old cell of type #fff
         self.gridMap.map[newPosition].object = self
         self.gridMap.map[newPosition].object.objectType = Object_Colour.Robot.name
-
+        print("self.pos_zt " + str(self.pos_zt))
+        print("self.pos_xt " + str(self.pos_xt))
+        self.gridRobot1DPosition = utilities.get_state_from_pos([self.pos_zt,self.pos_xt])
+        print("now good gridRobot1DPosition" + str(self.gridRobot1DPosition))
 
     '''
     Control command to move the robot in the down direction with
@@ -454,15 +457,23 @@ class robotModel:
     def num_objects_detected(self):
         num_objects_detected = 0
         # Check up
-        for x in range(1, self.laserRange):
+        for x in range(1, self.laserRange + 1):
+            print("x: " +str(x))
+            print("self.gridRobot1DPosition " +str(self.gridRobot1DPosition))
+            print("self.mapSize " + str(self.mapSize))
+            print("cal: ", str(self.gridRobot1DPosition-self.mapSize*x))
             try:
+                if (self.gridRobot1DPosition-self.mapSize*x) < 0: # Out of bounds
+                    break
                 if self.gridMap.map[self.gridRobot1DPosition-self.mapSize*x].empty == False:
                     num_objects_detected += 1
+                    print("found object in front")
                     break # If there are further objects behind the one detected by robot, they will not be seen.
                 if self.gridMap.map[self.gridRobot1DPosition-self.mapSize*x].colour == Object_Colour.Goal.value:
                     self.found_goal = True
                     self.master.writeTextBox("Goal found!")
             except:
+                print("exception: ")
                 pass
         # Check down
         for x in range(1, self.laserRange):
@@ -497,6 +508,7 @@ class robotModel:
                     self.master.writeTextBox("Goal found!")
             except:
                 pass
+        print("num_objects_detected: ",num_objects_detected)
         return num_objects_detected
 
 

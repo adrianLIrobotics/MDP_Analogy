@@ -56,12 +56,14 @@ class GridApp:
         self.writeTextBox("pos_x: "+str(self.gridMap.map[i].pos_x))
         print("pos_z ", self.gridMap.map[i].pos_z)
         self.writeTextBox("pos_z: "+str(self.gridMap.map[i].pos_z))
-        print("1D Pose ", self.gridMap.map[i].tkinterCellIndex)
-        self.writeTextBox("1D Pose: "+str(self.gridMap.map[i].tkinterCellIndex))
+        print("1D Pose ", self.gridMap.map[i].tkinterCellIndex-1)
+        self.writeTextBox("1D Pose: "+str(self.gridMap.map[i].tkinterCellIndex-1))
         print("colour", self.gridMap.map[i].colour)
         self.writeTextBox("colour: "+str(self.gridMap.map[i].colour))
         print("lighting_condition", self.gridMap.map[i].lighting_condition)
         self.writeTextBox("lighting_condition: "+str(self.gridMap.map[i].lighting_condition))
+        print("Cell empty", self.gridMap.map[i].empty)
+        self.writeTextBox("Cell empty: "+str(self.gridMap.map[i].empty))
         try:
             print("Object type", self.gridMap.map[i].object.objectType)
             self.writeTextBox("Object type: "+str(self.gridMap.map[i].object.objectType))
@@ -163,7 +165,7 @@ class GridApp:
                 if self.inspect == False:
                     print("X pos: ",str(self.gridMap.map[i].pos_x))
                     print("Z pos: ",str(self.gridMap.map[i].pos_z))
-                    print("1D pos: ", str(self.gridMap.map[i].tkinterCellIndex))
+                    print("1D pos: ", str(self.gridMap.map[i].tkinterCellIndex)) # 1
 
                     # If cell is empty and colour palete is black, change cell state to not empty and color to black.
                     if ((self.gridMap.map[i].empty == True) and (self.colours[self.ics]==Object_Colour.Wall.value)):#
@@ -367,7 +369,7 @@ class GridApp:
         self.debug.pack()
 
         # Update control grid with initial conditions:
-        self.update_control_panel(self.robot.return_num_detected_objects(), self.robot.pos_zt, self.robot.gridRobot1DPosition)
+        self.update_control_panel(self.robot.num_objects_detected(), self.robot.pos_zt, self.robot.gridRobot1DPosition)
 
 '''    
 # Get the grid size from the command line, if provided
