@@ -4,6 +4,8 @@ from colour import Object_Colour
 from configparser import ConfigParser
 import pathlib
 import utilities
+import logging
+from datetime import date
 
 class robotModel:
 
@@ -14,6 +16,10 @@ class robotModel:
         config.read(config_path)
         initial_pose_x = config['robot']['initial_pose_x']
         initial_pose_z = config['robot']['initial_pose_z']
+
+        #Configure logger
+        today = date.today()
+        logging.basicConfig(filename='logs/'+str(today)+'.log', encoding='utf-8', level=logging.DEBUG)
 
         # Configure robot initial position.
         if (initial_pose_x == 'random') and (initial_pose_z == 'random'):
@@ -83,7 +89,7 @@ class robotModel:
     def coordinateTranslationTo1D(self, x_pos, z_pos):
         '''Convert 2D position array to 1D position array for TKinter canvas'''
         position1D = z_pos * (self.mapSize) + x_pos
-        print("Translation: ",position1D)
+        logging.debug("Translation: " + str(position1D))
         return position1D
 
     def robotkinematicEquation(self):
@@ -101,14 +107,14 @@ class robotModel:
             val = random.randint(0, mapSize*mapSize-1)
             
             if (gridMap.map[val].empty):
-                    gridMap.map[val].empty = False
-                    gridMap.map[val].object = self#Object_Colour.Robot.name
-                    gridMap.map[val].object.objectType = Object_Colour.Robot.name
-                    # Put the color of the robot in the canvas.
-                    gridMap.canvas.itemconfig(gridMap.map[val].tkinterCellIndex, fill=Object_Colour.Robot.value)
-                    self.gridPosition = val
-                    print(gridMap.map[val].pos_x,gridMap.map[val].pos_z)
-                    return gridMap.map[val].pos_x,gridMap.map[val].pos_z
+                gridMap.map[val].empty = False
+                gridMap.map[val].object = self#Object_Colour.Robot.name
+                gridMap.map[val].object.objectType = Object_Colour.Robot.name
+                # Put the color of the robot in the canvas.
+                gridMap.canvas.itemconfig(gridMap.map[val].tkinterCellIndex, fill=Object_Colour.Robot.value)
+                self.gridPosition = val
+                logging.debug("Robot init pose: "+gridMap.map[val].pos_x,gridMap.map[val].pos_z)
+                return gridMap.map[val].pos_x,gridMap.map[val].pos_z
 
     def gps(self):
         """Noisy gps position readings"""
@@ -187,7 +193,7 @@ class robotModel:
             self.master.updateRewardTextBox(self.cumulative_reward)
         except:
             pass
-        self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition)
+        
         # Update new cell with object type robot and old cell of type #fff
         self.gridMap.map[newPosition].object = self
         self.gridMap.map[newPosition].object.objectType = Object_Colour.Robot.name
@@ -195,6 +201,7 @@ class robotModel:
         print("self.pos_xt " + str(self.pos_xt))
         self.gridRobot1DPosition = utilities.get_state_from_pos([self.pos_zt,self.pos_xt])
         print("now good gridRobot1DPosition" + str(self.gridRobot1DPosition))
+        self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition)
 
     '''
     Control command to move the robot in the down direction with
@@ -275,10 +282,16 @@ class robotModel:
             self.master.updateRewardTextBox(self.cumulative_reward)
         except:
             pass
-        self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition)
+        
         # Update new cell with object type robot and old cell of type #fff
         self.gridMap.map[newPosition].object = self
         self.gridMap.map[newPosition].object.objectType = Object_Colour.Robot.name
+        print("self.pos_zt " + str(self.pos_zt))
+        print("self.pos_xt " + str(self.pos_xt))
+        self.gridRobot1DPosition = utilities.get_state_from_pos([self.pos_zt,self.pos_xt])
+        print("1. now good gridRobot1DPosition " + str(self.gridRobot1DPosition))
+
+        self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition)
 
     '''
     Control command to move the robot in the left direction with
@@ -455,19 +468,20 @@ class robotModel:
     Get number of objects detected and check if goal found.
     '''
     def num_objects_detected(self):
+        print("2. self.gridRobot1DPosition "+ str(self.gridRobot1DPosition))
         num_objects_detected = 0
         # Check up
         for x in range(1, self.laserRange + 1):
-            print("x: " +str(x))
-            print("self.gridRobot1DPosition " +str(self.gridRobot1DPosition))
-            print("self.mapSize " + str(self.mapSize))
-            print("cal: ", str(self.gridRobot1DPosition-self.mapSize*x))
+            logging.debug("x: " +str(x))
+            logging.debug("self.gridRobot1DPosition " +str(self.gridRobot1DPosition))
+            logging.debug("self.mapSize " + str(self.mapSize))
+            logging.debug("calculation: "+ str(self.gridRobot1DPosition-self.mapSize*x))
             try:
                 if (self.gridRobot1DPosition-self.mapSize*x) < 0: # Out of bounds
                     break
                 if self.gridMap.map[self.gridRobot1DPosition-self.mapSize*x].empty == False:
                     num_objects_detected += 1
-                    print("found object in front")
+                    logging.debug("found object in front")
                     break # If there are further objects behind the one detected by robot, they will not be seen.
                 if self.gridMap.map[self.gridRobot1DPosition-self.mapSize*x].colour == Object_Colour.Goal.value:
                     self.found_goal = True
@@ -475,6 +489,7 @@ class robotModel:
             except:
                 print("exception: ")
                 pass
+        '''
         # Check down
         for x in range(1, self.laserRange):
             try:
@@ -509,6 +524,7 @@ class robotModel:
             except:
                 pass
         print("num_objects_detected: ",num_objects_detected)
+        '''
         return num_objects_detected
 
 
