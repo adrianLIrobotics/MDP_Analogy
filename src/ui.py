@@ -8,6 +8,10 @@ from map import Map
 from policy import PolicyModel
 from mdp import Mdp
 from tkinter import ttk
+from matplotlib import pyplot as plt
+from threading import Thread
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 
 # A simple colouring grid app, with load/save functionality.
 # Christian Hill, August 2018.
@@ -42,6 +46,19 @@ class GridApp:
         self.num_observation_value.insert(END, str(num_object_detected))
         self.robot_real_pos_z_value.delete(1.0, END)
         self.robot_real_pos_z_value.insert(END, str(z_real_pose))
+
+    '''
+    Mathplot historical robot position
+    '''
+    def plot_robot_x_pose(self, robot):
+        time = []
+        count = 0
+        for x in robot.pos_x:
+            time.append(count)
+            count +=1
+        
+        plt.plot(robot.pos_x, time)
+        plt.title("Robot x pose historical data")
 
     def show_cells_information(self, i):
         print("Border edge: ", self.gridMap.map[i].border_edge)
@@ -85,11 +102,16 @@ class GridApp:
     def writeTextBox(self,text):
         self.debug.insert(END,str(text)+"\n")
 
+    def create_empty_figure(self):
+        # Create empty matplot figure
+        #self.fig, [self.ax, self.ax1] = plt.subplots(2, 1)
+        fig = plt.figure()
+        plt.show()
+
     def __init__(self, master, n, width=1000, height=1500, pad=5): # width=600, height=600
         """Initialize a grid and the Tk Frame on which it is rendered."""
-        
         self.inspect = False
-
+        
         # Number of cells in each dimension.
         self.n = n
         # Some dimensions for the App in pixels.
@@ -121,18 +143,14 @@ class GridApp:
 
         # Add MDP
         Mdp(n, self.robot, self.gridMap)
-        #policy_object = PolicyModel(self.gridMap.mapSize**2,self.robot)
+
+        self.openPlotWindow(master, self.robot)
 
         self.openNewWindow(master,c_width,palette_height,frame,self.robot)
 
         self.ics = 9#0
         self.select_colour(self.ics)
-    
-        #frame.bind("<Key>",self.key_pressed)
-        #input buttom
-        #debug_window = Text(frame,height = 1.5,width = 5)
-        #debug_window.pack( side= BOTTOM, padx=pad, pady=pad)# , expand= True
-        #debug_window.place(relx=0.8, rely=0.2, relwidth=0.5, anchor='nw')
+
 
         def palette_click_callback(event):
             """Function called when someone clicks on the palette canvas."""
@@ -217,9 +235,31 @@ class GridApp:
         if self.inspect == False:
             self.inspect = True
 
+    def openPlotWindow(self, master, robot):
+        newPlotWindow = Toplevel(master)
+        newPlotWindow.title("Plot window")
+        newPlotWindow.geometry("460x500")
+        fig = Figure(figsize = (5, 5), dpi = 100)
+        y = [i**2 for i in range(101)]
+        # adding the subplot
+        plot1 = fig.add_subplot(111)
+        # plotting the graph
+        plot1.plot(y)
+        # creating the Tkinter canvas containing the Matplotlib figure
+        canvas = FigureCanvasTkAgg(fig, master = newPlotWindow)  
+        canvas.draw()
+        # placing the canvas on the Tkinter window
+        canvas.get_tk_widget().pack()
+        # creating the Matplotlib toolbar
+        toolbar = NavigationToolbar2Tk(canvas, newPlotWindow)
+        toolbar.update()
+        # placing the toolbar on the Tkinter window
+        canvas.get_tk_widget().pack()
+  
+
     def openNewWindow(self, master, c_width, palette_height,frame,robot):
         newWindow = Toplevel(master)
-        newWindow.title("New Window")
+        newWindow.title("Control Window")
         newWindow.geometry("460x500") # newWindow.geometry("400x50")  
         p_pad = 5
         pad = 5
@@ -372,22 +412,3 @@ class GridApp:
 
         # Update control grid with initial conditions:
         self.update_control_panel(self.robot.num_objects_detected(), self.robot.pos_zt, self.robot.gridRobot1DPosition, self.robot.pos_xt)
-
-'''    
-# Get the grid size from the command line, if provided
-try:
-    n = int(sys.argv[1])
-except IndexError:
-    n = DEFAULT_N
-except ValueError:
-    print('Usage: {} <n>\nwhere n is the grid size.'.format(sys.argv[0]))
-    sys.exit(1)
-if n < 1 or n > MAX_N:
-    print('Minimum n is 1, Maximum n is {}'.format(MAX_N))
-    sys.exit(1)
-
-# Set the whole thing running
-root = Tk()
-grid = GridApp(root, n, 600, 600, 5)
-root.mainloop()
-'''

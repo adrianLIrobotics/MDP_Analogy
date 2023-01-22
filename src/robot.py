@@ -7,6 +7,8 @@ import utilities
 import logging
 from datetime import date
 
+# https://howtothink.readthedocs.io/en/latest/PvL_H.html
+
 class robotModel:
 
     def __init__(self,localized,mapSize,gridMap,master):
@@ -62,7 +64,6 @@ class robotModel:
         self.actions = [moveUpOne, moveUpTwo, moveDownOne, moveDownTwo, moveLeftOne, moveLeftTwo, moveRightOne, moveRightTWo, stay]
 
         # Update Control panel with initial data of robot:
-    
         
     def return_robot_actions_id(self):
         return self.actions
@@ -119,8 +120,7 @@ class robotModel:
     def gps(self):
         """Noisy gps position readings"""
         noise_std=0.1
-        return self.pos_xt + randn() * noise_std, self.pos_zt + randn() * noise_std
-        #return self.pos_xt,self.pos_zt
+        return [self.pos_xt + randn() * noise_std, self.pos_zt + randn() * noise_std]
 
     def imu(self):
         """Noisy velocity readings"""
