@@ -373,10 +373,15 @@ class robotModel:
             self.master.updateRewardTextBox(self.cumulative_reward)
         except:
             pass
-        self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition)
+        
         # Update new cell with object type robot and old cell of type #fff
         self.gridMap.map[newPosition].object = self
         self.gridMap.map[newPosition].object.objectType = Object_Colour.Robot.name
+        print("self.pos_zt " + str(self.pos_zt))
+        print("self.pos_xt " + str(self.pos_xt))
+        self.gridRobot1DPosition = utilities.get_state_from_pos([self.pos_zt,self.pos_xt])
+        print("1. now good gridRobot1DPosition " + str(self.gridRobot1DPosition))
+        self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition)
 
     '''
     Control command to move the robot in the right direction with
@@ -459,10 +464,15 @@ class robotModel:
             self.master.updateRewardTextBox(self.cumulative_reward)
         except:
             pass
-        self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition)
+        
         # Update new cell with object type robot and old cell of type #fff
         self.gridMap.map[newPosition].object = self
         self.gridMap.map[newPosition].object.objectType = Object_Colour.Robot.name
+        print("self.pos_zt " + str(self.pos_zt))
+        print("self.pos_xt " + str(self.pos_xt))
+        self.gridRobot1DPosition = utilities.get_state_from_pos([self.pos_zt,self.pos_xt])
+        print("1. now good gridRobot1DPosition " + str(self.gridRobot1DPosition))
+        self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition)
 
     '''
     Get number of objects detected and check if goal found.
@@ -489,9 +499,9 @@ class robotModel:
             except:
                 print("exception: ")
                 pass
-        '''
+        
         # Check down
-        for x in range(1, self.laserRange):
+        for x in range(1, self.laserRange + 1):
             try:
                 if self.gridMap.map[self.gridRobot1DPosition+self.mapSize*x].empty == False:
                     num_objects_detected += 1
@@ -502,7 +512,7 @@ class robotModel:
             except:
                 pass
         # Check right
-        for x in range(1, self.laserRange):
+        for x in range(1, self.laserRange + 1):
             try:
                 if self.gridMap.map[self.gridRobot1DPosition+x].empty == False:
                     num_objects_detected += 1
@@ -513,7 +523,7 @@ class robotModel:
             except:
                 pass
         # Check left
-        for x in range(1, self.laserRange):
+        for x in range(1, self.laserRange + 1):
             try:
                 if self.gridMap.map[self.gridRobot1DPosition-x].empty == False:
                     num_objects_detected += 1
@@ -524,7 +534,7 @@ class robotModel:
             except:
                 pass
         print("num_objects_detected: ",num_objects_detected)
-        '''
+        
         return num_objects_detected
 
 
