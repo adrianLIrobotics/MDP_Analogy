@@ -45,10 +45,13 @@ class Map:
                 cell = Cell(ix,iy,True,rect)
                 self.map.append(cell)#gridMap.map.append(rect)
         
+         # Load a custom map at initialization.
         if loadMap != '':
-            # Load a custom map at initialization. 
-            pass
-        
+            try:
+                self.loadMapSilently()
+            except Exception as e:
+                print(e)
+
         # Spawn random goal if no map is provided at init time.
         if loadMap == '':
             self.spawn_random_goal(self.mapSize,self)
@@ -117,6 +120,48 @@ class Map:
                 self.canvas.itemconfig(cell.tkinterCellIndex, fill=UNFILLED)
                 cell.empty = True
                 cell.object= None
+
+    """Load a map at init time"""
+    def loadMapSilently(self):
+        print("Loading map silently...")
+        
+        def _coords_to_index(coords):
+            """
+            Translate from the provided coordinate (e.g. 'A1') to an index
+            into the grid cells list.
+            """
+            ix = ord(coords[0])-65
+            iy = self.mapSize - int(coords[1:])
+            return iy*self.mapSize + ix
+
+        #Clear the map
+        self.clearMap()
+        # Open the file and read the image, setting the cell colours as we go.
+        with open("maps/"+loadMap) as fi:
+            for line in fi.readlines():
+                line = line.strip()
+                if line in colours:
+                    this_colour = line
+                    continue
+                if not line or line.startswith('-'):
+                    continue
+                coords = line.split(',')
+                if not coords:
+                    continue
+                for coord in coords:
+                    i = _coords_to_index(coord.strip())
+                    self.canvas.itemconfig(self.map[i].tkinterCellIndex, fill=this_colour)
+
+                    # Attach object to the cell if it is not white
+                    if this_colour == Object_Colour.Wall.value:
+                        self.map[i].fill_cell(Object_Colour.Wall.name)
+
+                    if this_colour == Object_Colour.Fire.value:
+                        self.map[i].fill_cell(Object_Colour.Fire.name)
+
+                    if this_colour == Object_Colour.Water.value:
+                        self.map[i].fill_cell(Object_Colour.Water.name)
+
 
     def loadMap(self):
         """Load an image from a provided file."""
