@@ -201,7 +201,7 @@ class robotModel:
         print("self.pos_xt " + str(self.pos_xt))
         self.gridRobot1DPosition = utilities.get_state_from_pos([self.pos_zt,self.pos_xt])
         print("now good gridRobot1DPosition" + str(self.gridRobot1DPosition))
-        self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition)
+        self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition, self.pos_xt)
 
     '''
     Control command to move the robot in the down direction with
@@ -291,7 +291,7 @@ class robotModel:
         self.gridRobot1DPosition = utilities.get_state_from_pos([self.pos_zt,self.pos_xt])
         print("1. now good gridRobot1DPosition " + str(self.gridRobot1DPosition))
 
-        self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition)
+        self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition, self.pos_xt)
 
     '''
     Control command to move the robot in the left direction with
@@ -381,7 +381,7 @@ class robotModel:
         print("self.pos_xt " + str(self.pos_xt))
         self.gridRobot1DPosition = utilities.get_state_from_pos([self.pos_zt,self.pos_xt])
         print("1. now good gridRobot1DPosition " + str(self.gridRobot1DPosition))
-        self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition)
+        self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition, self.pos_xt)
 
     '''
     Control command to move the robot in the right direction with
@@ -472,7 +472,7 @@ class robotModel:
         print("self.pos_xt " + str(self.pos_xt))
         self.gridRobot1DPosition = utilities.get_state_from_pos([self.pos_zt,self.pos_xt])
         print("1. now good gridRobot1DPosition " + str(self.gridRobot1DPosition))
-        self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition)
+        self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition, self.pos_xt)
 
     '''
     Get number of objects detected and check if goal found.

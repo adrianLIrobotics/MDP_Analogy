@@ -33,13 +33,15 @@ class GridApp:
     def clearTextBox(self):
         self.debug.delete(1.0, END)
 
-    def update_control_panel(self,num_object_detected, x_real_pose,oneD_pose_real):
+    def update_control_panel(self,num_object_detected, x_real_pose,oneD_pose_real , z_real_pose):
         self.z_real_pose.delete(1.0,END)
         self.robot_1d_real_pose.delete(1.0,END)
         self.z_real_pose.insert(END, str(x_real_pose))
         self.robot_1d_real_pose.insert(END, str(oneD_pose_real))
         self.num_observation_value.delete(1.0,END)
         self.num_observation_value.insert(END, str(num_object_detected))
+        self.robot_real_pos_z_value.delete(1.0, END)
+        self.robot_real_pos_z_value.insert(END, str(z_real_pose))
 
     def show_cells_information(self, i):
         print("Border edge: ", self.gridMap.map[i].border_edge)
@@ -286,22 +288,22 @@ class GridApp:
         self.robot_1d_real_pose = Text(robot_info,height = 1.5,width = 5)
         self.robot_1d_real_pose.pack( side= LEFT, padx=pad, pady=pad)
 
-        robot_real_pos_z = Label(robot_info, text='Real X pose: ')
-        robot_real_pos_z.pack(side=LEFT, padx=pad, pady=pad)
+        self.robot_real_pos_z = Label(robot_info, text='Real X pose: ')
+        self.robot_real_pos_z.pack(side=LEFT, padx=pad, pady=pad)
 
-        robot_real_pos_z_value = Text(robot_info,height = 1.5,width = 5)
-        robot_real_pos_z_value.pack( side= LEFT, padx=pad, pady=pad)
+        self.robot_real_pos_z_value = Text(robot_info,height = 1.5,width = 5)
+        self.robot_real_pos_z_value.pack( side= LEFT, padx=pad, pady=pad)
 
         robot_estimate_info = LabelFrame(labelframe, text="Robot-estimate-info")
         robot_estimate_info.pack(side=TOP, padx=pad*2, pady=pad)
 
-        localization_label = Label(robot_estimate_info, text='Localization: ')
+        localization_label = Label(robot_estimate_info, text='Nº Observations: ')
         localization_label.pack(side=LEFT, padx=pad, pady=pad)
 
         self.localization_label_value = Text(robot_estimate_info,height = 1.5,width = 5)
         self.localization_label_value.pack( side= RIGHT, padx=pad, pady=pad)
 
-        num_observation_label = Label(robot_estimate_info, text='Nº Observations: ')
+        num_observation_label = Label(robot_estimate_info, text='Localization: ')
         num_observation_label.pack(side=RIGHT, padx=pad, pady=pad)
 
         self.num_observation_value = Text(robot_estimate_info,height = 1.5,width = 5)
@@ -369,7 +371,7 @@ class GridApp:
         self.debug.pack()
 
         # Update control grid with initial conditions:
-        self.update_control_panel(self.robot.num_objects_detected(), self.robot.pos_zt, self.robot.gridRobot1DPosition)
+        self.update_control_panel(self.robot.num_objects_detected(), self.robot.pos_zt, self.robot.gridRobot1DPosition, self.robot.pos_xt)
 
 '''    
 # Get the grid size from the command line, if provided
