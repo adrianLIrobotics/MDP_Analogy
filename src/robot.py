@@ -132,6 +132,10 @@ class robotModel:
     parameter number of steps.
     '''
     def moveUp(self, num_steps):
+        # Update history
+        self.pos_x.append(self.pos_xt)
+        self.pos_z.append(self.pos_zt)
+
         oldPosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt)
         collidedPlusOnePosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt-1)
         if (num_steps == 1):
@@ -164,9 +168,6 @@ class robotModel:
                 self.gridMap.canvas.itemconfig(self.gridMap.map[newPosition].tkinterCellIndex, fill=Object_Colour.Robot.value)
                 # Update robot internal pose
                 self.pos_zt -= 1
-                # Update history
-                self.pos_x.append(self.pos_xt)
-                self.pos_z.append(self.pos_zt)
         else:
             if (num_steps == 1):
                 self.cumulative_reward += self.gridMap.map[newPosition].reward
@@ -176,9 +177,6 @@ class robotModel:
                 self.pos_zt -= 2
 
             self.collided = False
-            # Append to historical path
-            self.pos_x.append(self.pos_xt)
-            self.pos_z.append(self.pos_zt)
 
             # Remove robot from canvas actual position
             self.gridMap.canvas.itemconfig(self.gridMap.map[oldPosition].tkinterCellIndex, fill='#fff')
@@ -191,6 +189,7 @@ class robotModel:
         # Update control panel UI
         try:
             self.master.updateRewardTextBox(self.cumulative_reward)
+            
         except:
             pass
         
@@ -202,7 +201,8 @@ class robotModel:
         self.gridRobot1DPosition = utilities.get_state_from_pos([self.pos_zt,self.pos_xt])
         print("now good gridRobot1DPosition" + str(self.gridRobot1DPosition))
         self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition, self.pos_xt)
-
+        print("pos_x "+str(self.pos_x))
+        self.master.updateXPlot(self.pos_x)
     '''
     Control command to move the robot in the down direction with
     parameter number of steps.
