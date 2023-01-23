@@ -201,8 +201,8 @@ class robotModel:
         self.gridRobot1DPosition = utilities.get_state_from_pos([self.pos_zt,self.pos_xt])
         print("now good gridRobot1DPosition" + str(self.gridRobot1DPosition))
         self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition, self.pos_xt)
-        print("pos_x "+str(self.pos_x))
         self.master.updateXPlot(self.pos_x)
+        self.master.updateYPlot(self.pos_z)
     '''
     Control command to move the robot in the down direction with
     parameter number of steps.
@@ -292,6 +292,8 @@ class robotModel:
         print("1. now good gridRobot1DPosition " + str(self.gridRobot1DPosition))
 
         self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition, self.pos_xt)
+        self.master.updateXPlot(self.pos_x)
+        self.master.updateYPlot(self.pos_z)
 
     '''
     Control command to move the robot in the left direction with
@@ -382,6 +384,8 @@ class robotModel:
         self.gridRobot1DPosition = utilities.get_state_from_pos([self.pos_zt,self.pos_xt])
         print("1. now good gridRobot1DPosition " + str(self.gridRobot1DPosition))
         self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition, self.pos_xt)
+        self.master.updateXPlot(self.pos_x)
+        self.master.updateYPlot(self.pos_z)
 
     '''
     Control command to move the robot in the right direction with
@@ -473,7 +477,9 @@ class robotModel:
         self.gridRobot1DPosition = utilities.get_state_from_pos([self.pos_zt,self.pos_xt])
         print("1. now good gridRobot1DPosition " + str(self.gridRobot1DPosition))
         self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition, self.pos_xt)
-
+        self.master.updateXPlot(self.pos_x)
+        self.master.updateYPlot(self.pos_z)
+        
     '''
     Get number of objects detected and check if goal found.
     '''

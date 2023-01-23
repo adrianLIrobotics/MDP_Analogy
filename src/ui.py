@@ -239,12 +239,23 @@ class GridApp:
         try:
             self.plot1.clear()
             self.plot1.plot(x)
+            self.plot1.set_title("x-pose history")
+            self.plot2.set_title("y-pose history")
             self.canvas.draw()
+            
         except Exception as e:
             print(e)
 
-    def updateYPlot(self,y = []):
-        return y
+    def updateYPlot(self,y):
+        try:
+            self.plot2.clear()
+            self.plot2.plot(y)
+            self.plot1.set_title("x-pose history")
+            self.plot2.set_title("y-pose history")
+            self.canvas.draw()
+            
+        except Exception as e:
+            print(e)
 
     def openPlotWindow(self, master, robot):
         self.newPlotWindow = Toplevel(master)
