@@ -235,10 +235,11 @@ class GridApp:
         if self.inspect == False:
             self.inspect = True
 
-    def updateXPlot(self,x):
+    def updateXPlot(self,x, x_noise):
         try:
             self.plot1.clear()
             self.plot1.plot(x)
+            self.plot1.plot(x_noise)
             self.plot1.set_title("x-pose history")
             self.plot2.set_title("y-pose history")
             self.canvas.draw()
@@ -246,10 +247,11 @@ class GridApp:
         except Exception as e:
             print(e)
 
-    def updateYPlot(self,y):
+    def updateYPlot(self,y, Y_noise):
         try:
             self.plot2.clear()
             self.plot2.plot(y)
+            self.plot2.plot(Y_noise)
             self.plot1.set_title("x-pose history")
             self.plot2.set_title("y-pose history")
             self.canvas.draw()
@@ -265,7 +267,9 @@ class GridApp:
         #y = [i**2 for i in range(101)]
         #y = [1,2,3,4,5,6,7,20]
         x = []
+        x_noise = []
         y = []
+        Y_noise = []
         # adding the subplot
         self.plot1 = self.fig.add_subplot(311)#311
         self.plot2 = self.fig.add_subplot(313)#312
@@ -274,7 +278,9 @@ class GridApp:
         self.plot2.set_title("y-pose history")
         # plotting the graph
         self.plot1.plot(x)
+        self.plot1.plot(x_noise)
         self.plot2.plot(y)
+        self.plot2.plot(Y_noise)
         # creating the Tkinter canvas containing the Matplotlib figure
         self.canvas = FigureCanvasTkAgg(self.fig, master = self.newPlotWindow)  
         self.canvas.draw()
