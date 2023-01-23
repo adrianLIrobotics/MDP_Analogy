@@ -6,51 +6,51 @@ import pathlib
 import utilities
 import logging
 from datetime import date
+import numpy as np
 
 # https://howtothink.readthedocs.io/en/latest/PvL_H.html
 
 class robotModel:
 
     def __init__(self,localized,mapSize,gridMap,master):
-        # Read configuration file
+
+        '''Read configuration file'''
         config_path = pathlib.Path(__file__).parent.absolute() / "config.ini"
         config = ConfigParser()
         config.read(config_path)
         initial_pose_x = config['robot']['initial_pose_x']
         initial_pose_z = config['robot']['initial_pose_z']
 
-        #Configure logger
+        '''Configure logger'''
         today = date.today()
         logging.basicConfig(filename='logs/'+str(today)+'.log', encoding='utf-8', level=logging.DEBUG)
 
-        # Configure robot initial position.
+        '''Configure robot initial position'''
         if (initial_pose_x == 'random') and (initial_pose_z == 'random'):
             x,z = self.initialPoseRandom(mapSize,gridMap) 
         else:
            x,z = self.manual_robot_pose(int(initial_pose_x),int(initial_pose_z),gridMap)
-           #x += 1 # Off set 
 
-        self.pos_xt = x # Position in x axes at time t.
-        self.pos_zt = z # Position in z axes at time t.
+        self.pos_xt = x # Real Position in x axes at time t.
+        self.pos_zt = z # Real Position in z axes at time t.
         self.vel_xt = 0 # Velocity in x axes at time t.
         self.vel_zt = 0 # Voisy velocity in z axes at time t.
-        self.pos_x = [self.pos_xt] # Noisy historical position in x axes.
-        self.pos_z = [self.pos_zt] # Noisy historical position in z axes.
+        self.pos_x = [self.pos_xt] # Historical Real data in x axes.
+        self.pos_z = [self.pos_zt] # Historical Real data in z axes.
+        self.pos_x_noisy = [self.gaussian_noise(self.pos_xt)] # Noisy historical position in x axes.
+        self.pos_z_noisy = [self.gaussian_noise(self.pos_zt)] # Noisy historical position in z axes.
         self.vel_x = [0] # Noisy historical velocity in x axes.
         self.vel_z = [0] # Noisy historical velocity in z axes.
         self.found_goal = False # By default the robot hasnt found the goal.
-        self.localized = localized
-        self.localized_believe = 0
-        self.laserRange = 1
-
-        #self.gridRobot1DPosition = utilities.get_state_from_pos([self.pos_xt,self.pos_zt])
+        self.localized = localized # True if 90 or more
+        self.localized_believe = 0 # Believe in % over localization
+        self.laserRange = 1 # Robot laser range signal.
         self.gridRobot1DPosition = utilities.get_state_from_pos([self.pos_zt,self.pos_xt])# x 2, z 0   
         self.gridMap = gridMap
         self.mapSize = mapSize
-        self.collided = False
+        self.collided = False # Robot collided with object at time t.
         self.master = master
         self.cumulative_reward = 0
-
         # Id's of robot actions
         moveUpOne = 0
         moveUpTwo = 1
@@ -62,15 +62,19 @@ class robotModel:
         moveRightTWo = 7
         stay = 8
         self.actions = [moveUpOne, moveUpTwo, moveDownOne, moveDownTwo, moveLeftOne, moveLeftTwo, moveRightOne, moveRightTWo, stay]
-
-        # Update Control panel with initial data of robot:
         
+
+    '''Apply gaussian noise over signal'''
+    def gaussian_noise(self, data):
+        gaussian_variance = 0.5 #1
+        noisy_data = round(np.random.normal(data,gaussian_variance,1)[0])
+        return noisy_data
+        
+    '''Return robot action id's'''
     def return_robot_actions_id(self):
         return self.actions
 
-    '''
-    Teleport robot to given coordinates.
-    '''
+    '''Teleport robot to given coordinates''' 
     def manual_robot_pose(self,x,z,gridMap):
         pos_allowed = True
         
@@ -86,27 +90,29 @@ class robotModel:
                 self.gridPosition = val
                 print(gridMap.map[val].pos_x,gridMap.map[val].pos_z)
                 return gridMap.map[val].pos_x,gridMap.map[val].pos_z
-    
+
+    '''Convert 2D position array to 1D position array for TKinter canvas'''
     def coordinateTranslationTo1D(self, x_pos, z_pos):
-        '''Convert 2D position array to 1D position array for TKinter canvas'''
         position1D = z_pos * (self.mapSize) + x_pos
         logging.debug("Translation: " + str(position1D))
         return position1D
 
+    '''Robot kinematic equations'''
     def robotkinematicEquation(self):
         dt = 1
         self.pos_xt = self.pos_xt+(self.vel_xt*dt)
         self.pos_zt = self.pos_zt+(self.vel_zt*dt)
 
+    '''Set robot laser sensor range'''
     def setLaserRange(self,rangeNumber):
         self.laserRange = rangeNumber
     
+    '''Set initial random pose of robot '''
     def initialPoseRandom(self,mapSize,gridMap):
         pos_allowed = True
         while(pos_allowed):
             # Random number from all possible grid positions 
             val = random.randint(0, mapSize*mapSize-1)
-            
             if (gridMap.map[val].empty):
                 gridMap.map[val].empty = False
                 gridMap.map[val].object = self#Object_Colour.Robot.name
@@ -117,13 +123,13 @@ class robotModel:
                 logging.debug("Robot init pose: "+gridMap.map[val].pos_x,gridMap.map[val].pos_z)
                 return gridMap.map[val].pos_x,gridMap.map[val].pos_z
 
+    '''Noisy gps position readings'''
     def gps(self):
-        """Noisy gps position readings"""
         noise_std=0.1
         return [self.pos_xt + randn() * noise_std, self.pos_zt + randn() * noise_std]
 
+    '''Noisy velocity readings'''
     def imu(self):
-        """Noisy velocity readings"""
         noise_std=0.1
         return self.vel_xt + randn() * noise_std, self.vel_zt + randn() * noise_std 
 
@@ -132,9 +138,6 @@ class robotModel:
     parameter number of steps.
     '''
     def moveUp(self, num_steps):
-        # Update history
-        self.pos_x.append(self.pos_xt)
-        self.pos_z.append(self.pos_zt)
 
         oldPosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt)
         collidedPlusOnePosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt-1)
@@ -185,30 +188,33 @@ class robotModel:
             # Move robot in canvas one up.
             self.gridMap.canvas.itemconfig(self.gridMap.map[newPosition].tkinterCellIndex, fill=Object_Colour.Robot.value)
             self.master.writeTextBox("Moved Up "+ str(num_steps))
-
         # Update control panel UI
         try:
             self.master.updateRewardTextBox(self.cumulative_reward)
-            
         except:
             pass
-        
         # Update new cell with object type robot and old cell of type #fff
         self.gridMap.map[newPosition].object = self
         self.gridMap.map[newPosition].object.objectType = Object_Colour.Robot.name
         print("self.pos_zt " + str(self.pos_zt))
         print("self.pos_xt " + str(self.pos_xt))
         self.gridRobot1DPosition = utilities.get_state_from_pos([self.pos_zt,self.pos_xt])
-        print("now good gridRobot1DPosition" + str(self.gridRobot1DPosition))
+        # Update history
+        self.pos_x.append(self.pos_xt)
+        self.pos_z.append(self.pos_zt)
+        # Update noisy history
+        self.pos_x_noisy.append(self.gaussian_noise(self.pos_xt))
+        self.pos_z_noisy.append(self.gaussian_noise(self.pos_zt))
         self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition, self.pos_xt)
-        self.master.updateXPlot(self.pos_x, [])
-        self.master.updateYPlot(self.pos_z, [])
+        self.master.updateXPlot(self.pos_x, self.pos_x_noisy)
+        self.master.updateYPlot(self.pos_z, self.pos_z_noisy)
+
     '''
     Control command to move the robot in the down direction with
     parameter number of steps.
     '''
     def moveDown(self, num_steps):
-        """Move one unit down"""
+
         oldPosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt)
         collidedPlusOnePosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt+1)
         
@@ -251,10 +257,7 @@ class robotModel:
                 # Move robot in canvas one down.
                 self.gridMap.canvas.itemconfig(self.gridMap.map[newPosition].tkinterCellIndex, fill=Object_Colour.Robot.value)
                 # Update robot internal pose
-                self.pos_zt += 1
-                # Update history
-                self.pos_x.append(self.pos_xt)
-                self.pos_z.append(self.pos_zt)
+                self.pos_zt += 1 
 
         # Robot did not collide
         else:
@@ -266,10 +269,6 @@ class robotModel:
                 self.pos_zt += 2
 
             self.collided = False
-            # Append to historical path
-            self.pos_x.append(self.pos_xt)
-            self.pos_z.append(self.pos_zt)
-
             # Remove robot from canvas actual position
             self.gridMap.canvas.itemconfig(self.gridMap.map[oldPosition].tkinterCellIndex, fill='#fff')
             self.gridMap.map[oldPosition].object = None
@@ -289,18 +288,22 @@ class robotModel:
         print("self.pos_zt " + str(self.pos_zt))
         print("self.pos_xt " + str(self.pos_xt))
         self.gridRobot1DPosition = utilities.get_state_from_pos([self.pos_zt,self.pos_xt])
-        print("1. now good gridRobot1DPosition " + str(self.gridRobot1DPosition))
-
+        # Update history
+        self.pos_x.append(self.pos_xt)
+        self.pos_z.append(self.pos_zt)
+        # Update noisy history
+        self.pos_x_noisy.append(self.gaussian_noise(self.pos_xt))
+        self.pos_z_noisy.append(self.gaussian_noise(self.pos_zt))
         self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition, self.pos_xt)
-        self.master.updateXPlot(self.pos_x, [])
-        self.master.updateYPlot(self.pos_z, [])
+        self.master.updateXPlot(self.pos_x, self.pos_x_noisy)
+        self.master.updateYPlot(self.pos_z, self.pos_z_noisy)
 
     '''
     Control command to move the robot in the left direction with
     parameter number of steps.
     '''
     def moveLeft(self, num_steps):
-        """Move left"""
+
         oldPosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt)
         collidedPlusOnePosition = self.coordinateTranslationTo1D(self.pos_xt-1,self.pos_zt)
 
@@ -345,9 +348,6 @@ class robotModel:
                 self.gridMap.canvas.itemconfig(self.gridMap.map[newPosition].tkinterCellIndex, fill=Object_Colour.Robot.value)
                 # Update robot internal pose
                 self.pos_xt -= 1
-                # Update history
-                self.pos_x.append(self.pos_xt)
-                self.pos_z.append(self.pos_zt)
 
         # Robot did not collide
         else:
@@ -359,9 +359,6 @@ class robotModel:
                 self.pos_xt -= 2
 
             self.collided = False
-            # Append to historical path
-            self.pos_x.append(self.pos_xt)
-            self.pos_z.append(self.pos_zt)
 
             # Remove robot from canvas actual position
             self.gridMap.canvas.itemconfig(self.gridMap.map[oldPosition].tkinterCellIndex, fill='#fff')
@@ -382,18 +379,25 @@ class robotModel:
         print("self.pos_zt " + str(self.pos_zt))
         print("self.pos_xt " + str(self.pos_xt))
         self.gridRobot1DPosition = utilities.get_state_from_pos([self.pos_zt,self.pos_xt])
-        print("1. now good gridRobot1DPosition " + str(self.gridRobot1DPosition))
+        # Update history
+        self.pos_x.append(self.pos_xt)
+        print("self.pos_x h " +str(self.pos_x))
+        self.pos_z.append(self.pos_zt)
+        # Update noisy history
+        self.pos_x_noisy.append(self.gaussian_noise(self.pos_xt))
+        print("self.pos_x_noisy h "+str(self.pos_x_noisy))
+        self.pos_z_noisy.append(self.gaussian_noise(self.pos_zt))
+
         self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition, self.pos_xt)
-        self.master.updateXPlot(self.pos_x, [])
-        self.master.updateYPlot(self.pos_z, [])
+        self.master.updateXPlot(self.pos_x, self.pos_x_noisy)
+        self.master.updateYPlot(self.pos_z, self.pos_z_noisy)
 
     '''
     Control command to move the robot in the right direction with
     parameter number of steps.
     '''  
     def moveRight(self, num_steps):
-        """Moves right"""
-        print("num_steps ", str(num_steps))
+
         oldPosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt)
         collidedPlusOnePosition = self.coordinateTranslationTo1D(self.pos_xt+1,self.pos_zt)
 
@@ -438,9 +442,6 @@ class robotModel:
                 self.gridMap.canvas.itemconfig(self.gridMap.map[newPosition].tkinterCellIndex, fill=Object_Colour.Robot.value)
                 # Update robot internal pose
                 self.pos_xt += 1
-                # Update history
-                self.pos_x.append(self.pos_xt)
-                self.pos_z.append(self.pos_zt)
 
         # Robot did not collide
         else:
@@ -452,9 +453,6 @@ class robotModel:
                 self.pos_xt += 2
 
             self.collided = False
-            # Append to historical path
-            self.pos_x.append(self.pos_xt)
-            self.pos_z.append(self.pos_zt)
 
             # Remove robot from canvas actual position
             self.gridMap.canvas.itemconfig(self.gridMap.map[oldPosition].tkinterCellIndex, fill='#fff')
@@ -475,23 +473,23 @@ class robotModel:
         print("self.pos_zt " + str(self.pos_zt))
         print("self.pos_xt " + str(self.pos_xt))
         self.gridRobot1DPosition = utilities.get_state_from_pos([self.pos_zt,self.pos_xt])
-        print("1. now good gridRobot1DPosition " + str(self.gridRobot1DPosition))
-        self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition, self.pos_xt)
-        self.master.updateXPlot(self.pos_x, [])
-        self.master.updateYPlot(self.pos_z, [])
+        # Update history
+        self.pos_x.append(self.pos_xt)
+        self.pos_z.append(self.pos_zt)
+        # Update noisy history
+        self.pos_x_noisy.append(self.gaussian_noise(self.pos_xt))
+        self.pos_z_noisy.append(self.gaussian_noise(self.pos_zt))
 
-    '''
-    Get number of objects detected and check if goal found.
-    '''
+        self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition, self.pos_xt)
+        self.master.updateXPlot(self.pos_x, self.pos_x_noisy)
+        self.master.updateYPlot(self.pos_z, self.pos_z_noisy)
+
+    '''Get number of objects detected and check if goal found.'''
     def num_objects_detected(self):
         print("2. self.gridRobot1DPosition "+ str(self.gridRobot1DPosition))
         num_objects_detected = 0
         # Check up
         for x in range(1, self.laserRange + 1):
-            logging.debug("x: " +str(x))
-            logging.debug("self.gridRobot1DPosition " +str(self.gridRobot1DPosition))
-            logging.debug("self.mapSize " + str(self.mapSize))
-            logging.debug("calculation: "+ str(self.gridRobot1DPosition-self.mapSize*x))
             try:
                 if (self.gridRobot1DPosition-self.mapSize*x) < 0: # Out of bounds
                     break
@@ -540,7 +538,6 @@ class robotModel:
             except:
                 pass
         print("num_objects_detected: ",num_objects_detected)
-        
         return num_objects_detected
 
 

@@ -238,8 +238,11 @@ class GridApp:
     def updateXPlot(self,x, x_noise):
         try:
             self.plot1.clear()
-            self.plot1.plot(x)
-            self.plot1.plot(x_noise)
+            self.plot1.plot(x, color='g', label='real') #
+            self.plot1.plot(x_noise, color='r', label='noise') #
+            #self.plot1.legend()
+            #self.plot1.set_xlabel("position")
+            #self.plot1.set_ylabel("time")
             self.plot1.set_title("x-pose history")
             self.plot2.set_title("y-pose history")
             self.canvas.draw()
