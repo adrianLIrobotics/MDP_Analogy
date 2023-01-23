@@ -238,13 +238,20 @@ class GridApp:
     def openPlotWindow(self, master, robot):
         newPlotWindow = Toplevel(master)
         newPlotWindow.title("Plot window")
-        newPlotWindow.geometry("460x500")
+        newPlotWindow.geometry("500x700")
         fig = Figure(figsize = (5, 5), dpi = 100)
-        y = [i**2 for i in range(101)]
+        #y = [i**2 for i in range(101)]
+        #y = [1,2,3,4,5,6,7,20]
+        y = []
         # adding the subplot
-        plot1 = fig.add_subplot(111)
+        plot1 = fig.add_subplot(311)#311
+        plot2 = fig.add_subplot(313)#312
+        # Add titles
+        plot1.set_title("x-pose history")
+        plot2.set_title("y-pose history")
         # plotting the graph
         plot1.plot(y)
+        plot2.plot(y)
         # creating the Tkinter canvas containing the Matplotlib figure
         canvas = FigureCanvasTkAgg(fig, master = newPlotWindow)  
         canvas.draw()
