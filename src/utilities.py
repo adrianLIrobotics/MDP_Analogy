@@ -51,3 +51,18 @@ def restore_objects(filename):
     with open(filename, 'rb') as inp:
         states_pickle = pickle.load(inp)
     return states_pickle
+
+'''
+Get the variance according to the light of the cell.
+'''
+def get_variance_from_light_condition(light_cell_value):
+    if light_cell_value >= 50:
+        return 0
+    if light_cell_value < 50:
+        return 0.2
+
+'''
+Get the % of localization believe of the robot.
+'''
+def get_localized_believe(real_pose_x, real_pose_z, estimated_pose_x, estimated_pose_z):
+    pass

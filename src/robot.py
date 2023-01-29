@@ -7,6 +7,7 @@ import utilities
 import logging
 from datetime import date
 import numpy as np
+from Estimator import predictor
 
 # https://howtothink.readthedocs.io/en/latest/PvL_H.html
 
@@ -20,6 +21,7 @@ class robotModel:
         config.read(config_path)
         initial_pose_x = config['robot']['initial_pose_x']
         initial_pose_z = config['robot']['initial_pose_z']
+        initial_pose_known = config['robot']['initial_pose_known']
 
         '''Configure logger'''
         today = date.today()
@@ -31,23 +33,25 @@ class robotModel:
         else:
            x,z = self.manual_robot_pose(int(initial_pose_x),int(initial_pose_z),gridMap)
 
+        self.gridMap = gridMap
+        self.gaussian_variance = float(config['robot']['sensor_noise']) # Sensor robot noise.
+        self.mapSize = int(config['map']['mapSize']) # Number of columns in map.
         self.pos_xt = x # Real Position in x axes at time t.
         self.pos_zt = z # Real Position in z axes at time t.
         self.vel_xt = 0 # Velocity in x axes at time t.
         self.vel_zt = 0 # Voisy velocity in z axes at time t.
         self.pos_x = [self.pos_xt] # Historical Real data in x axes.
         self.pos_z = [self.pos_zt] # Historical Real data in z axes.
+        self.noisy_pos_xt = self.gaussian_noise(self.pos_xt) # Noisy position in x axes at time t.
+        self.noisy_pos_zt = self.gaussian_noise(self.pos_zt) # Noisy position in z axes at time t.
         self.pos_x_noisy = [self.gaussian_noise(self.pos_xt)] # Noisy historical position in x axes.
         self.pos_z_noisy = [self.gaussian_noise(self.pos_zt)] # Noisy historical position in z axes.
         self.vel_x = [0] # Noisy historical velocity in x axes.
         self.vel_z = [0] # Noisy historical velocity in z axes.
         self.found_goal = False # By default the robot hasnt found the goal.
         self.localized = localized # True if 90 or more
-        self.localized_believe = 0 # Believe in % over localization
         self.laserRange = 1 # Robot laser range signal.
         self.gridRobot1DPosition = utilities.get_state_from_pos([self.pos_zt,self.pos_xt])# x 2, z 0   
-        self.gridMap = gridMap
-        self.mapSize = mapSize
         self.collided = False # Robot collided with object at time t.
         self.master = master
         self.cumulative_reward = 0
@@ -62,13 +66,33 @@ class robotModel:
         moveRightTWo = 7
         stay = 8
         self.actions = [moveUpOne, moveUpTwo, moveDownOne, moveDownTwo, moveLeftOne, moveLeftTwo, moveRightOne, moveRightTWo, stay]
-        
+        ''' Robot estimated initial pose definition'''
+        if initial_pose_known == "Yes":
+            self.pos_xt_estimated = self.pos_xt
+            self.pos_zt_estimated = self.pos_zt
+            self.localized_believe = 100 # Believe in % over localization
+        else:
+            self.pos_xt_estimated = 0 # Estimated position of robot in x axes at time t using kalman filter.
+            self.pos_zt_estimated = 0 # Estimated position of robot in z axes at time t using kalman filter.
+            self.localized_believe = 0 # Believe in % over localization
+
+        self.pos_x_estimated = [self.pos_xt_estimated]  # Historical estimated position of robot in x axes.
+        self.pos_z_estimated = [self.pos_zt_estimated] # Historical estimated position of robot in z axes.
 
     '''Apply gaussian noise over signal'''
     def gaussian_noise(self, data):
-        gaussian_variance = 0.5 #1
-        noisy_data = round(np.random.normal(data,gaussian_variance,1)[0])
-        return noisy_data
+        position = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt)
+
+        # Check the lighing conditions of the cell the robot is in to calculate a proper variance over the gaussian normal.
+        self.gaussian_variance += utilities.get_variance_from_light_condition(self.gridMap.map[position].lighting_condition)
+        try:
+            noisy_data = round(np.random.normal(data,self.gaussian_variance,1)[0])
+            return noisy_data
+        except:
+            # Init noisy
+            variance = 0.5 + utilities.get_variance_from_light_condition(self.gridMap.map[position].lighting_condition)
+            noisy_data = round(np.random.normal(data,variance,1)[0])
+            return noisy_data
         
     '''Return robot action id's'''
     def return_robot_actions_id(self):
@@ -205,6 +229,8 @@ class robotModel:
         # Update noisy history
         self.pos_x_noisy.append(self.gaussian_noise(self.pos_xt))
         self.pos_z_noisy.append(self.gaussian_noise(self.pos_zt))
+        '''Estimate new position using kalman filter'''
+        #self.kalman = predictor(self.noisy_pos_xt, self.noisy_pos_zt, num_steps)
         self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition, self.pos_xt)
         self.master.updateXPlot(self.pos_x, self.pos_x_noisy)
         self.master.updateYPlot(self.pos_z, self.pos_z_noisy)
