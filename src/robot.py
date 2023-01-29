@@ -34,7 +34,8 @@ class robotModel:
            x,z = self.manual_robot_pose(int(initial_pose_x),int(initial_pose_z),gridMap)
 
         self.gridMap = gridMap
-        self.gaussian_variance = float(config['robot']['sensor_noise']) # Sensor robot noise.
+        self.gaussian_variance_camera = float(config['robot']['camera_sensor_noise']) # Camera sensor robot noise.
+        self.gaussian_variance_encoder = float(config['robot']['encoder_sensor_noise'])
         self.mapSize = int(config['map']['mapSize']) # Number of columns in map.
         self.pos_xt = x # Real Position in x axes at time t.
         self.pos_zt = z # Real Position in z axes at time t.
@@ -42,10 +43,14 @@ class robotModel:
         self.vel_zt = 0 # Voisy velocity in z axes at time t.
         self.pos_x = [self.pos_xt] # Historical Real data in x axes.
         self.pos_z = [self.pos_zt] # Historical Real data in z axes.
-        self.noisy_pos_xt = self.gaussian_noise(self.pos_xt) # Noisy position in x axes at time t.
-        self.noisy_pos_zt = self.gaussian_noise(self.pos_zt) # Noisy position in z axes at time t.
-        self.pos_x_noisy = [self.gaussian_noise(self.pos_xt)] # Noisy historical position in x axes.
-        self.pos_z_noisy = [self.gaussian_noise(self.pos_zt)] # Noisy historical position in z axes.
+        self.noisy_pos_xt_encoder = self.apply_gaussian_noise_encoder(self.pos_xt) # Noisy position in x axes at time t from encoder.
+        self.noisy_pos_zt_encoder = self.apply_gaussian_noise_encoder(self.pos_zt) # Noisy position in z axes at time t from encoder.
+        self.pos_x_noisy_encoder = [self.apply_gaussian_noise_encoder(self.pos_xt)] # Noisy historical position in x axes from encoder.
+        self.pos_z_noisy_encoder = [self.apply_gaussian_noise_encoder(self.pos_zt)] # Noisy historical position in z axes from encoder.
+        self.noisy_pos_xt_camera = self.apply_gaussian_noise_camera(self.pos_xt) # Noisy position in x axes at time t from camera sensor.
+        self.noisy_pos_zt_camera = self.apply_gaussian_noise_camera(self.pos_zt) # Noisy position in z axes at time t from camera sensor.
+        self.pos_x_noisy_camera = [self.apply_gaussian_noise_camera(self.pos_xt)] # Noisy historical position in x axes from camera sensor.
+        self.pos_z_noisy_camera = [self.apply_gaussian_noise_camera(self.pos_zt)] # Noisy historical position in z axes from camera sensor.
         self.vel_x = [0] # Noisy historical velocity in x axes.
         self.vel_z = [0] # Noisy historical velocity in z axes.
         self.found_goal = False # By default the robot hasnt found the goal.
@@ -79,14 +84,24 @@ class robotModel:
         self.pos_x_estimated = [self.pos_xt_estimated]  # Historical estimated position of robot in x axes.
         self.pos_z_estimated = [self.pos_zt_estimated] # Historical estimated position of robot in z axes.
 
-    '''Apply gaussian noise over signal'''
-    def gaussian_noise(self, data):
+    '''Apply gaussian noise over encoder signal'''
+    def apply_gaussian_noise_encoder(self, data):
+        try:
+            noisy_data = round(np.random.normal(data,self.gaussian_variance_encoder,1)[0])
+            return noisy_data
+        except:
+            # Init noisy
+            noisy_data = round(np.random.normal(data,0.5,1)[0])
+            return noisy_data
+
+    '''Apply gaussian noise over camera signal'''
+    def apply_gaussian_noise_camera(self, data):
         position = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt)
 
         # Check the lighing conditions of the cell the robot is in to calculate a proper variance over the gaussian normal.
-        self.gaussian_variance += utilities.get_variance_from_light_condition(self.gridMap.map[position].lighting_condition)
+        self.gaussian_variance_camera += utilities.get_variance_from_light_condition(self.gridMap.map[position].lighting_condition)
         try:
-            noisy_data = round(np.random.normal(data,self.gaussian_variance,1)[0])
+            noisy_data = round(np.random.normal(data,self.gaussian_variance_camera,1)[0])
             return noisy_data
         except:
             # Init noisy
@@ -227,13 +242,15 @@ class robotModel:
         self.pos_x.append(self.pos_xt)
         self.pos_z.append(self.pos_zt)
         # Update noisy history
-        self.pos_x_noisy.append(self.gaussian_noise(self.pos_xt))
-        self.pos_z_noisy.append(self.gaussian_noise(self.pos_zt))
+        self.pos_x_noisy_encoder.append(self.apply_gaussian_noise_encoder(self.pos_xt))
+        self.pos_z_noisy_encoder.append(self.apply_gaussian_noise_encoder(self.pos_zt))
+        self.pos_x_noisy_camera.append(self.apply_gaussian_noise_camera(self.pos_xt))
+        self.pos_z_noisy_camera.append(self.apply_gaussian_noise_camera(self.pos_zt))
         '''Estimate new position using kalman filter'''
         #self.kalman = predictor(self.noisy_pos_xt, self.noisy_pos_zt, num_steps)
         self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition, self.pos_xt)
-        self.master.updateXPlot(self.pos_x, self.pos_x_noisy)
-        self.master.updateYPlot(self.pos_z, self.pos_z_noisy)
+        self.master.updateXPlot(self.pos_x, self.pos_x_noisy_encoder)
+        self.master.updateYPlot(self.pos_z, self.pos_z_noisy_encoder)
 
     '''
     Control command to move the robot in the down direction with
@@ -318,11 +335,13 @@ class robotModel:
         self.pos_x.append(self.pos_xt)
         self.pos_z.append(self.pos_zt)
         # Update noisy history
-        self.pos_x_noisy.append(self.gaussian_noise(self.pos_xt))
-        self.pos_z_noisy.append(self.gaussian_noise(self.pos_zt))
+        self.pos_x_noisy_encoder.append(self.apply_gaussian_noise_encoder(self.pos_xt))
+        self.pos_z_noisy_encoder.append(self.apply_gaussian_noise_encoder(self.pos_zt))
+        self.pos_x_noisy_camera.append(self.apply_gaussian_noise_camera(self.pos_xt))
+        self.pos_z_noisy_camera.append(self.apply_gaussian_noise_camera(self.pos_zt))
         self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition, self.pos_xt)
-        self.master.updateXPlot(self.pos_x, self.pos_x_noisy)
-        self.master.updateYPlot(self.pos_z, self.pos_z_noisy)
+        self.master.updateXPlot(self.pos_x, self.pos_x_noisy_encoder)
+        self.master.updateYPlot(self.pos_z, self.pos_z_noisy_encoder)
 
     '''
     Control command to move the robot in the left direction with
@@ -410,13 +429,14 @@ class robotModel:
         print("self.pos_x h " +str(self.pos_x))
         self.pos_z.append(self.pos_zt)
         # Update noisy history
-        self.pos_x_noisy.append(self.gaussian_noise(self.pos_xt))
-        print("self.pos_x_noisy h "+str(self.pos_x_noisy))
-        self.pos_z_noisy.append(self.gaussian_noise(self.pos_zt))
+        self.pos_x_noisy_encoder.append(self.apply_gaussian_noise_encoder(self.pos_xt))
+        self.pos_z_noisy_encoder.append(self.apply_gaussian_noise_encoder(self.pos_zt))
+        self.pos_x_noisy_camera.append(self.apply_gaussian_noise_camera(self.pos_xt))
+        self.pos_z_noisy_camera.append(self.apply_gaussian_noise_camera(self.pos_zt))
 
         self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition, self.pos_xt)
-        self.master.updateXPlot(self.pos_x, self.pos_x_noisy)
-        self.master.updateYPlot(self.pos_z, self.pos_z_noisy)
+        self.master.updateXPlot(self.pos_x, self.pos_x_noisy_encoder)
+        self.master.updateYPlot(self.pos_z, self.pos_z_noisy_encoder)
 
     '''
     Control command to move the robot in the right direction with
@@ -503,12 +523,14 @@ class robotModel:
         self.pos_x.append(self.pos_xt)
         self.pos_z.append(self.pos_zt)
         # Update noisy history
-        self.pos_x_noisy.append(self.gaussian_noise(self.pos_xt))
-        self.pos_z_noisy.append(self.gaussian_noise(self.pos_zt))
+        self.pos_x_noisy_encoder.append(self.apply_gaussian_noise_encoder(self.pos_xt))
+        self.pos_z_noisy_encoder.append(self.apply_gaussian_noise_encoder(self.pos_zt))
+        self.pos_x_noisy_camera.append(self.apply_gaussian_noise_camera(self.pos_xt))
+        self.pos_z_noisy_camera.append(self.apply_gaussian_noise_camera(self.pos_zt))
 
         self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition, self.pos_xt)
-        self.master.updateXPlot(self.pos_x, self.pos_x_noisy)
-        self.master.updateYPlot(self.pos_z, self.pos_z_noisy)
+        self.master.updateXPlot(self.pos_x, self.pos_x_noisy_encoder)
+        self.master.updateYPlot(self.pos_z, self.pos_z_noisy_encoder)
 
     '''Get number of objects detected and check if goal found.'''
     def num_objects_detected(self):

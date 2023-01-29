@@ -235,11 +235,13 @@ class GridApp:
         if self.inspect == False:
             self.inspect = True
 
+    '''Update graph window x plot'''
     def updateXPlot(self,x, x_noise):
         try:
             self.plot1.clear()
             self.plot1.plot(x, color='g', label='real') #
             self.plot1.plot(x_noise, color='r', label='noise') #
+            self.plot1.legend(['real', 'encoder noise'])
             #self.plot1.legend()
             #self.plot1.set_xlabel("position")
             #self.plot1.set_ylabel("time")
@@ -250,11 +252,13 @@ class GridApp:
         except Exception as e:
             print(e)
 
+    '''Update graph window z plot'''
     def updateYPlot(self,y, Y_noise):
         try:
             self.plot2.clear()
-            self.plot2.plot(y)
-            self.plot2.plot(Y_noise)
+            self.plot2.plot(y, color='g', label='real')
+            self.plot2.plot(Y_noise, color='r', label='noise')
+            self.plot2.legend(['real', 'encoder noise'])
             self.plot1.set_title("x-pose history")
             self.plot2.set_title("y-pose history")
             self.canvas.draw()
@@ -262,6 +266,7 @@ class GridApp:
         except Exception as e:
             print(e)
 
+    '''Graphs window'''
     def openPlotWindow(self, master, robot):
         self.newPlotWindow = Toplevel(master)
         self.newPlotWindow.title("Plot window")
@@ -279,6 +284,9 @@ class GridApp:
         # Add titles
         self.plot1.set_title("x-pose history")
         self.plot2.set_title("y-pose history")
+
+        self.plot1.legend(['real', 'encoder noise'])
+        self.plot2.legend(['real', 'encoder noise'])
         # plotting the graph
         self.plot1.plot(x)
         self.plot1.plot(x_noise)
