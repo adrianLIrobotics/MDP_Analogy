@@ -236,16 +236,17 @@ class GridApp:
             self.inspect = True
 
     '''Update graph window x plot'''
-    def updateXPlot(self,x, x_noise_encoder, x_noise_camera):
+    def updateXPlot(self,x, x_noise_encoder, x_noise_camera, kalman_x_pose):
         try:
             self.plot1.clear()
             self.plot1.plot(x, color='g', label='real') #
-            self.plot1.plot(x_noise_encoder, color='r', label='noise') #
-            self.plot1.plot(x_noise_camera, color='b', label='noise') #
-            self.plot1.legend(['real', 'encoder noise', 'camera noise'])
-            #self.plot1.legend()
-            #self.plot1.set_xlabel("position")
-            #self.plot1.set_ylabel("time")
+            self.plot1.plot(x_noise_encoder, color='r', label='encoder') #
+            self.plot1.plot(x_noise_camera, color='b', label='camera') #
+            self.plot1.plot(kalman_x_pose, color='y', label='kalman') #
+            
+            #self.plot1.legend(['real', 'encoder noise', 'camera noise', 'kalman'])
+            self.plot1.legend(loc='lower center', bbox_to_anchor=(0.5, -0.8),
+          fancybox=True, shadow=True, ncol=5)
             self.plot1.set_title("x-pose history")
             self.plot2.set_title("y-pose history")
             self.canvas.draw()
@@ -254,13 +255,14 @@ class GridApp:
             print(e)
 
     '''Update graph window z plot'''
-    def updateYPlot(self,y, Y_noise_encoder, Y_noise_camera):
+    def updateYPlot(self,y, Y_noise_encoder, Y_noise_camera, kalman_z_pose):
         try:
             self.plot2.clear()
             self.plot2.plot(y, color='g', label='real')
             self.plot2.plot(Y_noise_encoder, color='r', label='noise')
             self.plot2.plot(Y_noise_camera, color='b', label='noise')
-            self.plot2.legend(['real', 'encoder noise', 'camera noise'])
+            self.plot2.plot(kalman_z_pose, color='y', label='noise')
+            #self.plot2.legend(['real', 'encoder noise', 'camera noise', 'kalman'])
             self.plot1.set_title("x-pose history")
             self.plot2.set_title("y-pose history")
             self.canvas.draw()

@@ -8,6 +8,7 @@ import logging
 from datetime import date
 import numpy as np
 from Estimator import predictor
+from numpy import array, asarray
 
 # https://howtothink.readthedocs.io/en/latest/PvL_H.html
 
@@ -51,6 +52,10 @@ class robotModel:
         self.noisy_pos_zt_camera = self.apply_gaussian_noise_camera(self.pos_zt) # Noisy position in z axes at time t from camera sensor.
         self.pos_x_noisy_camera = [self.apply_gaussian_noise_camera(self.pos_xt)] # Noisy historical position in x axes from camera sensor.
         self.pos_z_noisy_camera = [self.apply_gaussian_noise_camera(self.pos_zt)] # Noisy historical position in z axes from camera sensor.
+        self.pos_xt_kalman = 0
+        self.pos_zt_kalman = 0
+        self.pos_x_kalman = [self.pos_xt_kalman]
+        self.pos_z_kalman = [self.pos_zt_kalman]
         self.vel_x = [0] # Noisy historical velocity in x axes.
         self.vel_z = [0] # Noisy historical velocity in z axes.
         self.found_goal = False # By default the robot hasnt found the goal.
@@ -84,6 +89,7 @@ class robotModel:
         self.pos_x_estimated = [self.pos_xt_estimated]  # Historical estimated position of robot in x axes.
         self.pos_z_estimated = [self.pos_zt_estimated] # Historical estimated position of robot in z axes.
 
+        self.kalman = predictor() # Init kalman filter
     '''Apply gaussian noise over encoder signal'''
     def apply_gaussian_noise_encoder(self, data):
         try:
@@ -260,10 +266,18 @@ class robotModel:
         self.pos_x_noisy_camera.append(self.apply_gaussian_noise_camera(self.pos_xt))
         self.pos_z_noisy_camera.append(self.apply_gaussian_noise_camera(self.pos_zt))
         '''Estimate new position using kalman filter'''
-        #self.kalman = predictor(self.noisy_pos_xt, self.noisy_pos_zt, num_steps)
+        z = array([[self.pos_x_noisy_camera[-1]],[self.pos_z_noisy_camera[-1]]])
+        mu, cov = self.kalman.predict(z)
+        print("self.pos_x_noisy_camera[-1] "+str(self.pos_x_noisy_camera[-1]))
+        print("self.pos_z_noisy_camera[-1] "+str(self.pos_z_noisy_camera[-1]))
+        # Update kalman signal history
+        self.pos_x_kalman.append(mu[0][0])
+        print("mu[0][0] "+str(mu[0][0]))
+        self.pos_z_kalman.append(mu[2][0])
+        print("mu[2][0] "+str(mu[2][0]))
         self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition, self.pos_xt)
-        self.master.updateXPlot(self.pos_x, self.pos_x_noisy_encoder, self.pos_x_noisy_camera)
-        self.master.updateYPlot(self.pos_z, self.pos_z_noisy_encoder, self.pos_z_noisy_camera)
+        self.master.updateXPlot(self.pos_x, self.pos_x_noisy_encoder, self.pos_x_noisy_camera, self.pos_x_kalman)
+        self.master.updateYPlot(self.pos_z, self.pos_z_noisy_encoder, self.pos_z_noisy_camera, self.pos_z_kalman)
 
     '''
     Control command to move the robot in the down direction with
