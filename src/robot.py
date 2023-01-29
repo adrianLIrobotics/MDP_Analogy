@@ -271,10 +271,8 @@ class robotModel:
         print("self.pos_x_noisy_camera[-1] "+str(self.pos_x_noisy_camera[-1]))
         print("self.pos_z_noisy_camera[-1] "+str(self.pos_z_noisy_camera[-1]))
         # Update kalman signal history
-        self.pos_x_kalman.append(mu[0][0])
-        print("mu[0][0] "+str(mu[0][0]))
-        self.pos_z_kalman.append(mu[2][0])
-        print("mu[2][0] "+str(mu[2][0]))
+        self.pos_x_kalman.append(round(mu[0][0]))
+        self.pos_z_kalman.append(round(mu[2][0]))
         self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition, self.pos_xt)
         self.master.updateXPlot(self.pos_x, self.pos_x_noisy_encoder, self.pos_x_noisy_camera, self.pos_x_kalman)
         self.master.updateYPlot(self.pos_z, self.pos_z_noisy_encoder, self.pos_z_noisy_camera, self.pos_z_kalman)
