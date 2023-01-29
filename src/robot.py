@@ -97,6 +97,19 @@ class robotModel:
     '''Apply gaussian noise over camera signal'''
     def apply_gaussian_noise_camera(self, data):
         position = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt)
+        try:
+            print("Number of objects detected from camera: "+str(self.num_objects_detected()))
+            # Depending on the number of objects the camera detects, position output is better or worse.
+            if self.num_objects_detected() == 0:
+                self.gaussian_variance_camera = 0.6
+            elif self.num_objects_detected() == 1:
+                self.gaussian_variance_camera = 0.4 # 0.4
+            elif self.num_objects_detected() == 2:
+                self.gaussian_variance_camera = 0.3
+            elif self.num_objects_detected() == 3:
+                self.gaussian_variance_camera = 0.2
+        except:
+            pass
 
         # Check the lighing conditions of the cell the robot is in to calculate a proper variance over the gaussian normal.
         self.gaussian_variance_camera += utilities.get_variance_from_light_condition(self.gridMap.map[position].lighting_condition)
@@ -249,8 +262,8 @@ class robotModel:
         '''Estimate new position using kalman filter'''
         #self.kalman = predictor(self.noisy_pos_xt, self.noisy_pos_zt, num_steps)
         self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition, self.pos_xt)
-        self.master.updateXPlot(self.pos_x, self.pos_x_noisy_encoder)
-        self.master.updateYPlot(self.pos_z, self.pos_z_noisy_encoder)
+        self.master.updateXPlot(self.pos_x, self.pos_x_noisy_encoder, self.pos_x_noisy_camera)
+        self.master.updateYPlot(self.pos_z, self.pos_z_noisy_encoder, self.pos_z_noisy_camera)
 
     '''
     Control command to move the robot in the down direction with
@@ -340,8 +353,8 @@ class robotModel:
         self.pos_x_noisy_camera.append(self.apply_gaussian_noise_camera(self.pos_xt))
         self.pos_z_noisy_camera.append(self.apply_gaussian_noise_camera(self.pos_zt))
         self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition, self.pos_xt)
-        self.master.updateXPlot(self.pos_x, self.pos_x_noisy_encoder)
-        self.master.updateYPlot(self.pos_z, self.pos_z_noisy_encoder)
+        self.master.updateXPlot(self.pos_x, self.pos_x_noisy_encoder, self.pos_x_noisy_camera)
+        self.master.updateYPlot(self.pos_z, self.pos_z_noisy_encoder, self.pos_z_noisy_camera)
 
     '''
     Control command to move the robot in the left direction with
@@ -435,8 +448,8 @@ class robotModel:
         self.pos_z_noisy_camera.append(self.apply_gaussian_noise_camera(self.pos_zt))
 
         self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition, self.pos_xt)
-        self.master.updateXPlot(self.pos_x, self.pos_x_noisy_encoder)
-        self.master.updateYPlot(self.pos_z, self.pos_z_noisy_encoder)
+        self.master.updateXPlot(self.pos_x, self.pos_x_noisy_encoder, self.pos_x_noisy_camera)
+        self.master.updateYPlot(self.pos_z, self.pos_z_noisy_encoder, self.pos_z_noisy_camera)
 
     '''
     Control command to move the robot in the right direction with
@@ -529,12 +542,12 @@ class robotModel:
         self.pos_z_noisy_camera.append(self.apply_gaussian_noise_camera(self.pos_zt))
 
         self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition, self.pos_xt)
-        self.master.updateXPlot(self.pos_x, self.pos_x_noisy_encoder)
-        self.master.updateYPlot(self.pos_z, self.pos_z_noisy_encoder)
+        self.master.updateXPlot(self.pos_x, self.pos_x_noisy_encoder, self.pos_x_noisy_camera)
+        self.master.updateYPlot(self.pos_z, self.pos_z_noisy_encoder, self.pos_z_noisy_camera)
 
     '''Get number of objects detected and check if goal found.'''
     def num_objects_detected(self):
-        print("2. self.gridRobot1DPosition "+ str(self.gridRobot1DPosition))
+        #print("2. self.gridRobot1DPosition "+ str(self.gridRobot1DPosition))
         num_objects_detected = 0
         # Check up
         for x in range(1, self.laserRange + 1):

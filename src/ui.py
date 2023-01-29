@@ -236,12 +236,13 @@ class GridApp:
             self.inspect = True
 
     '''Update graph window x plot'''
-    def updateXPlot(self,x, x_noise):
+    def updateXPlot(self,x, x_noise_encoder, x_noise_camera):
         try:
             self.plot1.clear()
             self.plot1.plot(x, color='g', label='real') #
-            self.plot1.plot(x_noise, color='r', label='noise') #
-            self.plot1.legend(['real', 'encoder noise'])
+            self.plot1.plot(x_noise_encoder, color='r', label='noise') #
+            self.plot1.plot(x_noise_camera, color='b', label='noise') #
+            self.plot1.legend(['real', 'encoder noise', 'camera noise'])
             #self.plot1.legend()
             #self.plot1.set_xlabel("position")
             #self.plot1.set_ylabel("time")
@@ -253,12 +254,13 @@ class GridApp:
             print(e)
 
     '''Update graph window z plot'''
-    def updateYPlot(self,y, Y_noise):
+    def updateYPlot(self,y, Y_noise_encoder, Y_noise_camera):
         try:
             self.plot2.clear()
             self.plot2.plot(y, color='g', label='real')
-            self.plot2.plot(Y_noise, color='r', label='noise')
-            self.plot2.legend(['real', 'encoder noise'])
+            self.plot2.plot(Y_noise_encoder, color='r', label='noise')
+            self.plot2.plot(Y_noise_camera, color='b', label='noise')
+            self.plot2.legend(['real', 'encoder noise', 'camera noise'])
             self.plot1.set_title("x-pose history")
             self.plot2.set_title("y-pose history")
             self.canvas.draw()
@@ -270,7 +272,7 @@ class GridApp:
     def openPlotWindow(self, master, robot):
         self.newPlotWindow = Toplevel(master)
         self.newPlotWindow.title("Plot window")
-        self.newPlotWindow.geometry("500x500")
+        self.newPlotWindow.geometry("500x500")#("500x500")
         self.fig = Figure(figsize = (5, 5), dpi = 100)
         #y = [i**2 for i in range(101)]
         #y = [1,2,3,4,5,6,7,20]
