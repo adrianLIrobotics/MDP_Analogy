@@ -113,11 +113,11 @@ class robotModel:
             if self.num_objects_detected() == 0:
                 self.gaussian_variance_camera = 0.6
             elif self.num_objects_detected() == 1:
-                self.gaussian_variance_camera = 0.4 # 0.4
+                self.gaussian_variance_camera = 0.3 # 0.4
             elif self.num_objects_detected() == 2:
-                self.gaussian_variance_camera = 0.3
-            elif self.num_objects_detected() == 3:
                 self.gaussian_variance_camera = 0.2
+            elif self.num_objects_detected() == 3:
+                self.gaussian_variance_camera = 0.1
         except:
             pass
 
