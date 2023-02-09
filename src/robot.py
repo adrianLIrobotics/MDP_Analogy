@@ -364,9 +364,14 @@ class robotModel:
         self.pos_z_noisy_encoder.append(self.apply_gaussian_noise_encoder(self.pos_zt))
         self.pos_x_noisy_camera.append(self.apply_gaussian_noise_camera(self.pos_xt))
         self.pos_z_noisy_camera.append(self.apply_gaussian_noise_camera(self.pos_zt))
+        '''Estimate new position using kalman filter'''
+        z = array([[self.pos_x_noisy_camera[-1]],[self.pos_z_noisy_camera[-1]]])
+        mu, cov = self.kalman.predict(z)
+        self.pos_x_kalman.append(round(mu[0][0]))
+        self.pos_z_kalman.append(round(mu[2][0]))
         self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition, self.pos_xt)
-        self.master.updateXPlot(self.pos_x, self.pos_x_noisy_encoder, self.pos_x_noisy_camera)
-        self.master.updateYPlot(self.pos_z, self.pos_z_noisy_encoder, self.pos_z_noisy_camera)
+        self.master.updateXPlot(self.pos_x, self.pos_x_noisy_encoder, self.pos_x_noisy_camera, self.pos_x_kalman)
+        self.master.updateYPlot(self.pos_z, self.pos_z_noisy_encoder, self.pos_z_noisy_camera, self.pos_z_kalman)
 
     '''
     Control command to move the robot in the left direction with
@@ -458,10 +463,15 @@ class robotModel:
         self.pos_z_noisy_encoder.append(self.apply_gaussian_noise_encoder(self.pos_zt))
         self.pos_x_noisy_camera.append(self.apply_gaussian_noise_camera(self.pos_xt))
         self.pos_z_noisy_camera.append(self.apply_gaussian_noise_camera(self.pos_zt))
+        '''Estimate new position using kalman filter'''
+        z = array([[self.pos_x_noisy_camera[-1]],[self.pos_z_noisy_camera[-1]]])
+        mu, cov = self.kalman.predict(z)
+        self.pos_x_kalman.append(round(mu[0][0]))
+        self.pos_z_kalman.append(round(mu[2][0]))
 
         self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition, self.pos_xt)
-        self.master.updateXPlot(self.pos_x, self.pos_x_noisy_encoder, self.pos_x_noisy_camera)
-        self.master.updateYPlot(self.pos_z, self.pos_z_noisy_encoder, self.pos_z_noisy_camera)
+        self.master.updateXPlot(self.pos_x, self.pos_x_noisy_encoder, self.pos_x_noisy_camera, self.pos_x_kalman)
+        self.master.updateYPlot(self.pos_z, self.pos_z_noisy_encoder, self.pos_z_noisy_camera, self.pos_z_kalman)
 
     '''
     Control command to move the robot in the right direction with
@@ -553,9 +563,15 @@ class robotModel:
         self.pos_x_noisy_camera.append(self.apply_gaussian_noise_camera(self.pos_xt))
         self.pos_z_noisy_camera.append(self.apply_gaussian_noise_camera(self.pos_zt))
 
+        '''Estimate new position using kalman filter'''
+        z = array([[self.pos_x_noisy_camera[-1]],[self.pos_z_noisy_camera[-1]]])
+        mu, cov = self.kalman.predict(z)
+        self.pos_x_kalman.append(round(mu[0][0]))
+        self.pos_z_kalman.append(round(mu[2][0]))
+
         self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition, self.pos_xt)
-        self.master.updateXPlot(self.pos_x, self.pos_x_noisy_encoder, self.pos_x_noisy_camera)
-        self.master.updateYPlot(self.pos_z, self.pos_z_noisy_encoder, self.pos_z_noisy_camera)
+        self.master.updateXPlot(self.pos_x, self.pos_x_noisy_encoder, self.pos_x_noisy_camera, self.pos_x_kalman)
+        self.master.updateYPlot(self.pos_z, self.pos_z_noisy_encoder, self.pos_z_noisy_camera, self.pos_z_kalman)
 
     '''Get number of objects detected and check if goal found.'''
     def num_objects_detected(self):
