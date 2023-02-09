@@ -24,6 +24,7 @@ class robotModel:
         self.initial_pose_x = config['robot']['initial_pose_x']
         self.initial_pose_z = config['robot']['initial_pose_z']
         initial_pose_known = config['robot']['initial_pose_known']
+        range_laser = config['robot']['laser_range']
 
         '''Configure logger'''
         today = date.today()
@@ -55,13 +56,14 @@ class robotModel:
         self.pos_z_noisy_camera = [self.apply_gaussian_noise_camera(self.pos_zt)] # Noisy historical position in z axes from camera sensor.
         self.pos_xt_kalman = 0
         self.pos_zt_kalman = 0
+        self.pos_1d_kalman = 0
         self.pos_x_kalman = [self.pos_xt_kalman]
         self.pos_z_kalman = [self.pos_zt_kalman]
         self.vel_x = [0] # Noisy historical velocity in x axes.
         self.vel_z = [0] # Noisy historical velocity in z axes.
         self.found_goal = False # By default the robot hasnt found the goal.
         self.localized = localized # True if 90 or more --> Depricated, will not be used.
-        self.laserRange = 1 # Robot laser range signal.
+        self.laserRange = int(range_laser) # Robot laser range signal.
         self.gridRobot1DPosition = utilities.get_state_from_pos([self.pos_zt,self.pos_xt])# x 2, z 0   
         self.gridMap.canvas.itemconfig(self.gridMap.map[self.gridRobot1DPosition].tkinterCellIndex, fill=Object_Colour.Robot.value) # Put the current cell as object of type robot.
         self.collided = False # Robot collided with object at time t.
@@ -272,10 +274,16 @@ class robotModel:
         mu, cov = self.kalman.predict(z)
         print("self.pos_x_noisy_camera[-1] "+str(self.pos_x_noisy_camera[-1]))
         print("self.pos_z_noisy_camera[-1] "+str(self.pos_z_noisy_camera[-1]))
+
+        
         # Update kalman signal history
-        self.pos_x_kalman.append(round(mu[0][0]))
-        self.pos_z_kalman.append(round(mu[2][0]))
-        self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition, self.pos_xt)
+        self.pos_xt_kalman =round(mu[0][0])
+        self.pos_zt_kalman = round(mu[2][0])
+        self.pos_1d_kalman = utilities.get_state_from_pos([self.pos_zt_kalman,self.pos_xt_kalman])
+        self.pos_x_kalman.append(self.pos_xt_kalman)
+        self.pos_z_kalman.append(self.pos_zt_kalman)
+
+        self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition, self.pos_xt, self.pos_1d_kalman, self.pos_xt_kalman, self.pos_zt_kalman)
         self.master.updateXPlot(self.pos_x, self.pos_x_noisy_encoder, self.pos_x_noisy_camera, self.pos_x_kalman)
         self.master.updateYPlot(self.pos_z, self.pos_z_noisy_encoder, self.pos_z_noisy_camera, self.pos_z_kalman)
 
@@ -369,9 +377,14 @@ class robotModel:
         '''Estimate new position using kalman filter'''
         z = array([[self.pos_x_noisy_camera[-1]],[self.pos_z_noisy_camera[-1]]])
         mu, cov = self.kalman.predict(z)
-        self.pos_x_kalman.append(round(mu[0][0]))
-        self.pos_z_kalman.append(round(mu[2][0]))
-        self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition, self.pos_xt)
+
+        self.pos_xt_kalman =round(mu[0][0])
+        self.pos_zt_kalman = round(mu[2][0])
+        self.pos_1d_kalman = utilities.get_state_from_pos([self.pos_zt_kalman,self.pos_xt_kalman])
+
+        self.pos_x_kalman.append(self.pos_xt_kalman)
+        self.pos_z_kalman.append(self.pos_zt_kalman)
+        self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition, self.pos_xt, self.pos_1d_kalman, self.pos_xt_kalman, self.pos_zt_kalman)
         self.master.updateXPlot(self.pos_x, self.pos_x_noisy_encoder, self.pos_x_noisy_camera, self.pos_x_kalman)
         self.master.updateYPlot(self.pos_z, self.pos_z_noisy_encoder, self.pos_z_noisy_camera, self.pos_z_kalman)
 
@@ -468,10 +481,14 @@ class robotModel:
         '''Estimate new position using kalman filter'''
         z = array([[self.pos_x_noisy_camera[-1]],[self.pos_z_noisy_camera[-1]]])
         mu, cov = self.kalman.predict(z)
-        self.pos_x_kalman.append(round(mu[0][0]))
-        self.pos_z_kalman.append(round(mu[2][0]))
 
-        self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition, self.pos_xt)
+        self.pos_xt_kalman =round(mu[0][0])
+        self.pos_zt_kalman = round(mu[2][0])
+        self.pos_1d_kalman = utilities.get_state_from_pos([self.pos_zt_kalman,self.pos_xt_kalman])
+        self.pos_x_kalman.append(self.pos_xt_kalman)
+        self.pos_z_kalman.append(self.pos_zt_kalman)
+
+        self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition, self.pos_xt, self.pos_1d_kalman, self.pos_xt_kalman, self.pos_zt_kalman)
         self.master.updateXPlot(self.pos_x, self.pos_x_noisy_encoder, self.pos_x_noisy_camera, self.pos_x_kalman)
         self.master.updateYPlot(self.pos_z, self.pos_z_noisy_encoder, self.pos_z_noisy_camera, self.pos_z_kalman)
 
@@ -568,10 +585,13 @@ class robotModel:
         '''Estimate new position using kalman filter'''
         z = array([[self.pos_x_noisy_camera[-1]],[self.pos_z_noisy_camera[-1]]])
         mu, cov = self.kalman.predict(z)
-        self.pos_x_kalman.append(round(mu[0][0]))
-        self.pos_z_kalman.append(round(mu[2][0]))
+        self.pos_xt_kalman =round(mu[0][0])
+        self.pos_zt_kalman = round(mu[2][0])
+        self.pos_1d_kalman = utilities.get_state_from_pos([self.pos_zt_kalman,self.pos_xt_kalman])
+        self.pos_x_kalman.append(self.pos_xt_kalman)
+        self.pos_z_kalman.append(self.pos_zt_kalman)
 
-        self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition, self.pos_xt)
+        self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition, self.pos_xt, self.pos_1d_kalman, self.pos_xt_kalman, self.pos_zt_kalman)
         self.master.updateXPlot(self.pos_x, self.pos_x_noisy_encoder, self.pos_x_noisy_camera, self.pos_x_kalman)
         self.master.updateYPlot(self.pos_z, self.pos_z_noisy_encoder, self.pos_z_noisy_camera, self.pos_z_kalman)
 

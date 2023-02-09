@@ -37,7 +37,7 @@ class GridApp:
     def clearTextBox(self):
         self.debug.delete(1.0, END)
 
-    def update_control_panel(self,num_object_detected, x_real_pose,oneD_pose_real , z_real_pose):
+    def update_control_panel(self,num_object_detected, x_real_pose,oneD_pose_real , z_real_pose, oneD_pose_kf, x_pose_kf, z_pose_kf):
         self.z_real_pose.delete(1.0,END)
         self.robot_1d_real_pose.delete(1.0,END)
         self.z_real_pose.insert(END, str(x_real_pose))
@@ -46,6 +46,12 @@ class GridApp:
         self.num_observation_value.insert(END, str(num_object_detected))
         self.robot_real_pos_z_value.delete(1.0, END)
         self.robot_real_pos_z_value.insert(END, str(z_real_pose))
+        self.kalman_1d_estimated_pose.delete(1.0, END)
+        self.kalman_1d_estimated_pose.insert(END, str(oneD_pose_kf))
+        self.x_pose_kf.delete(1.0, END)
+        self.x_pose_kf.insert(END, str(x_pose_kf))
+        self.z_pose_kf.delete(1.0, END)
+        self.z_pose_kf.insert(END,z_pose_kf)
 
     '''
     Mathplot historical robot position
@@ -409,20 +415,20 @@ class GridApp:
         pose_oneD_label = Label(robot_estimate_localization, text='1D Pose: ')
         pose_oneD_label.pack(side=LEFT, padx=pad, pady=pad)
 
-        self.pose_oneD_value = Text(robot_estimate_localization,height = 1.5,width = 5)
-        self.pose_oneD_value.pack( side= RIGHT, padx=pad, pady=pad)
+        self.z_pose_kf = Text(robot_estimate_localization,height = 1.5,width = 5)
+        self.z_pose_kf.pack( side= RIGHT, padx=pad, pady=pad)
 
         z_pose_label = Label(robot_estimate_localization, text='Z Pose: ')
         z_pose_label.pack(side=RIGHT, padx=pad, pady=pad)
 
-        self.z_pose_value = Text(robot_estimate_localization,height = 1.5,width = 5)
-        self.z_pose_value.pack( side= RIGHT, padx=pad, pady=pad)
+        self.x_pose_kf = Text(robot_estimate_localization,height = 1.5,width = 5)
+        self.x_pose_kf.pack( side= RIGHT, padx=pad, pady=pad)
 
         x_pose_label = Label(robot_estimate_localization, text='X Pose: ')
         x_pose_label.pack(side=RIGHT, padx=pad, pady=pad)
 
-        self.x_pose_value = Text(robot_estimate_localization,height = 1.5,width = 5)
-        self.x_pose_value.pack( side= RIGHT, padx=pad, pady=pad)
+        self.kalman_1d_estimated_pose = Text(robot_estimate_localization,height = 1.5,width = 5)
+        self.kalman_1d_estimated_pose.pack( side= RIGHT, padx=pad, pady=pad)
 
         # MDP CONTROL
         mdp_map_frame = LabelFrame(labelframe, text="MDP & MAP")
@@ -465,4 +471,4 @@ class GridApp:
         self.debug.pack()
 
         # Update control grid with initial conditions:
-        self.update_control_panel(self.robot.num_objects_detected(), self.robot.pos_zt, self.robot.gridRobot1DPosition, self.robot.pos_xt)
+        self.update_control_panel(self.robot.num_objects_detected(), self.robot.pos_zt, self.robot.gridRobot1DPosition, self.robot.pos_xt, self.robot.pos_1d_kalman, self.robot.pos_xt_kalman, self.robot.pos_zt_kalman)
