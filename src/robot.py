@@ -9,6 +9,7 @@ from datetime import date
 import numpy as np
 from Estimator import predictor
 from numpy import array, asarray
+from object import objectModel
 
 # https://howtothink.readthedocs.io/en/latest/PvL_H.html
 
@@ -20,8 +21,8 @@ class robotModel:
         config_path = pathlib.Path(__file__).parent.absolute() / "config.ini"
         config = ConfigParser()
         config.read(config_path)
-        initial_pose_x = config['robot']['initial_pose_x']
-        initial_pose_z = config['robot']['initial_pose_z']
+        self.initial_pose_x = config['robot']['initial_pose_x']
+        self.initial_pose_z = config['robot']['initial_pose_z']
         initial_pose_known = config['robot']['initial_pose_known']
 
         '''Configure logger'''
@@ -29,10 +30,10 @@ class robotModel:
         logging.basicConfig(filename='logs/'+str(today)+'.log', encoding='utf-8', level=logging.DEBUG)
 
         '''Configure robot initial position'''
-        if (initial_pose_x == 'random') and (initial_pose_z == 'random'):
+        if (self.initial_pose_x == 'random') and (self.initial_pose_z == 'random'):
             x,z = self.initialPoseRandom(mapSize,gridMap) 
         else:
-           x,z = self.manual_robot_pose(int(initial_pose_x),int(initial_pose_z),gridMap)
+           x,z = self.manual_robot_pose(int(self.initial_pose_x),int(self.initial_pose_z),gridMap)
 
         self.gridMap = gridMap
         self.gaussian_variance_camera = float(config['robot']['camera_sensor_noise']) # Camera sensor robot noise.
@@ -59,9 +60,10 @@ class robotModel:
         self.vel_x = [0] # Noisy historical velocity in x axes.
         self.vel_z = [0] # Noisy historical velocity in z axes.
         self.found_goal = False # By default the robot hasnt found the goal.
-        self.localized = localized # True if 90 or more
+        self.localized = localized # True if 90 or more --> Depricated, will not be used.
         self.laserRange = 1 # Robot laser range signal.
         self.gridRobot1DPosition = utilities.get_state_from_pos([self.pos_zt,self.pos_xt])# x 2, z 0   
+        self.gridMap.canvas.itemconfig(self.gridMap.map[self.gridRobot1DPosition].tkinterCellIndex, fill=Object_Colour.Robot.value) # Put the current cell as object of type robot.
         self.collided = False # Robot collided with object at time t.
         self.master = master
         self.cumulative_reward = 0
@@ -646,6 +648,47 @@ class robotModel:
 
     def robotCrushed(self):
         return True
+
+
+    '''Reset simulation to the initial configuration.'''
+    def reset_simulation(self):
+        
+        # 1. Put back the color of the goal cell in init pose of goal and add object type goal.
+        goalObject = objectModel(self.gridMap.goal_x_pose,self.gridMap.goal_z_pose,Object_Colour.Goal.name)
+        self.gridMap.map[self.gridMap.goal_1D_pose].object = goalObject
+        self.canvas.itemconfig(self.map[self.gridMap.goal_1D_pose].tkinterCellIndex, fill=Object_Colour.Goal.name)
+
+        # 2. Reset all rewards for robot and history.
+        x,z = self.manual_robot_pose(int(self.initial_pose_x),int(self.initial_pose_z),self.gridMap) # Will move the robot also in the simulation.
+        self.pos_xt = x # Reset real Position in x axes at time t.
+        self.pos_zt = z # Reset real Position in z axes at time t.
+        self.vel_xt = 0 # Reset velocity in x axes at time t.
+        self.vel_zt = 0 # Reset velocity in x axes at time t.
+
+        self.noisy_pos_xt_encoder = self.apply_gaussian_noise_encoder(self.pos_xt)
+        self.noisy_pos_zt_encoder = self.apply_gaussian_noise_encoder(self.pos_zt)
+        self.noisy_pos_xt_camera = self.apply_gaussian_noise_camera(self.pos_xt)
+        self.noisy_pos_zt_camera = self.apply_gaussian_noise_camera(self.pos_zt)
+
+        self.pos_x.clear()
+        self.pos_z.clear()
+        self.pos_x_noisy_encoder.clear()
+        self.pos_z_noisy_encoder.clear()
+        self.pos_x_noisy_camera.clear()
+        self.pos_z_noisy_camera.clear()
+
+        self.pos_xt_kalman = 0
+        self.pos_zt_kalman = 0
+        self.pos_x_kalman.clear()
+        self.pos_z_kalman.clear()
+
+        self.vel_x.clear()
+        self.vel_z.clear()
+        self.found_goal = False # By default the robot hasnt found the goal.
+        self.localized = False # True if 90 or more
+        self.gridRobot1DPosition = utilities.get_state_from_pos([self.pos_zt,self.pos_xt])# x 2, z 0   
+        self.collided = False # Robot collided with object at time t.
+        self.cumulative_reward = 0
 
     def amcl(self,map): 
         # Needs at least detecting two objects for localization. If not, robot lost.

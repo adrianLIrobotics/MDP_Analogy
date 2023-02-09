@@ -6,6 +6,7 @@ from colour import Object_Colour
 from robot import robotModel
 from configparser import ConfigParser
 import pathlib
+import utilities
 
 # Get general configuration data
 config_path = pathlib.Path(__file__).parent.absolute() / "config.ini"
@@ -13,6 +14,8 @@ config = ConfigParser()
 config.read(config_path)
 randomMap = config['map']['randomMap']
 loadMap = config['map']['loadMap']
+goal_x = config['map']['goal_initil_pose_x']
+goal_z = config['map']['goal_initil_pose_z']
 
 UNFILLED = '#fff'
 colours = (UNFILLED, 'red', 'green', 'blue', 'cyan', 'orange', 'yellow',
@@ -28,7 +31,10 @@ class Map:
         self.mapMaxSize = 50
         self.canvas = canvas
         self.map = []  
-        self.ObjectsNumber = 5
+        self.ObjectsNumber = 5 # Only used to set the number of walls in create random map fucntion.
+        self.goal_x_pose = goal_x
+        self.goal_z_pose = goal_z
+        self.goal_1D_pose = utilities.get_state_from_pos([self.goal_z_pose,self.goal_x_pose])
 
         npad = self.mapSize + 1
         xsize = (width - npad*pad) / self.mapSize
@@ -83,6 +89,10 @@ class Map:
                     self.gridPosition = val
                     print(gridMap.map[val].pos_x,gridMap.map[val].pos_z)
                     return gridMap.map[val].pos_x,gridMap.map[val].pos_z
+
+    '''Spawn a goal in given coordinates'''
+    def spawn_goal(self, x_pose, z_pose):
+        pass
 
     def createRamdomMap(self,a): # Of walls only
         """ Populate the grid map with obstacles in random cell positions """
@@ -162,7 +172,8 @@ class Map:
                     if this_colour == Object_Colour.Water.value:
                         self.map[i].fill_cell(Object_Colour.Water.name)
 
-
+                    if this_colour == Object_Colour.Goal.value:
+                        self.map[i].fill_cell(Object_Colour.Goal.name)
     def loadMap(self):
         """Load an image from a provided file."""
 
@@ -209,6 +220,9 @@ class Map:
 
                     if this_colour == Object_Colour.Water.value:
                         self.map[i].fill_cell(Object_Colour.Water.name)
+
+                    if this_colour == Object_Colour.Goal.value:
+                        self.map[i].fill_cell(Object_Colour.Goal.name)
 
 
     def _get_cell_coords(self, i):

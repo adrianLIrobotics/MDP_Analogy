@@ -142,7 +142,8 @@ class GridApp:
         self.robot = robotModel(True,self.gridMap.mapSize,self.gridMap,self)
 
         # Add MDP
-        Mdp(n, self.robot, self.gridMap)
+        self.markov_decision_process = Mdp(n, self.robot, self.gridMap)
+        
 
         self.openPlotWindow(master, self.robot)
 
@@ -329,14 +330,13 @@ class GridApp:
             self.palette_rects.append(rect)
         # ics is the index of the currently selected colour.
 
-        # Robot info 
+        '''Robot control panel'''
         labelframe = LabelFrame(newWindow)
         labelframe.pack(side=TOP, padx=pad*2, pady=pad)
 
         labelframe2 = LabelFrame(labelframe, text="Robot-actions")
         labelframe2.pack(side=TOP, padx=pad*2, pady=pad)
 
-        # command= lambda: self.gridMap.createRamdomMap(self.inputFeatures.get("1.0","end-1c"))
         b_up = Button(labelframe2, text='UP', command = lambda: robot.moveUp(get_index()))
         b_up.pack(side=RIGHT, padx=pad, pady=pad)
 
@@ -351,6 +351,9 @@ class GridApp:
 
         b_inspect = Button(labelframe2, text='INSPECT', command = self.inspect_cell)
         b_inspect.pack(side=RIGHT, padx=pad, pady=pad)
+
+        b_reset = Button(labelframe2, text='RESET', command = robot.reset_simulation)
+        b_reset.pack(side=RIGHT, padx=pad, pady=pad)
 
         def get_index(*arg):
             print("combo: ", str(var.get()))
@@ -425,10 +428,10 @@ class GridApp:
         mdp_map_frame = LabelFrame(labelframe, text="MDP & MAP")
         mdp_map_frame.pack(side=TOP, padx=pad*2, pady=pad)
 
-        b_run = Button(mdp_map_frame, text='RUN')
+        b_run = Button(mdp_map_frame, text='RUN', command=self.markov_decision_process.run_best_policy)
         b_run.pack(side=RIGHT, padx=pad, pady=pad)
 
-        b_train = Button(mdp_map_frame, text='Train')
+        b_train = Button(mdp_map_frame, text='Train', command=self.markov_decision_process.train_model)
         b_train.pack(side=RIGHT, padx=pad, pady=pad)
 
         self.t_reward = Text(mdp_map_frame,height = 1.5,width = 5)
@@ -440,7 +443,7 @@ class GridApp:
         b_clear = Button(mdp_map_frame, text='clear', command=self.gridMap.clearMap)
         b_clear.pack(side=RIGHT, padx=pad, pady=pad)
 
-        #input buttom
+        # Input buttom
         self.inputFeatures = Text(mdp_map_frame,height = 1.5,width = 5)
         self.inputFeatures.pack(side=RIGHT, padx=pad, pady=pad)
 

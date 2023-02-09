@@ -5,9 +5,20 @@ import random
 import utilities
 from state import state_model
 from colour import Object_Colour
+from configparser import ConfigParser
+import pathlib
 
 path_to_policies = "data/policies/"
 policy_file_name = "action_q_values.txt"
+
+
+# Get general configuration data
+config_path = pathlib.Path(__file__).parent.absolute() / "config.ini"
+config = ConfigParser()
+config.read(config_path)
+n_episodes = config['q_learning']['number_of_episodes']
+max_steps_ep = config['q_learning']['max_episode_steps']
+
 
 # Based upon Q-Learning to get optimal policy.
 class reinforment_learning():
@@ -16,8 +27,8 @@ class reinforment_learning():
         self.epsilon = 0.1 # ε-greedy value
         self.robot = robot
         self.num_states = num_states # Number of states in the mdp.
-        self.number_episodes = 20 # An episode is the path of agent until it reaches destination.
-        self.max_episode_steps = 100 # Maximum number of actions before arriving to goal.
+        self.number_episodes = int(n_episodes) # An episode is the path of agent until it reaches destination.
+        self.max_episode_steps = int(max_steps_ep) # Maximum number of actions before arriving to goal.
         self.min_alpha = 0.02 # Learning rate
         self.discount_factor = 0.5 # γ Gamma discount factor for future accountability.
         self.alphas = np.linspace(1.0, self.min_alpha, self.number_episodes) # Decay the learning rate, alpha, every episode 
@@ -82,7 +93,7 @@ class reinforment_learning():
     '''
     def q(self,state, action=None):
         if state not in self.q_table:
-            self.q_table[state] = np.zeros(len(self.actions))
+            self.q_table[state] = np.zeros(len(self.actions)) # The key of the dict is state.
             
         if action is None:
             return self.q_table[state] # If an action is not specified as input param, return all possible actions for a given state.
@@ -94,7 +105,7 @@ class reinforment_learning():
     '''
     def reset_simulation(self):
         # Teleport the robot to initial position.
-        self.robot.manual_robot_pose(self.robot.pos_x[0], self.robot.pos_z[0], self.grid )
+        self.robot.reset_simulation()
 
     '''
     Generate from q learning max(π) and q table
@@ -115,11 +126,12 @@ class reinforment_learning():
                 state = next_state
                 if done:
                     # save q-table.
-                    self.save_q_table()
+                    #self.save_q_table()
                     break
+            self.reset_simulation() # Reset simulation for new cycle.
             # Reset map and robot position --> TODO
             print(f"Episode {e + 1}: total reward -> {total_reward}")
-
+        print("Finished training...")
 
 
     ''' 
@@ -128,38 +140,43 @@ class reinforment_learning():
     def get_transitionted_state(self,current_state,action):
         # Run action in robot
         if self.actions[0] == action:
-            self.robot.moveUpOne() 
+            self.robot.moveUp(1) 
         if self.actions[1] == action:
-            self.robot.moveUpTwo()
+            self.robot.moveUp(2)
         if self.actions[2] in action:
-            self.robot.moveDownOne()
+            self.robot.moveDown(1)
         if self.actions[3] == action:
-            self.robot.moveDownTwo()
+            self.robot.moveDown(2)
         if self.actions[4] == action:
-            self.robot.moveLeftOne()
+            self.robot.moveLeft(1)
         if self.actions[5] == action:
-            self.robot.moveLeftTwo()
+            self.robot.moveLeft(1)
         if self.actions[6] == action:
-            self.robot.moveRightOne()
+            self.robot.moveRight(1)
         if self.actions[7] == action:
-            self.robot.moveRightTWo()
+            self.robot.moveRight(2)
         if self.actions[8] == action:
             pass
         
         # return s' 
-        s_prime = utilities.get_state_from_pos(self.robot.pos_x[0],self.robot.pos_z[0])
+        #s_prime = utilities.get_state_from_pos(self.robot.pos_x[0],self.robot.pos_z[0])
+        '''Use kalman filter estimation to get new pose'''
+        s_prime = utilities.get_state_from_pos(self.robot.pos_xt_kalman,self.robot.pos_zt_kalman)
         
+        '''
         # if robot collides with wall, reward is -0.1
         if (current_state == s_prime) and (self.robot.collided == True):
             self.robot.gridMap.map[s_prime].reward = -0.1
-            
+        ''' 
         # Check if robot has arrived to destination
         if (self.grid.map[s_prime].colour == Object_Colour.Goal.value):
             is_done = True
         else:
             is_done = False
 
-        return state_model(grid=self.grid, robotPose=[self.robot.pos_xt, self.robot.pos_zt]), self.grid.map[s_prime].reward, is_done
+        #return state_model(grid=self.grid, robotPose=[self.robot.pos_xt, self.robot.pos_zt]), self.grid.map[s_prime].reward, is_done
+        return state_model(grid=self.grid, robotPose=[self.robot.pos_xt, self.robot.pos_zt]), self.robot.cumulative_reward, is_done
+        
 
     '''
     max(π) | s

@@ -4,7 +4,7 @@ import random
 
 class Mdp:
 
-    def __init__(self,map_size,robot,grid):
+    def __init__(self,map_size,robot,grid): # grid == gridMap
 
         self.robot = robot # Robot using mdp
         self.num_states = map_size**2
@@ -18,13 +18,20 @@ class Mdp:
     '''
     S' | S, max(π)
     '''
-    def apply_best_action(self,current_state):
+    def apply_best_action(self,current_state = None):
         # Use q-table to find best action
-        action = self.learning.get_optimal_policy(current_state)
+        action = self.learning.get_optimal_policy(self.current_state)
         # Apply the best action
         next_state, reward, done = self.learning.get_transitionted_state(current_state, action)
         self.state_history.append(next_state)
         self.total_reward += reward
+
+    '''
+    Run trained model max(π) until goal is reached. 
+    '''
+    def run_best_policy(self):
+        while (self.robot.found_goal != True):
+            self.apply_best_action()
 
     '''
     S' | S, random(π)
