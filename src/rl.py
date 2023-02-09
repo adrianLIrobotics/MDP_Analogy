@@ -41,10 +41,10 @@ class reinforment_learning():
     '''
     Update Q Value
     '''
-    def update_q_value(self,state,next_state,reward,alpha):
+    def update_q_value(self,state,next_state,reward,alpha, action):
         #Q(s,a) = Q(s,a) + α(R + γ * max Q(s',a) - Q(s,a))
-        self.q(state)[self.action] = self.q(state, self.action) + \
-                alpha * (reward + self.discount_factor *  np.max(self.q(next_state)) - self.q(state, self.action))
+        self.q(state)[action] = self.q(state, action) + \
+                alpha * (reward + self.discount_factor *  np.max(self.q(next_state)) - self.q(state, action))
 
     '''
     Choose action based on epsilon greedy algorithm
@@ -56,7 +56,7 @@ class reinforment_learning():
             # Choose to explore other options.
             return random.choice(self.actions)
 
-        if random.random > self.epsilon:
+        if random.uniform(0, 1) > self.epsilon:
             return exploit(s)
         else:
             return explore()
@@ -119,10 +119,11 @@ class reinforment_learning():
 
             for _ in range(self.max_episode_steps):
                 action = self.epsilon_greedy_algorithm(state)
+                print("Action chosen: "+str(action))
                 next_state, reward, done = self.get_transitionted_state(state, action)
                 total_reward += reward
                 # Update the q value associated with the given state and action.
-                self.update_q_value(state,next_state,reward,alpha)
+                self.update_q_value(state,next_state,reward,alpha,action)
                 state = next_state
                 if done:
                     # save q-table.
@@ -143,7 +144,7 @@ class reinforment_learning():
             self.robot.moveUp(1) 
         if self.actions[1] == action:
             self.robot.moveUp(2)
-        if self.actions[2] in action:
+        if self.actions[2] == action:
             self.robot.moveDown(1)
         if self.actions[3] == action:
             self.robot.moveDown(2)
@@ -161,7 +162,7 @@ class reinforment_learning():
         # return s' 
         #s_prime = utilities.get_state_from_pos(self.robot.pos_x[0],self.robot.pos_z[0])
         '''Use kalman filter estimation to get new pose'''
-        s_prime = utilities.get_state_from_pos(self.robot.pos_xt_kalman,self.robot.pos_zt_kalman)
+        s_prime = utilities.get_state_from_pos((self.robot.pos_xt_kalman,self.robot.pos_zt_kalman))
         
         '''
         # if robot collides with wall, reward is -0.1
@@ -175,7 +176,7 @@ class reinforment_learning():
             is_done = False
 
         #return state_model(grid=self.grid, robotPose=[self.robot.pos_xt, self.robot.pos_zt]), self.grid.map[s_prime].reward, is_done
-        return state_model(grid=self.grid, robotPose=[self.robot.pos_xt, self.robot.pos_zt]), self.robot.cumulative_reward, is_done
+        return state_model(self.grid, self.robot), self.robot.cumulative_reward, is_done
         
 
     '''

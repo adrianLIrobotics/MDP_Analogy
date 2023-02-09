@@ -32,8 +32,8 @@ class Map:
         self.canvas = canvas
         self.map = []  
         self.ObjectsNumber = 5 # Only used to set the number of walls in create random map fucntion.
-        self.goal_x_pose = goal_x
-        self.goal_z_pose = goal_z
+        self.goal_x_pose = int(goal_x)
+        self.goal_z_pose = int(goal_z)
         self.goal_1D_pose = utilities.get_state_from_pos([self.goal_z_pose,self.goal_x_pose])
 
         npad = self.mapSize + 1
