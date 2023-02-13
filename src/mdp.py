@@ -1,6 +1,7 @@
 from state import state_model
 from rl import reinforment_learning
 import random
+import utilities
 
 class Mdp:
 
@@ -21,6 +22,8 @@ class Mdp:
     def apply_best_action(self,current_state = None):
         # Use q-table to find best action
         action = self.learning.get_optimal_policy(self.current_state)
+        action_out = utilities.translate_action_id_to_name(action)
+        print("Best action: "+str(action_out))
         # Apply the best action
         next_state, reward, done = self.learning.get_transitionted_state(current_state, action)
         self.state_history.append(next_state)
@@ -30,7 +33,9 @@ class Mdp:
     Run trained model max(π) until goal is reached. 
     '''
     def run_best_policy(self):
-        while (self.robot.found_goal != True):
+        print("Running best policy")
+        print(self.robot.goal_reached)
+        while (self.robot.goal_reached != True):
             self.apply_best_action()
 
     '''

@@ -67,5 +67,25 @@ Get the % of localization believe of the robot.
 def get_localized_believe(real_pose_x, real_pose_z, estimated_pose_x, estimated_pose_z):
     pass
 
+def translate_action_id_to_name(id):
+        if id ==0:
+            return "moveUp1"
+        elif id==1:
+            return "moveUp2"
+        elif id==2:
+            return "moveDown1"
+        elif id==3:
+            return "moveDown2"
+        elif id==4:
+            return "moveLeft1"
+        elif id==5:
+            return "moveLeft2"
+        elif id==6:
+            return "moveRight1"
+        elif id==7:
+            return "moveRight2"
+        elif id==8:
+            return "stay"
+
 
                         

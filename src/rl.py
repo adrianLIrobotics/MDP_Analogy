@@ -106,25 +106,6 @@ class reinforment_learning():
     
         return self.q_table[state][action] # returns the q-value of the corresponding index of the given action.
 
-    def translate_action_id_to_name(self, id):
-        if id ==0:
-            return "moveUp1"
-        elif id==1:
-            return "moveUp2"
-        elif id==2:
-            return "moveDown1"
-        elif id==3:
-            return "moveDown2"
-        elif id==4:
-            return "moveLeft1"
-        elif id==5:
-            return "moveLeft2"
-        elif id==6:
-            return "moveRight1"
-        elif id==7:
-            return "moveRight2"
-        elif id==8:
-            return "stay"
 
     def open_log_file(self, path_param, name_param):
         f = open(path_param + name_param, "w")
@@ -165,7 +146,7 @@ class reinforment_learning():
             
             for i in range(0, self.max_episode_steps): #
                 action = self.epsilon_greedy_algorithm(state)
-                #self.write_learning_routes(self.translate_action_id_to_name(action), f)
+                #self.write_learning_routes(utilities.translate_action_id_to_name(action), f)
                 next_state, reward, done = self.get_transitionted_state(state, action)
                 total_reward += reward
                 # Update the q value associated with the given state and action.
@@ -182,7 +163,9 @@ class reinforment_learning():
         self.write_learning_routes("Finished training...", f)
         self.close_file(f)
         self.write_q_value(self.q_table,h) # Save Q_table to file.
-        self.close_file(f,h)
+        self.close_file(h)
+        # Reset self.goal_reached for running eval.
+        self.robot.goal_reached = False
 
     ''' 
     P(s' | s, a)
