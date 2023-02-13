@@ -8,9 +8,14 @@ from colour import Object_Colour
 from configparser import ConfigParser
 import pathlib
 import time
+from datetime import datetime
+
+now = datetime.now()
+current_time = now.strftime("%Y_%m_%d_%H_%M_%S")
 
 path_to_policies = "data/policies/"
-policy_file_name = "action_q_values.txt"
+policy_file_name = "action_q_values_"+str(current_time)+".txt"
+q_value_file = "q_value_file_"+str(current_time)+".txt"
 
 
 # Get general configuration data
@@ -118,14 +123,19 @@ class reinforment_learning():
             return "moveRight1"
         elif id==7:
             return "moveRight2"
+        elif id==8:
+            return "stay"
 
-    def open_file(self):
-        f = open(path_to_policies + policy_file_name, "w")
+    def open_log_file(self, path_param, name_param):
+        f = open(path_param + name_param, "w")
         return f
 
     '''Save learning experience'''
     def write_learning_routes(self,val, f):
         f.write(str(val)+'\n')
+
+    def write_q_value(self, val, f):
+        f.write(str(val))
         
     def close_file(self,f):
         f.close() 
@@ -145,18 +155,17 @@ class reinforment_learning():
         print("Number of ep: "+str(self.number_episodes))
         print("Number of steps in episode: "+str(self.max_episode_steps))
         print("=============================")
-        f = self.open_file() # Start saving the route info
+        f = self.open_log_file(path_to_policies,policy_file_name) # Start saving the route info 
+        h = self.open_log_file(path_to_policies, q_value_file)
 
         for e in range(self.number_episodes):
-            #print("Episode: "+str(e))
             state = self.start_state
             total_reward = 0
             alpha = self.alphas[e]
             
             for i in range(0, self.max_episode_steps): #
-                #print("Step: "+str(i))
                 action = self.epsilon_greedy_algorithm(state)
-                self.write_learning_routes(self.translate_action_id_to_name(action), f)
+                #self.write_learning_routes(self.translate_action_id_to_name(action), f)
                 next_state, reward, done = self.get_transitionted_state(state, action)
                 total_reward += reward
                 # Update the q value associated with the given state and action.
@@ -164,17 +173,16 @@ class reinforment_learning():
                 state = next_state
                 if done:
                     print("Robot is in goal cell")
-                    # save q-table.
-                    #self.save_q_table()
                     break
             
-            #self.reset_simulation() # Reset simulation for new cycle.
-            # Reset map and robot position --> TODO
+            #self.reset_simulation() # Reset simulation for new cycle. MAYBE THIS IS NOT NEEDED.
             print(f"Episode {e + 1}: total reward -> {total_reward}")
             self.write_learning_routes(f"Episode {e + 1}: total reward -> {total_reward}", f)
         print("Finished training...")
         self.write_learning_routes("Finished training...", f)
         self.close_file(f)
+        self.write_q_value(self.q_table,h) # Save Q_table to file.
+        self.close_file(f,h)
 
     ''' 
     P(s' | s, a)
