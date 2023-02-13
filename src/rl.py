@@ -7,6 +7,7 @@ from state import state_model
 from colour import Object_Colour
 from configparser import ConfigParser
 import pathlib
+import time
 
 path_to_policies = "data/policies/"
 policy_file_name = "action_q_values.txt"
@@ -100,6 +101,35 @@ class reinforment_learning():
     
         return self.q_table[state][action] # returns the q-value of the corresponding index of the given action.
 
+    def translate_action_id_to_name(self, id):
+        if id ==0:
+            return "moveUp1"
+        elif id==1:
+            return "moveUp2"
+        elif id==2:
+            return "moveDown1"
+        elif id==3:
+            return "moveDown2"
+        elif id==4:
+            return "moveLeft1"
+        elif id==5:
+            return "moveLeft2"
+        elif id==6:
+            return "moveRight1"
+        elif id==7:
+            return "moveRight2"
+
+    def open_file(self):
+        f = open(path_to_policies + policy_file_name, "w")
+        return f
+
+    '''Save learning experience'''
+    def write_learning_routes(self,val, f):
+        f.write(str(val)+'\n')
+        
+    def close_file(self,f):
+        f.close() 
+
     '''
     Reset the system for new episode of training.
     '''
@@ -111,29 +141,40 @@ class reinforment_learning():
     Generate from q learning max(π) and q table
     '''
     def q_learning(self):
+        print("=============================")
+        print("Number of ep: "+str(self.number_episodes))
+        print("Number of steps in episode: "+str(self.max_episode_steps))
+        print("=============================")
+        f = self.open_file() # Start saving the route info
+
         for e in range(self.number_episodes):
-    
+            #print("Episode: "+str(e))
             state = self.start_state
             total_reward = 0
             alpha = self.alphas[e]
-
-            for _ in range(self.max_episode_steps):
+            
+            for i in range(0, self.max_episode_steps): #
+                #print("Step: "+str(i))
                 action = self.epsilon_greedy_algorithm(state)
-                print("Action chosen: "+str(action))
+                self.write_learning_routes(self.translate_action_id_to_name(action), f)
                 next_state, reward, done = self.get_transitionted_state(state, action)
                 total_reward += reward
                 # Update the q value associated with the given state and action.
                 self.update_q_value(state,next_state,reward,alpha,action)
                 state = next_state
                 if done:
+                    print("Robot is in goal cell")
                     # save q-table.
                     #self.save_q_table()
                     break
-            self.reset_simulation() # Reset simulation for new cycle.
+            
+            #self.reset_simulation() # Reset simulation for new cycle.
             # Reset map and robot position --> TODO
             print(f"Episode {e + 1}: total reward -> {total_reward}")
+            self.write_learning_routes(f"Episode {e + 1}: total reward -> {total_reward}", f)
         print("Finished training...")
-
+        self.write_learning_routes("Finished training...", f)
+        self.close_file(f)
 
     ''' 
     P(s' | s, a)
@@ -142,21 +183,30 @@ class reinforment_learning():
         # Run action in robot
         if self.actions[0] == action:
             self.robot.moveUp(1) 
+          #  time.sleep(3)
         if self.actions[1] == action:
             self.robot.moveUp(2)
+           # time.sleep(3)
         if self.actions[2] == action:
             self.robot.moveDown(1)
+           # time.sleep(3)
         if self.actions[3] == action:
             self.robot.moveDown(2)
+            #time.sleep(3)
         if self.actions[4] == action:
             self.robot.moveLeft(1)
+            #time.sleep(3)
         if self.actions[5] == action:
             self.robot.moveLeft(1)
+           # time.sleep(3)
         if self.actions[6] == action:
             self.robot.moveRight(1)
+           #time.sleep(3)
         if self.actions[7] == action:
             self.robot.moveRight(2)
+            #time.sleep(3)
         if self.actions[8] == action:
+            #time.sleep(3)
             pass
         
         # return s' 
@@ -170,10 +220,19 @@ class reinforment_learning():
             self.robot.gridMap.map[s_prime].reward = -0.1
         ''' 
         # Check if robot has arrived to destination
-        if (self.grid.map[s_prime].colour == Object_Colour.Goal.value):
+        if (self.robot.goal_reached == True):
             is_done = True
         else:
             is_done = False
+        '''
+        try:
+            if (self.grid.map[s_prime].colour == Object_Colour.Goal.value):
+                is_done = True
+            else:
+                is_done = False
+        except:
+            is_done = False
+        '''
 
         #return state_model(grid=self.grid, robotPose=[self.robot.pos_xt, self.robot.pos_zt]), self.grid.map[s_prime].reward, is_done
         return state_model(self.grid, self.robot), self.robot.cumulative_reward, is_done

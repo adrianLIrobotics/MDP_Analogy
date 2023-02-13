@@ -62,6 +62,7 @@ class robotModel:
         self.vel_x = [0] # Noisy historical velocity in x axes.
         self.vel_z = [0] # Noisy historical velocity in z axes.
         self.found_goal = False # By default the robot hasnt found the goal.
+        self.goal_reached = False
         self.localized = localized # True if 90 or more --> Depricated, will not be used.
         self.laserRange = int(range_laser) # Robot laser range signal.
         self.gridRobot1DPosition = utilities.get_state_from_pos([self.pos_zt,self.pos_xt])# x 2, z 0   
@@ -108,7 +109,7 @@ class robotModel:
     def apply_gaussian_noise_camera(self, data):
         position = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt)
         try:
-            print("Number of objects detected from camera: "+str(self.num_objects_detected()))
+            #print("Number of objects detected from camera: "+str(self.num_objects_detected()))
             # Depending on the number of objects the camera detects, position output is better or worse.
             if self.num_objects_detected() == 0:
                 self.gaussian_variance_camera = 0.6
@@ -116,7 +117,7 @@ class robotModel:
                 self.gaussian_variance_camera = 0.3 # 0.4
             elif self.num_objects_detected() == 2:
                 self.gaussian_variance_camera = 0.2
-            elif self.num_objects_detected() == 3:
+            elif self.num_objects_detected() == 3: #more than 3
                 self.gaussian_variance_camera = 0.1
         except:
             pass
@@ -143,14 +144,14 @@ class robotModel:
         while(pos_allowed):
             # Random number from all possible grid positions 
             val = utilities.get_state_from_pos((x,z))
-            print("val ",val)
+            #print("val ",val)
             if (gridMap.map[val].empty):
                 gridMap.map[val].empty = False
                 gridMap.map[val].object = self #Object_Colour.Robot.name
                 # Put the color of the robot in the canvas.
                 gridMap.canvas.itemconfig(gridMap.map[val].tkinterCellIndex, fill=Object_Colour.Robot.value)
                 self.gridPosition = val
-                print(gridMap.map[val].pos_x,gridMap.map[val].pos_z)
+                #print(gridMap.map[val].pos_x,gridMap.map[val].pos_z)
                 return gridMap.map[val].pos_x,gridMap.map[val].pos_z
 
     '''Convert 2D position array to 1D position array for TKinter canvas'''
@@ -219,11 +220,11 @@ class robotModel:
                 self.cumulative_reward += -0.2
                 # If collided, robot position is the same
                 newPosition = oldPosition
-            print("Collided: ",self.collided)
+            #print("Collided: ",self.collided)
             self.master.writeTextBox("Robot collided!")
             # Check if robot can move at least one up.
             if ((self.gridMap.map[collidedPlusOnePosition].empty == True) and (self.gridMap.map[collidedPlusOnePosition].first_row)) or ((self.gridMap.map[collidedPlusOnePosition].empty == True) and not (self.gridMap.map[oldPosition].first_row)):
-                print("Moving only 1...")
+                #print("Moving only 1...")
                 newPosition = collidedPlusOnePosition
                 # Remove robot from canvas actual position
                 self.gridMap.canvas.itemconfig(self.gridMap.map[oldPosition].tkinterCellIndex, fill='#fff')
@@ -235,6 +236,7 @@ class robotModel:
                 self.pos_zt -= 1
         else:
             if (num_steps == 1):
+                #print("Reward "+str(self.gridMap.map[newPosition].reward))# empty reward
                 self.cumulative_reward += self.gridMap.map[newPosition].reward
                 self.pos_zt -= 1
             else:
@@ -258,8 +260,8 @@ class robotModel:
         # Update new cell with object type robot and old cell of type #fff
         self.gridMap.map[newPosition].object = self
         self.gridMap.map[newPosition].object.objectType = Object_Colour.Robot.name
-        print("self.pos_zt " + str(self.pos_zt))
-        print("self.pos_xt " + str(self.pos_xt))
+        #print("self.pos_zt " + str(self.pos_zt))
+        #print("self.pos_xt " + str(self.pos_xt))
         self.gridRobot1DPosition = utilities.get_state_from_pos([self.pos_zt,self.pos_xt])
         # Update history
         self.pos_x.append(self.pos_xt)
@@ -272,8 +274,8 @@ class robotModel:
         '''Estimate new position using kalman filter'''
         z = array([[self.pos_x_noisy_camera[-1]],[self.pos_z_noisy_camera[-1]]])
         mu, cov = self.kalman.predict(z)
-        print("self.pos_x_noisy_camera[-1] "+str(self.pos_x_noisy_camera[-1]))
-        print("self.pos_z_noisy_camera[-1] "+str(self.pos_z_noisy_camera[-1]))
+        #print("self.pos_x_noisy_camera[-1] "+str(self.pos_x_noisy_camera[-1]))
+        #print("self.pos_z_noisy_camera[-1] "+str(self.pos_z_noisy_camera[-1]))
 
         
         # Update kalman signal history
@@ -286,6 +288,10 @@ class robotModel:
         self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition, self.pos_xt, self.pos_1d_kalman, self.pos_xt_kalman, self.pos_zt_kalman)
         self.master.updateXPlot(self.pos_x, self.pos_x_noisy_encoder, self.pos_x_noisy_camera, self.pos_x_kalman)
         self.master.updateYPlot(self.pos_z, self.pos_z_noisy_encoder, self.pos_z_noisy_camera, self.pos_z_kalman)
+
+        # Check if robot arrived to destionatio.
+        if self.gridMap.map[newPosition].colour == Object_Colour.Goal.value:
+            self.goal_reached = True
 
     '''
     Control command to move the robot in the down direction with
@@ -308,7 +314,7 @@ class robotModel:
             robot_collided = True
         if robot_collided:
             self.collided = True
-            print("Robot collided!")
+            #print("Robot collided!")
             self.master.writeTextBox("Robot collided!")
             if (num_steps == 1):
                 self.cumulative_reward += -0.1
@@ -326,7 +332,7 @@ class robotModel:
             except: # out of scope number from grid, means robot is trying to exit natural limits of grid.
                 move_one = False
             if move_one:
-                print("Moving only 1")
+                #"Moving only 1")
                 newPosition = collidedPlusOnePosition
                 # Remove robot from canvas actual position
                 self.gridMap.canvas.itemconfig(self.gridMap.map[oldPosition].tkinterCellIndex, fill='#fff')
@@ -363,8 +369,8 @@ class robotModel:
         # Update new cell with object type robot and old cell of type #fff
         self.gridMap.map[newPosition].object = self
         self.gridMap.map[newPosition].object.objectType = Object_Colour.Robot.name
-        print("self.pos_zt " + str(self.pos_zt))
-        print("self.pos_xt " + str(self.pos_xt))
+        #print("self.pos_zt " + str(self.pos_zt))
+        #print("self.pos_xt " + str(self.pos_xt))
         self.gridRobot1DPosition = utilities.get_state_from_pos([self.pos_zt,self.pos_xt])
         # Update history
         self.pos_x.append(self.pos_xt)
@@ -388,6 +394,10 @@ class robotModel:
         self.master.updateXPlot(self.pos_x, self.pos_x_noisy_encoder, self.pos_x_noisy_camera, self.pos_x_kalman)
         self.master.updateYPlot(self.pos_z, self.pos_z_noisy_encoder, self.pos_z_noisy_camera, self.pos_z_kalman)
 
+        # Check if robot arrived to destionatio.
+        if self.gridMap.map[newPosition].colour == Object_Colour.Goal.value:
+            self.goal_reached = True
+
     '''
     Control command to move the robot in the left direction with
     parameter number of steps.
@@ -409,7 +419,7 @@ class robotModel:
             robot_collided = True
         if robot_collided:
             self.collided = True
-            print("Robot collided!")
+            #print("Robot collided!")
             self.master.writeTextBox("Robot collided!")
             if (num_steps == 1):
                 self.cumulative_reward += -0.1
@@ -428,7 +438,7 @@ class robotModel:
                 move_one = False
 
             if move_one:
-                print("Moving only 1")
+                #print("Moving only 1")
                 newPosition = collidedPlusOnePosition
                 # Remove robot from canvas actual position
                 self.gridMap.canvas.itemconfig(self.gridMap.map[oldPosition].tkinterCellIndex, fill='#fff')
@@ -466,12 +476,12 @@ class robotModel:
         # Update new cell with object type robot and old cell of type #fff
         self.gridMap.map[newPosition].object = self
         self.gridMap.map[newPosition].object.objectType = Object_Colour.Robot.name
-        print("self.pos_zt " + str(self.pos_zt))
-        print("self.pos_xt " + str(self.pos_xt))
+        #print("self.pos_zt " + str(self.pos_zt))
+        #print("self.pos_xt " + str(self.pos_xt))
         self.gridRobot1DPosition = utilities.get_state_from_pos([self.pos_zt,self.pos_xt])
         # Update history
         self.pos_x.append(self.pos_xt)
-        print("self.pos_x h " +str(self.pos_x))
+        #print("self.pos_x h " +str(self.pos_x))
         self.pos_z.append(self.pos_zt)
         # Update noisy history
         self.pos_x_noisy_encoder.append(self.apply_gaussian_noise_encoder(self.pos_xt))
@@ -491,6 +501,10 @@ class robotModel:
         self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition, self.pos_xt, self.pos_1d_kalman, self.pos_xt_kalman, self.pos_zt_kalman)
         self.master.updateXPlot(self.pos_x, self.pos_x_noisy_encoder, self.pos_x_noisy_camera, self.pos_x_kalman)
         self.master.updateYPlot(self.pos_z, self.pos_z_noisy_encoder, self.pos_z_noisy_camera, self.pos_z_kalman)
+
+        # Check if robot arrived to destionatio.
+        if self.gridMap.map[newPosition].colour == Object_Colour.Goal.value:
+            self.goal_reached = True
 
     '''
     Control command to move the robot in the right direction with
@@ -513,7 +527,7 @@ class robotModel:
             robot_collided = True
         if robot_collided:
             self.collided = True
-            print("Robot collided!")
+            #print("Robot collided!")
             self.master.writeTextBox("Robot collided!")
             if (num_steps == 1):
                 self.cumulative_reward += -0.1
@@ -532,7 +546,7 @@ class robotModel:
                 move_one = False
 
             if move_one:
-                print("Moving only 1")
+                #print("Moving only 1")
                 newPosition = collidedPlusOnePosition
                 # Remove robot from canvas actual position
                 self.gridMap.canvas.itemconfig(self.gridMap.map[oldPosition].tkinterCellIndex, fill='#fff')
@@ -570,8 +584,8 @@ class robotModel:
         # Update new cell with object type robot and old cell of type #fff
         self.gridMap.map[newPosition].object = self
         self.gridMap.map[newPosition].object.objectType = Object_Colour.Robot.name
-        print("self.pos_zt " + str(self.pos_zt))
-        print("self.pos_xt " + str(self.pos_xt))
+        #print("self.pos_zt " + str(self.pos_zt))
+        #print("self.pos_xt " + str(self.pos_xt))
         self.gridRobot1DPosition = utilities.get_state_from_pos([self.pos_zt,self.pos_xt])
         # Update history
         self.pos_x.append(self.pos_xt)
@@ -595,6 +609,10 @@ class robotModel:
         self.master.updateXPlot(self.pos_x, self.pos_x_noisy_encoder, self.pos_x_noisy_camera, self.pos_x_kalman)
         self.master.updateYPlot(self.pos_z, self.pos_z_noisy_encoder, self.pos_z_noisy_camera, self.pos_z_kalman)
 
+        # Check if robot arrived to destionatio.
+        if self.gridMap.map[newPosition].colour == Object_Colour.Goal.value:
+            self.goal_reached = True
+
     '''Get number of objects detected and check if goal found.'''
     def num_objects_detected(self):
         #print("2. self.gridRobot1DPosition "+ str(self.gridRobot1DPosition))
@@ -612,7 +630,7 @@ class robotModel:
                     self.found_goal = True
                     self.master.writeTextBox("Goal found!")
             except:
-                print("exception: ")
+                #print("exception: ")
                 pass
         
         # Check down
@@ -648,7 +666,7 @@ class robotModel:
                     self.master.writeTextBox("Goal found!")
             except:
                 pass
-        print("num_objects_detected: ",num_objects_detected)
+        #print("num_objects_detected: ",num_objects_detected)
         return num_objects_detected
 
 
@@ -672,11 +690,12 @@ class robotModel:
 
     '''Reset simulation to the initial configuration.'''
     def reset_simulation(self):
+        print("Reset simulation...")
         
         # 1. Put back the color of the goal cell in init pose of goal and add object type goal.
         goalObject = objectModel(self.gridMap.goal_x_pose,self.gridMap.goal_z_pose,Object_Colour.Goal.name)
         self.gridMap.map[self.gridMap.goal_1D_pose].object = goalObject
-        self.canvas.itemconfig(self.map[self.gridMap.goal_1D_pose].tkinterCellIndex, fill=Object_Colour.Goal.name)
+        self.gridMap.canvas.itemconfig(self.gridMap.map[self.gridMap.goal_1D_pose].tkinterCellIndex, fill=Object_Colour.Goal.value)
 
         # 2. Reset all rewards for robot and history.
         x,z = self.manual_robot_pose(int(self.initial_pose_x),int(self.initial_pose_z),self.gridMap) # Will move the robot also in the simulation.

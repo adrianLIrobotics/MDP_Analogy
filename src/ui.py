@@ -28,11 +28,12 @@ class GridApp:
     ncolours = len(colours)
 
     def key_pressed(self,event):
-        print(event.char)
+        #print(event.char)
+        pass
 
     def setNumberFeatures(self,event):
             featureNumber = self.inputFeatures.get(1.0, "end-1c")
-            print(featureNumber)
+            #print(featureNumber)
 
     def clearTextBox(self):
         self.debug.delete(1.0, END)
@@ -209,7 +210,7 @@ class GridApp:
                     # If cell is not empty and colour palete is white, change cell state to empty.
                     if (self.gridMap.map[i].empty == False) and (self.colours[self.ics]==UNFILLED):
                         self.gridMap.map[i].empty_cell()
-                        print(self.gridMap.map[i].empty)
+                        #print(self.gridMap.map[i].empty)
                     
                     self.w.itemconfig(self.gridMap.map[i].tkinterCellIndex, fill=self.colours[self.ics])
 
@@ -259,7 +260,8 @@ class GridApp:
             self.canvas.draw()
             
         except Exception as e:
-            print(e)
+            pass
+            #print(e)
 
     '''Update graph window z plot'''
     def updateYPlot(self,y, Y_noise_encoder, Y_noise_camera, kalman_z_pose):
@@ -275,7 +277,8 @@ class GridApp:
             self.canvas.draw()
             
         except Exception as e:
-            print(e)
+            #print(e)
+            pass
 
     '''Graphs window'''
     def openPlotWindow(self, master, robot):
@@ -362,7 +365,7 @@ class GridApp:
         b_reset.pack(side=RIGHT, padx=pad, pady=pad)
 
         def get_index(*arg):
-            print("combo: ", str(var.get()))
+            #print("combo: ", str(var.get()))
             return int(var.get())
 
         var = StringVar()

@@ -87,7 +87,7 @@ class Map:
                     # Put the color of the robot in the canvas.
                     gridMap.canvas.itemconfig(gridMap.map[val].tkinterCellIndex, fill=Object_Colour.Goal.value)
                     self.gridPosition = val
-                    print(gridMap.map[val].pos_x,gridMap.map[val].pos_z)
+                    #print(gridMap.map[val].pos_x,gridMap.map[val].pos_z)
                     return gridMap.map[val].pos_x,gridMap.map[val].pos_z
 
     '''Spawn a goal in given coordinates'''
@@ -174,6 +174,13 @@ class Map:
 
                     if this_colour == Object_Colour.Goal.value:
                         self.map[i].fill_cell(Object_Colour.Goal.name)
+
+        # Add collider free property to cell with goal.
+        self.map[self.goal_1D_pose].empty = True
+        # Add reward to goal cell
+        self.map[self.goal_1D_pose].reward = 1000
+        
+
     def loadMap(self):
         """Load an image from a provided file."""
 

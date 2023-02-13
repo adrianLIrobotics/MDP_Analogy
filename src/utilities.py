@@ -66,3 +66,6 @@ Get the % of localization believe of the robot.
 '''
 def get_localized_believe(real_pose_x, real_pose_z, estimated_pose_x, estimated_pose_z):
     pass
+
+
+                        

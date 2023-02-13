@@ -1,4 +1,5 @@
 # Example of q learning from: https://medium.com/@curiousily/solving-an-mdp-with-q-learning-from-scratch-deep-reinforcement-learning-for-hackers-part-1-45d1d360c120
+# https://arshren.medium.com/an-introduction-to-markov-decision-process-8cc36c454d46
 
 from copy import deepcopy
 import numpy as np
