@@ -37,6 +37,8 @@ class Mdp:
         print(self.robot.goal_reached)
         while (self.robot.goal_reached != True):
             self.apply_best_action()
+        # Reset self.robot.goal_reached
+        self.robot.goal_reached = False
 
     '''
     S' | S, random(π)

@@ -2,7 +2,7 @@ class state_model:
 
     def __init__(self,gridMap,robot):
         self.grid = gridMap
-        self.robotPose = robot.pos_xt, robot.pos_zt
+        self.robotPose = [robot.pos_xt, robot.pos_zt]
         #self.localized_robot_believe = robot.localized_believe
         
     def __eq__(self, other):
@@ -12,4 +12,4 @@ class state_model:
         return hash(str(self.grid) + str(self.robotPose))
     
     def __str__(self):
-        return f"State(grid={self.grid}, car_pos={self.robotPose})"
+        return f"State(grid={self.grid}, robotPose={self.robotPose})"

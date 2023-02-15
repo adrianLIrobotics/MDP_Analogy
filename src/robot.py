@@ -276,7 +276,6 @@ class robotModel:
         mu, cov = self.kalman.predict(z)
         #print("self.pos_x_noisy_camera[-1] "+str(self.pos_x_noisy_camera[-1]))
         #print("self.pos_z_noisy_camera[-1] "+str(self.pos_z_noisy_camera[-1]))
-
         
         # Update kalman signal history
         self.pos_xt_kalman =round(mu[0][0])

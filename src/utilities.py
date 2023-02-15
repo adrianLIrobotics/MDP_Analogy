@@ -87,5 +87,26 @@ def translate_action_id_to_name(id):
         elif id==8:
             return "stay"
 
+def translate_action_name_to_id(name):
+    if id =="moveUp1":
+        return 0
+    elif id=="moveUp2":
+        return 1
+    elif id=="moveDown1":
+        return 2
+    elif id=="moveDown2":
+        return 3
+    elif id=="moveLeft1":
+        return 4
+    elif id=="moveLeft2":
+        return 5
+    elif id=="moveRight1":
+        return 6
+    elif id=="moveRight2":
+        return 7
+    elif id=="stay":
+        return 8
+
+
 
                         

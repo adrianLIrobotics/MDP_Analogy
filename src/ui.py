@@ -12,8 +12,10 @@ from matplotlib import pyplot as plt
 from threading import Thread
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
+from state import state_model
+import utilities
 
-# A simple colouring grid app, with load/save functionality.
+# Thanks to:
 # Christian Hill, August 2018.
 
 # The "default" colour for an unfilled grid cell
@@ -67,6 +69,9 @@ class GridApp:
         plt.plot(robot.pos_x, time)
         plt.title("Robot x pose historical data")
 
+    '''
+    Show all information about a selected cell.
+    '''
     def show_cells_information(self, i):
         print("Border edge: ", self.gridMap.map[i].border_edge)
         self.writeTextBox("Border edge: "+str(self.gridMap.map[i].border_edge))
@@ -95,6 +100,13 @@ class GridApp:
             self.writeTextBox("Object type: "+str(self.gridMap.map[i].object.objectType))
         except:
             pass
+        #Show q values:
+        #State(grid=grid, car_pos=[1, 1])
+        print("Q-values for cell: ")
+        state = state_model(self.grid.map, self.robot)
+        r =self.markov_decision_process.learning.get_qvalues(state)
+        print(f"up1={r[0]}, up2={r[1]}, donw1={r[2]}, down2={r[3]}, down2={r[3]}, moveLeft1={r[4]}, moveLeft2={r[5]}, moveRight1={r[6]}, moveRight2={r[7]}, stay={r[8]} ")
+         
 
     '''
     Update robot reward value

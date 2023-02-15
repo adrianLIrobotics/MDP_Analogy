@@ -45,6 +45,12 @@ class reinforment_learning():
         self.total_reward = 0 
 
     '''
+    Get q values for state
+    '''
+    def get_qvalues(self, state):
+        return self.q(state)
+
+    '''
     Update Q Value
     '''
     def update_q_value(self,state,next_state,reward,alpha, action):
@@ -154,6 +160,8 @@ class reinforment_learning():
                 state = next_state
                 if done:
                     print("Robot is in goal cell")
+                    #self.reset_simulation()
+                    #self.robot.goal_reached = False
                     break
             
             #self.reset_simulation() # Reset simulation for new cycle. MAYBE THIS IS NOT NEEDED.
@@ -203,7 +211,8 @@ class reinforment_learning():
         # return s' 
         #s_prime = utilities.get_state_from_pos(self.robot.pos_x[0],self.robot.pos_z[0])
         '''Use kalman filter estimation to get new pose'''
-        s_prime = utilities.get_state_from_pos((self.robot.pos_xt_kalman,self.robot.pos_zt_kalman))
+        #s_prime = utilities.get_state_from_pos((self.robot.pos_xt_kalman,self.robot.pos_zt_kalman))
+        s_prime = utilities.get_state_from_pos((self.robot.pos_xt,self.robot.pos_zt))
         
         '''
         # if robot collides with wall, reward is -0.1
