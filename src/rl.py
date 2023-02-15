@@ -10,6 +10,8 @@ import pathlib
 import time
 from datetime import datetime
 
+# https://stackoverflow.com/questions/4901815/object-of-custom-type-as-dictionary-key
+
 now = datetime.now()
 current_time = now.strftime("%Y_%m_%d_%H_%M_%S")
 

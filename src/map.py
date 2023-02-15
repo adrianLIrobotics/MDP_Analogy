@@ -288,3 +288,17 @@ class Map:
                 print('{}\n{}'.format(colour,'-'*len(colour)), file=fo)
                 _output_coords(coords)
                 print('\n', file=fo)
+
+    '''
+    Function to convert the grid map to one suitable for the state model.
+    '''
+    def get_stateMap(self):
+        grid = []
+        count = 0
+        for element in range(0,self.mapSize):
+            line = []
+            for subelement in range(0,self.mapSize):
+                line.append(self.map[subelement+(count*6)].colour)
+            grid.append(line)
+            count +=1
+        return grid

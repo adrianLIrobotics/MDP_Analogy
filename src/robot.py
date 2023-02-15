@@ -147,6 +147,7 @@ class robotModel:
             #print("val ",val)
             if (gridMap.map[val].empty):
                 gridMap.map[val].empty = False
+                gridMap.map[val].colour = Object_Colour.Robot.value
                 gridMap.map[val].object = self #Object_Colour.Robot.name
                 # Put the color of the robot in the canvas.
                 gridMap.canvas.itemconfig(gridMap.map[val].tkinterCellIndex, fill=Object_Colour.Robot.value)
@@ -288,6 +289,9 @@ class robotModel:
         self.master.updateXPlot(self.pos_x, self.pos_x_noisy_encoder, self.pos_x_noisy_camera, self.pos_x_kalman)
         self.master.updateYPlot(self.pos_z, self.pos_z_noisy_encoder, self.pos_z_noisy_camera, self.pos_z_kalman)
 
+        self.gridMap.map[oldPosition].colour = '#fff'
+        self.gridMap.map[newPosition].colour = Object_Colour.Robot.value
+
         # Check if robot arrived to destionatio.
         if self.gridMap.map[newPosition].colour == Object_Colour.Goal.value:
             self.goal_reached = True
@@ -392,6 +396,9 @@ class robotModel:
         self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition, self.pos_xt, self.pos_1d_kalman, self.pos_xt_kalman, self.pos_zt_kalman)
         self.master.updateXPlot(self.pos_x, self.pos_x_noisy_encoder, self.pos_x_noisy_camera, self.pos_x_kalman)
         self.master.updateYPlot(self.pos_z, self.pos_z_noisy_encoder, self.pos_z_noisy_camera, self.pos_z_kalman)
+
+        self.gridMap.map[oldPosition].colour = '#fff'
+        self.gridMap.map[newPosition].colour = Object_Colour.Robot.value
 
         # Check if robot arrived to destionatio.
         if self.gridMap.map[newPosition].colour == Object_Colour.Goal.value:
@@ -501,6 +508,9 @@ class robotModel:
         self.master.updateXPlot(self.pos_x, self.pos_x_noisy_encoder, self.pos_x_noisy_camera, self.pos_x_kalman)
         self.master.updateYPlot(self.pos_z, self.pos_z_noisy_encoder, self.pos_z_noisy_camera, self.pos_z_kalman)
 
+        self.gridMap.map[oldPosition].colour = '#fff'
+        self.gridMap.map[newPosition].colour = Object_Colour.Robot.value
+
         # Check if robot arrived to destionatio.
         if self.gridMap.map[newPosition].colour == Object_Colour.Goal.value:
             self.goal_reached = True
@@ -608,6 +618,9 @@ class robotModel:
         self.master.updateXPlot(self.pos_x, self.pos_x_noisy_encoder, self.pos_x_noisy_camera, self.pos_x_kalman)
         self.master.updateYPlot(self.pos_z, self.pos_z_noisy_encoder, self.pos_z_noisy_camera, self.pos_z_kalman)
 
+        self.gridMap.map[oldPosition].colour = '#fff'
+        self.gridMap.map[newPosition].colour = Object_Colour.Robot.value
+        
         # Check if robot arrived to destionatio.
         if self.gridMap.map[newPosition].colour == Object_Colour.Goal.value:
             self.goal_reached = True
