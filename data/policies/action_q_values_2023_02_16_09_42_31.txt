@@ -1,0 +1,21 @@
+Episode 1: total reward -> -6.819999999999996
+Episode 2: total reward -> 997.72
+Episode 3: total reward -> 998.94
+Episode 4: total reward -> 498.94
+Episode 5: total reward -> 998.46
+Episode 6: total reward -> 999.32
+Episode 7: total reward -> 999.72
+Episode 8: total reward -> 999.58
+Episode 9: total reward -> 1999.88
+Episode 10: total reward -> 1999.88
+Episode 11: total reward -> 1998.9200000000005
+Episode 12: total reward -> 1999.88
+Episode 13: total reward -> 1999.88
+Episode 14: total reward -> 1999.88
+Episode 15: total reward -> 1999.68
+Episode 16: total reward -> 1999.88
+Episode 17: total reward -> 1999.88
+Episode 18: total reward -> 1999.88
+Episode 19: total reward -> 1999.88
+Episode 20: total reward -> 1999.8400000000001
+Finished training...

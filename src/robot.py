@@ -70,6 +70,7 @@ class robotModel:
         self.collided = False # Robot collided with object at time t.
         self.master = master
         self.cumulative_reward = 0
+        self.current_reward = 0
         # Id's of robot actions
         moveUpOne = 0
         moveUpTwo = 1
@@ -214,11 +215,13 @@ class robotModel:
             self.collided = True
             if (num_steps == 1):
                 self.cumulative_reward += -0.1
+                self.current_reward = -0.1
                 # If collided, robot position is the same
                 newPosition = oldPosition
             else:
                 # Collided act is worse if going faster
                 self.cumulative_reward += -0.2
+                self.current_reward = -0.2
                 # If collided, robot position is the same
                 newPosition = oldPosition
             #print("Collided: ",self.collided)
@@ -239,9 +242,11 @@ class robotModel:
             if (num_steps == 1):
                 #print("Reward "+str(self.gridMap.map[newPosition].reward))# empty reward
                 self.cumulative_reward += self.gridMap.map[newPosition].reward
+                self.current_reward = self.gridMap.map[newPosition].reward
                 self.pos_zt -= 1
             else:
                 self.cumulative_reward += self.gridMap.map[newPosition].reward / 2
+                self.current_reward = self.gridMap.map[newPosition].reward / 2
                 self.pos_zt -= 2
 
             self.collided = False
@@ -289,12 +294,12 @@ class robotModel:
         self.master.updateXPlot(self.pos_x, self.pos_x_noisy_encoder, self.pos_x_noisy_camera, self.pos_x_kalman)
         self.master.updateYPlot(self.pos_z, self.pos_z_noisy_encoder, self.pos_z_noisy_camera, self.pos_z_kalman)
 
-        self.gridMap.map[oldPosition].colour = '#fff'
-        self.gridMap.map[newPosition].colour = Object_Colour.Robot.value
-
         # Check if robot arrived to destionatio.
         if self.gridMap.map[newPosition].colour == Object_Colour.Goal.value:
             self.goal_reached = True
+
+        self.gridMap.map[oldPosition].colour = '#fff'
+        self.gridMap.map[newPosition].colour = Object_Colour.Robot.value
 
     '''
     Control command to move the robot in the down direction with
@@ -321,11 +326,13 @@ class robotModel:
             self.master.writeTextBox("Robot collided!")
             if (num_steps == 1):
                 self.cumulative_reward += -0.1
+                self.current_reward = -0.1
                 # If collided, robot position is the same
                 newPosition = oldPosition
             else:
                 # Collided act is worse if going faster
                 self.cumulative_reward += -0.2 
+                self.current_reward = -0.2
                 # If collided, robot position is the same
                 newPosition = oldPosition
 
@@ -350,9 +357,11 @@ class robotModel:
         else:
             if (num_steps == 1):
                 self.cumulative_reward += self.gridMap.map[newPosition].reward
+                self.current_reward = self.gridMap.map[newPosition].reward
                 self.pos_zt += 1
             else:
                 self.cumulative_reward += self.gridMap.map[newPosition].reward / 2
+                self.current_reward = self.gridMap.map[newPosition].reward / 2
                 self.pos_zt += 2
 
             self.collided = False
@@ -397,12 +406,12 @@ class robotModel:
         self.master.updateXPlot(self.pos_x, self.pos_x_noisy_encoder, self.pos_x_noisy_camera, self.pos_x_kalman)
         self.master.updateYPlot(self.pos_z, self.pos_z_noisy_encoder, self.pos_z_noisy_camera, self.pos_z_kalman)
 
-        self.gridMap.map[oldPosition].colour = '#fff'
-        self.gridMap.map[newPosition].colour = Object_Colour.Robot.value
-
         # Check if robot arrived to destionatio.
         if self.gridMap.map[newPosition].colour == Object_Colour.Goal.value:
             self.goal_reached = True
+
+        self.gridMap.map[oldPosition].colour = '#fff'
+        self.gridMap.map[newPosition].colour = Object_Colour.Robot.value
 
     '''
     Control command to move the robot in the left direction with
@@ -429,11 +438,13 @@ class robotModel:
             self.master.writeTextBox("Robot collided!")
             if (num_steps == 1):
                 self.cumulative_reward += -0.1
+                self.current_reward = -0.1
                 # If collided, robot position is the same
                 newPosition = oldPosition
             else:
                 # Collided act is worse if going faster
                 self.cumulative_reward += -0.2 
+                self.current_reward = -0.2
                 # If collided, robot position is the same
                 newPosition = oldPosition
 
@@ -459,9 +470,11 @@ class robotModel:
         else:
             if (num_steps == 1):
                 self.cumulative_reward += self.gridMap.map[newPosition].reward
+                self.current_reward = self.gridMap.map[newPosition].reward
                 self.pos_xt -= 1
             else:
                 self.cumulative_reward += self.gridMap.map[newPosition].reward / 2
+                self.current_reward = self.gridMap.map[newPosition].reward / 2
                 self.pos_xt -= 2
 
             self.collided = False
@@ -508,12 +521,12 @@ class robotModel:
         self.master.updateXPlot(self.pos_x, self.pos_x_noisy_encoder, self.pos_x_noisy_camera, self.pos_x_kalman)
         self.master.updateYPlot(self.pos_z, self.pos_z_noisy_encoder, self.pos_z_noisy_camera, self.pos_z_kalman)
 
-        self.gridMap.map[oldPosition].colour = '#fff'
-        self.gridMap.map[newPosition].colour = Object_Colour.Robot.value
-
         # Check if robot arrived to destionatio.
         if self.gridMap.map[newPosition].colour == Object_Colour.Goal.value:
             self.goal_reached = True
+        
+        self.gridMap.map[oldPosition].colour = '#fff'
+        self.gridMap.map[newPosition].colour = Object_Colour.Robot.value
 
     '''
     Control command to move the robot in the right direction with
@@ -540,11 +553,13 @@ class robotModel:
             self.master.writeTextBox("Robot collided!")
             if (num_steps == 1):
                 self.cumulative_reward += -0.1
+                self.current_reward = -0.1
                 # If collided, robot position is the same
                 newPosition = oldPosition
             else:
                 # Collided act is worse if going faster
                 self.cumulative_reward += -0.2 
+                self.current_reward = -0.2
                 # If collided, robot position is the same
                 newPosition = oldPosition
 
@@ -569,10 +584,13 @@ class robotModel:
         # Robot did not collide
         else:
             if (num_steps == 1):
+                print("Reward: "+str(self.gridMap.map[newPosition].reward))
                 self.cumulative_reward += self.gridMap.map[newPosition].reward
+                self.current_reward = self.gridMap.map[newPosition].reward
                 self.pos_xt += 1
             else:
                 self.cumulative_reward += self.gridMap.map[newPosition].reward / 2
+                self.current_reward = self.gridMap.map[newPosition].reward / 2
                 self.pos_xt += 2
 
             self.collided = False
@@ -616,14 +634,14 @@ class robotModel:
 
         self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition, self.pos_xt, self.pos_1d_kalman, self.pos_xt_kalman, self.pos_zt_kalman)
         self.master.updateXPlot(self.pos_x, self.pos_x_noisy_encoder, self.pos_x_noisy_camera, self.pos_x_kalman)
-        self.master.updateYPlot(self.pos_z, self.pos_z_noisy_encoder, self.pos_z_noisy_camera, self.pos_z_kalman)
-
-        self.gridMap.map[oldPosition].colour = '#fff'
-        self.gridMap.map[newPosition].colour = Object_Colour.Robot.value
+        self.master.updateYPlot(self.pos_z, self.pos_z_noisy_encoder, self.pos_z_noisy_camera, self.pos_z_kalman) 
 
         # Check if robot arrived to destionatio.
         if self.gridMap.map[newPosition].colour == Object_Colour.Goal.value:
             self.goal_reached = True
+
+        self.gridMap.map[oldPosition].colour = '#fff'
+        self.gridMap.map[newPosition].colour = Object_Colour.Robot.value
 
     '''Get number of objects detected and check if goal found.'''
     def num_objects_detected(self):
@@ -752,6 +770,10 @@ class robotModel:
         self.collided = False # Robot collided with object at time t.
         self.cumulative_reward = 0
         self.goal_reached = False
+
+        self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, self.gridRobot1DPosition, self.pos_xt, self.pos_1d_kalman, self.pos_xt_kalman, self.pos_zt_kalman)
+        self.master.updateXPlot(self.pos_x, self.pos_x_noisy_encoder, self.pos_x_noisy_camera, self.pos_x_kalman)
+        self.master.updateYPlot(self.pos_z, self.pos_z_noisy_encoder, self.pos_z_noisy_camera, self.pos_z_kalman)
         
 
     def amcl(self,map): 

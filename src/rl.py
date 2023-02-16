@@ -166,7 +166,7 @@ class reinforment_learning():
                     #self.robot.goal_reached = False
                     break
             
-            #self.reset_simulation() # Reset simulation for new cycle. MAYBE THIS IS NOT NEEDED.
+            self.reset_simulation() # Reset simulation for new cycle. MAYBE THIS IS NOT NEEDED.
             #self.reset_simulation() # Take care with this one.
             print(f"Episode {e + 1}: total reward -> {total_reward}")
             self.write_learning_routes(f"Episode {e + 1}: total reward -> {total_reward}", f)
@@ -238,7 +238,7 @@ class reinforment_learning():
         '''
 
         #return state_model(grid=self.grid, robotPose=[self.robot.pos_xt, self.robot.pos_zt]), self.grid.map[s_prime].reward, is_done
-        return state_model(self.grid.get_stateMap(), self.robot), self.robot.cumulative_reward, is_done
+        return state_model(self.grid.get_stateMap(), self.robot), self.robot.current_reward , is_done
         
 
     '''
