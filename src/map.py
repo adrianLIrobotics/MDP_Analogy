@@ -302,3 +302,4 @@ class Map:
             grid.append(line)
             count +=1
         return grid
+        

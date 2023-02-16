@@ -144,7 +144,7 @@ class robotModel:
         while(pos_allowed):
             # Random number from all possible grid positions 
             val = utilities.get_state_from_pos((x,z))
-            #print("val ",val)
+            print(gridMap.map[val].empty)
             if (gridMap.map[val].empty):
                 gridMap.map[val].empty = False
                 gridMap.map[val].colour = Object_Colour.Robot.value
@@ -620,7 +620,7 @@ class robotModel:
 
         self.gridMap.map[oldPosition].colour = '#fff'
         self.gridMap.map[newPosition].colour = Object_Colour.Robot.value
-        
+
         # Check if robot arrived to destionatio.
         if self.gridMap.map[newPosition].colour == Object_Colour.Goal.value:
             self.goal_reached = True
@@ -704,17 +704,28 @@ class robotModel:
     def reset_simulation(self):
         print("Reset simulation...")
         
+        self.gridMap.map[self.gridRobot1DPosition].colour = '#fff'
+        self.gridMap.canvas.itemconfig(self.gridMap.map[self.gridRobot1DPosition].tkinterCellIndex, fill='#fff')
+
         # 1. Put back the color of the goal cell in init pose of goal and add object type goal.
         goalObject = objectModel(self.gridMap.goal_x_pose,self.gridMap.goal_z_pose,Object_Colour.Goal.name)
         self.gridMap.map[self.gridMap.goal_1D_pose].object = goalObject
         self.gridMap.canvas.itemconfig(self.gridMap.map[self.gridMap.goal_1D_pose].tkinterCellIndex, fill=Object_Colour.Goal.value)
+        self.gridMap.map[self.gridMap.goal_1D_pose].colour = Object_Colour.Goal.value
+        
 
         # 2. Reset all rewards for robot and history.
+        temp_robot_pose = utilities.get_state_from_pos((int(self.pos_xt),int(self.pos_zt)))
+        self.gridMap.map[temp_robot_pose].empty = True
+        temp_robot_pose2 = utilities.get_state_from_pos((int(self.initial_pose_x),int(self.initial_pose_z)))
+        self.gridMap.map[temp_robot_pose2].empty = True
         x,z = self.manual_robot_pose(int(self.initial_pose_x),int(self.initial_pose_z),self.gridMap) # Will move the robot also in the simulation.
+        
         self.pos_xt = x # Reset real Position in x axes at time t.
         self.pos_zt = z # Reset real Position in z axes at time t.
         self.vel_xt = 0 # Reset velocity in x axes at time t.
         self.vel_zt = 0 # Reset velocity in x axes at time t.
+        
 
         self.noisy_pos_xt_encoder = self.apply_gaussian_noise_encoder(self.pos_xt)
         self.noisy_pos_zt_encoder = self.apply_gaussian_noise_encoder(self.pos_zt)
@@ -740,6 +751,8 @@ class robotModel:
         self.gridRobot1DPosition = utilities.get_state_from_pos([self.pos_zt,self.pos_xt])# x 2, z 0   
         self.collided = False # Robot collided with object at time t.
         self.cumulative_reward = 0
+        self.goal_reached = False
+        
 
     def amcl(self,map): 
         # Needs at least detecting two objects for localization. If not, robot lost.

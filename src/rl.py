@@ -162,11 +162,12 @@ class reinforment_learning():
                 state = next_state
                 if done:
                     print("Robot is in goal cell")
-                    #self.reset_simulation()
+                    self.reset_simulation()
                     #self.robot.goal_reached = False
                     break
             
             #self.reset_simulation() # Reset simulation for new cycle. MAYBE THIS IS NOT NEEDED.
+            #self.reset_simulation() # Take care with this one.
             print(f"Episode {e + 1}: total reward -> {total_reward}")
             self.write_learning_routes(f"Episode {e + 1}: total reward -> {total_reward}", f)
         print("Finished training...")
@@ -214,7 +215,7 @@ class reinforment_learning():
         #s_prime = utilities.get_state_from_pos(self.robot.pos_x[0],self.robot.pos_z[0])
         '''Use kalman filter estimation to get new pose'''
         #s_prime = utilities.get_state_from_pos((self.robot.pos_xt_kalman,self.robot.pos_zt_kalman))
-        s_prime = utilities.get_state_from_pos((self.robot.pos_xt,self.robot.pos_zt))
+        #s_prime = utilities.get_state_from_pos((self.robot.pos_xt,self.robot.pos_zt))
         
         '''
         # if robot collides with wall, reward is -0.1
@@ -237,7 +238,7 @@ class reinforment_learning():
         '''
 
         #return state_model(grid=self.grid, robotPose=[self.robot.pos_xt, self.robot.pos_zt]), self.grid.map[s_prime].reward, is_done
-        return state_model(self.grid, self.robot), self.robot.cumulative_reward, is_done
+        return state_model(self.grid.get_stateMap(), self.robot), self.robot.cumulative_reward, is_done
         
 
     '''
