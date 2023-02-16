@@ -81,7 +81,7 @@ class robotModel:
         moveRightOne = 6
         moveRightTWo = 7
         stay = 8
-        self.actions = [moveUpOne, moveUpTwo, moveDownOne, moveDownTwo, moveLeftOne, moveLeftTwo, moveRightOne, moveRightTWo, stay]
+        self.actions = [moveUpOne, moveUpTwo, moveDownOne, moveDownTwo, moveLeftOne, moveLeftTwo, moveRightOne, moveRightTWo]
         ''' Robot estimated initial pose definition'''
         if initial_pose_known == "Yes":
             self.pos_xt_estimated = self.pos_xt

@@ -108,7 +108,7 @@ class GridApp:
         print("Q-values for cell: ")
         state = state_model(self.gridMap.map, self.robot)
         r =self.markov_decision_process.learning.get_qvalues(state)
-        print(f"up1={r[0]}, up2={r[1]}, donw1={r[2]}, down2={r[3]}, down2={r[3]}, moveLeft1={r[4]}, moveLeft2={r[5]}, moveRight1={r[6]}, moveRight2={r[7]}, stay={r[8]} ")
+        print(f"up1={r[0]}, up2={r[1]}, donw1={r[2]}, down2={r[3]}, down2={r[3]}, moveLeft1={r[4]}, moveLeft2={r[5]}, moveRight1={r[6]}, moveRight2={r[7]} ") #, stay={r[8]}
          
 
     '''

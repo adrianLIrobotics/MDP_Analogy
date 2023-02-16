@@ -207,9 +207,9 @@ class reinforment_learning():
         if self.actions[7] == action:
             self.robot.moveRight(2)
             #time.sleep(3)
-        if self.actions[8] == action:
+        #if self.actions[8] == action:
             #time.sleep(3)
-            pass
+           # pass
         
         # return s' 
         #s_prime = utilities.get_state_from_pos(self.robot.pos_x[0],self.robot.pos_z[0])
