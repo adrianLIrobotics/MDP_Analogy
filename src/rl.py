@@ -9,6 +9,7 @@ from configparser import ConfigParser
 import pathlib
 import time
 from datetime import datetime
+from tkinter import filedialog
 
 # https://stackoverflow.com/questions/4901815/object-of-custom-type-as-dictionary-key
 
@@ -26,7 +27,6 @@ config = ConfigParser()
 config.read(config_path)
 n_episodes = config['q_learning']['number_of_episodes']
 max_steps_ep = config['q_learning']['max_episode_steps']
-
 
 # Based upon Q-Learning to get optimal policy.
 class reinforment_learning():
@@ -75,32 +75,6 @@ class reinforment_learning():
         else:
             return explore()
 
-    '''
-    Save in local file the q table for specific map
-    '''
-    def save_q_table(self):
-
-        def save_q_values_per_action():
-            for key in self.q_table:
-                f = open(path_to_policies + policy_file_name, "w")
-                f.write(self.q_table[key]+'\n')
-                f.close()
-        
-        def save_states():
-            states_list = []
-            for key in self.q_table:
-                states_list.append(key)
-            utilities.save_object(states_list,'states.pkl')
-
-        save_q_values_per_action()
-        save_states()
-
-
-    '''
-    Read from local file the q table from specific map.
-    '''
-    def read_q_table(self):
-        raise NotImplementedError
 
     '''
     Easy handle of the q_table dictionary
@@ -114,12 +88,19 @@ class reinforment_learning():
     
         return self.q_table[state][action] # returns the q-value of the corresponding index of the given action.
 
+    def open_file_read(self, name_param, path_param = None):
+        if (path_param == None):
+            f = open(name_param, "r")
+            return f
+        else:
+            f = open(path_param + name_param, "r")
+            return f
 
-    def open_log_file(self, path_param, name_param):
+    def open_file_write(self, path_param, name_param):
         f = open(path_param + name_param, "w")
         return f
 
-    '''Save learning experience'''
+    '''Save learning summery'''
     def write_learning_routes(self,val, f):
         f.write(str(val)+'\n')
 
@@ -128,6 +109,72 @@ class reinforment_learning():
         
     def close_file(self,f):
         f.close() 
+
+    '''
+    Save in local file the q table for specific map
+    '''
+    def save_q_table(self):
+
+        def save_q_values():
+            for key, value in self.q_table.items():
+                #fob.write(str(key.grid)+";"+str(key.robotPose)+":"+str(value)+"\n")
+                fob.write(str(key.grid)+";"+str(key.robotPose)+":"+str(value.tolist()).replace("]","").replace("[","")+"\n")
+
+        file = filedialog.asksaveasfilename(
+        filetypes=[("txt file", ".txt")],
+        defaultextension=".txt")
+        fob=open(file,'w')
+        save_q_values()
+        fob.close()
+
+    '''
+    Read from local file the q table.
+    '''
+    def read_q_table(self):
+        qtable_file = filedialog.askopenfilename(filetypes=(
+                ('Grid files', '.grid'),
+                ('Text files', '.txt'),
+                ('All files', '*.*'))) # Get name of q_file
+        self.q_table.clear() # Clear the previous loaded q_table for reset.
+
+        def parser_q_map(string_map):
+            indexes = utilities.find(string_map, ']')
+            previous_index = 0
+            temp_map = [] # Temporal map
+            for index_pos in indexes:
+                row = string_map[previous_index:index_pos] # Get row
+                previous_index = index_pos
+                cleaned_row = row.replace("[","").replace("]","").replace("'","")
+                row_tokens = cleaned_row.split(", ")
+                new_list = list(filter(lambda x: x != '', row_tokens))
+                if indexes[-1] != index_pos:
+                    temp_map.append(new_list)
+            return temp_map
+
+        def parser_robot_pose_q(string_robot_pose):
+            x_pose_parsed = int(string_robot_pose[string_robot_pose.index("[")+1:string_robot_pose.index(",")])
+            z_pose_parsed = int(string_robot_pose[string_robot_pose.index(",")+2:string_robot_pose.index("]")])
+            tempRobot = robotModel(False,0) # Create a temporal robot
+            tempRobot.pos_xt = x_pose_parsed
+            tempRobot.pos_zt = z_pose_parsed
+            return tempRobot
+        
+        def parser_actions_q(string_actions):
+            temp = np.array(string_actions.replace("\n","").split(",")).astype(float)
+            print(temp)
+            return temp
+        
+        # Complete the action_state_dict
+        def get_action_state_dict():
+            f = self.open_file_read(qtable_file)
+            lines = f.readlines()
+            for line in lines:
+                state_q = state_model(parser_q_map(line[0:line.find(";")]), parser_robot_pose_q(line[line.find(";"):line.find(":")]))
+                actions_q = parser_actions_q(line[line.find(":")+1:])
+                self.q_table[state_q] = actions_q
+            f.close()
+        # Read the file and load the action_state to self.q_table.
+        get_action_state_dict()
 
     '''
     Reset the system for new episode of training.
@@ -144,8 +191,8 @@ class reinforment_learning():
         print("Number of ep: "+str(self.number_episodes))
         print("Number of steps in episode: "+str(self.max_episode_steps))
         print("=============================")
-        f = self.open_log_file(path_to_policies,policy_file_name) # Start saving the route info 
-        h = self.open_log_file(path_to_policies, q_value_file)
+        f = self.open_file_write(path_to_policies,policy_file_name) # Start saving the route info 
+        h = self.open_file_write(path_to_policies, q_value_file)
 
         for e in range(self.number_episodes):
             state = self.start_state

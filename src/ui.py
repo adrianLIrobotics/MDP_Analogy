@@ -14,6 +14,7 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 from state import state_model
 import utilities
+import numpy as np
 
 # Thanks to:
 # Christian Hill, August 2018.
@@ -110,7 +111,8 @@ class GridApp:
         state = state_model(self.gridMap.get_stateMap(), self.robot)
         r =self.markov_decision_process.learning.get_qvalues(state)
         print(f"up1={r[0]}, up2={r[1]}, donw1={r[2]}, down2={r[3]}, down2={r[3]}, moveLeft1={r[4]}, moveLeft2={r[5]}, moveRight1={r[6]}, moveRight2={r[7]} ") #, stay={r[8]}
-         
+        print("Best move is: ")
+        print(utilities.translate_action_id_to_name(np.argmax(r)))
 
     '''
     Update robot reward value
@@ -170,7 +172,7 @@ class GridApp:
 
         self.openPlotWindow(master, self.robot)
 
-        self.openNewWindow(master,c_width,palette_height,frame,self.robot)
+        self.openControlWindow(master,c_width,palette_height,frame,self.robot)
 
         self.ics = 9#0
         self.select_colour(self.ics)
@@ -334,10 +336,10 @@ class GridApp:
         self.canvas.get_tk_widget().pack()
   
 
-    def openNewWindow(self, master, c_width, palette_height,frame,robot):
+    def openControlWindow(self, master, c_width, palette_height,frame,robot):
         newWindow = Toplevel(master)
         newWindow.title("Control Window")
-        newWindow.geometry("460x500") # newWindow.geometry("400x50")  
+        newWindow.geometry("460x600") # newWindow.geometry("400x50")  
         p_pad = 5
         pad = 5
         p_width = p_height = palette_height - 2*p_pad
@@ -355,7 +357,7 @@ class GridApp:
             self.palette_rects.append(rect)
         # ics is the index of the currently selected colour.
 
-        '''Robot control panel'''
+        '''ROBOT CONTROL PANEL'''
         labelframe = LabelFrame(newWindow)
         labelframe.pack(side=TOP, padx=pad*2, pady=pad)
 
@@ -392,6 +394,7 @@ class GridApp:
         combo.set('1') # Default number of steps per move is 1.
         var.trace('w', get_index)
 
+        '''ROBOT REAL STATE PANEL'''
         robot_info = LabelFrame(labelframe, text="Robot-real-state-info")
         robot_info.pack(side=TOP, padx=pad*2, pady=pad)
 
@@ -416,6 +419,7 @@ class GridApp:
         robot_estimate_info = LabelFrame(labelframe, text="Robot-estimate-info")
         robot_estimate_info.pack(side=TOP, padx=pad*2, pady=pad)
 
+        '''ROBOT ESTIMATED STATE PANEL'''
         localization_label = Label(robot_estimate_info, text='Nº Observations: ')
         localization_label.pack(side=LEFT, padx=pad, pady=pad)
 
@@ -449,8 +453,8 @@ class GridApp:
         self.kalman_1d_estimated_pose = Text(robot_estimate_localization,height = 1.5,width = 5)
         self.kalman_1d_estimated_pose.pack( side= RIGHT, padx=pad, pady=pad)
 
-        # MDP CONTROL
-        mdp_map_frame = LabelFrame(labelframe, text="MDP & MAP")
+        '''MDP CONTROL PANEL'''
+        mdp_map_frame = LabelFrame(labelframe, text="MDP")
         mdp_map_frame.pack(side=TOP, padx=pad*2, pady=pad)
 
         b_run = Button(mdp_map_frame, text='RUN', command=self.markov_decision_process.run_best_policy)
@@ -459,24 +463,41 @@ class GridApp:
         b_train = Button(mdp_map_frame, text='Train', command=self.markov_decision_process.train_model)
         b_train.pack(side=RIGHT, padx=pad, pady=pad)
 
-        self.t_reward = Text(mdp_map_frame,height = 1.5,width = 5)
-        self.t_reward.pack( side= RIGHT, padx=pad, pady=pad)# , expand= True
+        # Load, save q learning
+        b_load = Button(mdp_map_frame, text='open',command=self.markov_decision_process.open_q_learning)
+        b_load.pack(side=RIGHT, padx=pad, pady=pad)
+        b_save = Button(mdp_map_frame, text='save', command=self.markov_decision_process.save_q_learning)
+        b_save.pack(side=RIGHT, padx=pad, pady=pad)
 
-        b_random = Button(mdp_map_frame, text='random',command= lambda: self.gridMap.createRamdomMap(self.inputFeatures.get("1.0","end-1c")))
+        num_episodes_label = Label(mdp_map_frame, text='Nº Episodes: ')
+        num_episodes_label.pack(side=LEFT, padx=pad, pady=pad)
+
+        self.inputNumEpisodes = Text(mdp_map_frame,height = 1.5,width = 5)
+        self.inputNumEpisodes.pack(side=RIGHT, padx=pad, pady=pad)
+
+        '''MAP CONTROL PANEL'''
+
+        map_frame = LabelFrame(labelframe, text="MAP")
+        map_frame.pack(side=TOP, padx=pad*2, pady=pad)
+
+        b_map_open = Button(map_frame, text='open', command=self.gridMap.loadMap)
+        b_map_open.pack(side=RIGHT, padx=pad, pady=pad)
+
+        b_map_save = Button(map_frame, text='save', command= self.gridMap.saveMap)
+        b_map_save.pack(side=RIGHT, padx=pad, pady=pad)
+
+        b_map_clear = Button(map_frame, text='clear', command=self.gridMap.clearMap)
+        b_map_clear.pack(side=RIGHT, padx=pad, pady=pad)
+
+        b_random = Button(map_frame, text='random',command= lambda: self.gridMap.createRamdomMap(self.inputFeatures.get("1.0","end-1c")))
         b_random.pack(side=RIGHT, padx=pad, pady=pad)
-        # Add a button to clear the grid
-        b_clear = Button(mdp_map_frame, text='clear', command=self.gridMap.clearMap)
-        b_clear.pack(side=RIGHT, padx=pad, pady=pad)
+
+        num_obstacles_label = Label(map_frame, text='Nº Obstacles: ')
+        num_obstacles_label.pack(side=LEFT, padx=pad, pady=pad)
 
         # Input buttom
-        self.inputFeatures = Text(mdp_map_frame,height = 1.5,width = 5)
+        self.inputFeatures = Text(map_frame,height = 1.5,width = 5)
         self.inputFeatures.pack(side=RIGHT, padx=pad, pady=pad)
-
-        # Load, save image and ramdom map generator buttons
-        b_load = Button(mdp_map_frame, text='open', command=self.gridMap.loadMap)
-        b_load.pack(side=RIGHT, padx=pad, pady=pad)
-        b_save = Button(mdp_map_frame, text='save', command= self.gridMap.saveMap)
-        b_save.pack(side=RIGHT, padx=pad, pady=pad)
 
         # The Debug window.
         debugframe = LabelFrame(newWindow, text="Debug control")

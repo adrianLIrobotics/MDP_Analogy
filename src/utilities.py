@@ -31,9 +31,15 @@ def add_element_to_dic(dict, key, value):
         dict[key] = []
     dict[key].append(value)
 
+'''
+Checks if a file exists
+'''
 def check_file_exists(path_to_file, file_name):
     return exists(path_to_file + file_name)
 
+'''
+Checks if a file is empty
+'''
 def check_file_is_empty(path_to_file, file_name):
     return os.stat(path_to_file + file_name).st_size == 0
 
@@ -67,6 +73,15 @@ Get the % of localization believe of the robot.
 def get_localized_believe(real_pose_x, real_pose_z, estimated_pose_x, estimated_pose_z):
     pass
 
+'''
+Return a list of all indexes for an specific character given a string
+'''
+def find(s, ch):
+    return [i for i, ltr in enumerate(s) if ltr == ch]
+
+'''
+Translate action Id to the name of action.
+'''
 def translate_action_id_to_name(id):
         if id ==0:
             return "moveUp1"
@@ -87,6 +102,9 @@ def translate_action_id_to_name(id):
         elif id==8:
             return "stay"
 
+'''
+Translate action name to its Id.
+'''
 def translate_action_name_to_id(name):
     if id =="moveUp1":
         return 0

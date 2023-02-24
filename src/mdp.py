@@ -17,6 +17,15 @@ class Mdp:
         self.current_state = self.state_history[-1] # Current state in the MDP.
 
     '''
+    Load a q-learning file into the q_table knowledge
+    '''
+    def open_q_learning(self):
+        self.learning.read_q_table()
+
+    def save_q_learning(self):
+        self.learning.save_q_table()
+
+    '''
     S' | S, max(π)
     '''
     def apply_best_action(self,current_state = None):

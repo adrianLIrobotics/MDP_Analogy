@@ -15,87 +15,96 @@ from object import objectModel
 
 class robotModel:
 
-    def __init__(self,localized,mapSize,gridMap,master):
+    def __init__(self):
+        self.pos_xt = 0
+        self.pos_zt = 0
 
-        '''Read configuration file'''
-        config_path = pathlib.Path(__file__).parent.absolute() / "config.ini"
-        config = ConfigParser()
-        config.read(config_path)
-        self.initial_pose_x = config['robot']['initial_pose_x']
-        self.initial_pose_z = config['robot']['initial_pose_z']
-        initial_pose_known = config['robot']['initial_pose_known']
-        range_laser = config['robot']['laser_range']
+    def __init__(self,localized,mapSize,gridMap=None,master=None):
 
-        '''Configure logger'''
-        today = date.today()
-        logging.basicConfig(filename='logs/'+str(today)+'.log', encoding='utf-8', level=logging.DEBUG)
-
-        '''Configure robot initial position'''
-        if (self.initial_pose_x == 'random') and (self.initial_pose_z == 'random'):
-            x,z = self.initialPoseRandom(mapSize,gridMap) 
+        if (master == None):
+            self.pos_xt = 0
+            self.pos_zt = 0
         else:
-           x,z = self.manual_robot_pose(int(self.initial_pose_x),int(self.initial_pose_z),gridMap)
+            '''Read configuration file'''
+            config_path = pathlib.Path(__file__).parent.absolute() / "config.ini"
+            config = ConfigParser()
+            config.read(config_path)
+            self.initial_pose_x = config['robot']['initial_pose_x']
+            self.initial_pose_z = config['robot']['initial_pose_z']
+            initial_pose_known = config['robot']['initial_pose_known']
+            range_laser = config['robot']['laser_range']
 
-        self.gridMap = gridMap
-        self.gaussian_variance_camera = float(config['robot']['camera_sensor_noise']) # Camera sensor robot noise.
-        self.gaussian_variance_encoder = float(config['robot']['encoder_sensor_noise'])
-        self.mapSize = int(config['map']['mapSize']) # Number of columns in map.
-        self.pos_xt = x # Real Position in x axes at time t.
-        self.pos_zt = z # Real Position in z axes at time t.
-        self.vel_xt = 0 # Velocity in x axes at time t.
-        self.vel_zt = 0 # Voisy velocity in z axes at time t.
-        self.pos_x = [self.pos_xt] # Historical Real data in x axes.
-        self.pos_z = [self.pos_zt] # Historical Real data in z axes.
-        self.noisy_pos_xt_encoder = self.apply_gaussian_noise_encoder(self.pos_xt) # Noisy position in x axes at time t from encoder.
-        self.noisy_pos_zt_encoder = self.apply_gaussian_noise_encoder(self.pos_zt) # Noisy position in z axes at time t from encoder.
-        self.pos_x_noisy_encoder = [self.apply_gaussian_noise_encoder(self.pos_xt)] # Noisy historical position in x axes from encoder.
-        self.pos_z_noisy_encoder = [self.apply_gaussian_noise_encoder(self.pos_zt)] # Noisy historical position in z axes from encoder.
-        self.noisy_pos_xt_camera = self.apply_gaussian_noise_camera(self.pos_xt) # Noisy position in x axes at time t from camera sensor.
-        self.noisy_pos_zt_camera = self.apply_gaussian_noise_camera(self.pos_zt) # Noisy position in z axes at time t from camera sensor.
-        self.pos_x_noisy_camera = [self.apply_gaussian_noise_camera(self.pos_xt)] # Noisy historical position in x axes from camera sensor.
-        self.pos_z_noisy_camera = [self.apply_gaussian_noise_camera(self.pos_zt)] # Noisy historical position in z axes from camera sensor.
-        self.pos_xt_kalman = 0
-        self.pos_zt_kalman = 0
-        self.pos_1d_kalman = 0
-        self.pos_x_kalman = [self.pos_xt_kalman]
-        self.pos_z_kalman = [self.pos_zt_kalman]
-        self.vel_x = [0] # Noisy historical velocity in x axes.
-        self.vel_z = [0] # Noisy historical velocity in z axes.
-        self.found_goal = False # By default the robot hasnt found the goal.
-        self.goal_reached = False
-        self.localized = localized # True if 90 or more --> Depricated, will not be used.
-        self.laserRange = int(range_laser) # Robot laser range signal.
-        self.gridRobot1DPosition = utilities.get_state_from_pos([self.pos_zt,self.pos_xt])# x 2, z 0   
-        self.gridMap.canvas.itemconfig(self.gridMap.map[self.gridRobot1DPosition].tkinterCellIndex, fill=Object_Colour.Robot.value) # Put the current cell as object of type robot.
-        self.collided = False # Robot collided with object at time t.
-        self.master = master
-        self.cumulative_reward = 0
-        self.current_reward = 0
-        # Id's of robot actions
-        moveUpOne = 0
-        moveUpTwo = 1
-        moveDownOne = 2
-        moveDownTwo = 3
-        moveLeftOne = 4
-        moveLeftTwo = 5
-        moveRightOne = 6
-        moveRightTWo = 7
-        stay = 8
-        self.actions = [moveUpOne, moveUpTwo, moveDownOne, moveDownTwo, moveLeftOne, moveLeftTwo, moveRightOne, moveRightTWo]
-        ''' Robot estimated initial pose definition'''
-        if initial_pose_known == "Yes":
-            self.pos_xt_estimated = self.pos_xt
-            self.pos_zt_estimated = self.pos_zt
-            self.localized_believe = 100 # Believe in % over localization
-        else:
-            self.pos_xt_estimated = 0 # Estimated position of robot in x axes at time t using kalman filter.
-            self.pos_zt_estimated = 0 # Estimated position of robot in z axes at time t using kalman filter.
-            self.localized_believe = 0 # Believe in % over localization
+            '''Configure logger'''
+            today = date.today()
+            logging.basicConfig(filename='logs/'+str(today)+'.log', encoding='utf-8', level=logging.DEBUG)
 
-        self.pos_x_estimated = [self.pos_xt_estimated]  # Historical estimated position of robot in x axes.
-        self.pos_z_estimated = [self.pos_zt_estimated] # Historical estimated position of robot in z axes.
+            '''Configure robot initial position'''
+            if (self.initial_pose_x == 'random') and (self.initial_pose_z == 'random'):
+                x,z = self.initialPoseRandom(mapSize,gridMap) 
+            else:
+                x,z = self.manual_robot_pose(int(self.initial_pose_x),int(self.initial_pose_z),gridMap)
 
-        self.kalman = predictor() # Init kalman filter
+            self.gridMap = gridMap
+            self.gaussian_variance_camera = float(config['robot']['camera_sensor_noise']) # Camera sensor robot noise.
+            self.gaussian_variance_encoder = float(config['robot']['encoder_sensor_noise'])
+            self.mapSize = int(config['map']['mapSize']) # Number of columns in map.
+            self.pos_xt = x # Real Position in x axes at time t.
+            self.pos_zt = z # Real Position in z axes at time t.
+            self.vel_xt = 0 # Velocity in x axes at time t.
+            self.vel_zt = 0 # Voisy velocity in z axes at time t.
+            self.pos_x = [self.pos_xt] # Historical Real data in x axes.
+            self.pos_z = [self.pos_zt] # Historical Real data in z axes.
+            self.noisy_pos_xt_encoder = self.apply_gaussian_noise_encoder(self.pos_xt) # Noisy position in x axes at time t from encoder.
+            self.noisy_pos_zt_encoder = self.apply_gaussian_noise_encoder(self.pos_zt) # Noisy position in z axes at time t from encoder.
+            self.pos_x_noisy_encoder = [self.apply_gaussian_noise_encoder(self.pos_xt)] # Noisy historical position in x axes from encoder.
+            self.pos_z_noisy_encoder = [self.apply_gaussian_noise_encoder(self.pos_zt)] # Noisy historical position in z axes from encoder.
+            self.noisy_pos_xt_camera = self.apply_gaussian_noise_camera(self.pos_xt) # Noisy position in x axes at time t from camera sensor.
+            self.noisy_pos_zt_camera = self.apply_gaussian_noise_camera(self.pos_zt) # Noisy position in z axes at time t from camera sensor.
+            self.pos_x_noisy_camera = [self.apply_gaussian_noise_camera(self.pos_xt)] # Noisy historical position in x axes from camera sensor.
+            self.pos_z_noisy_camera = [self.apply_gaussian_noise_camera(self.pos_zt)] # Noisy historical position in z axes from camera sensor.
+            self.pos_xt_kalman = 0
+            self.pos_zt_kalman = 0
+            self.pos_1d_kalman = 0
+            self.pos_x_kalman = [self.pos_xt_kalman]
+            self.pos_z_kalman = [self.pos_zt_kalman]
+            self.vel_x = [0] # Noisy historical velocity in x axes.
+            self.vel_z = [0] # Noisy historical velocity in z axes.
+            self.found_goal = False # By default the robot hasnt found the goal.
+            self.goal_reached = False
+            self.localized = localized # True if 90 or more --> Depricated, will not be used.
+            self.laserRange = int(range_laser) # Robot laser range signal.
+            self.gridRobot1DPosition = utilities.get_state_from_pos([self.pos_zt,self.pos_xt])# x 2, z 0   
+            self.gridMap.canvas.itemconfig(self.gridMap.map[self.gridRobot1DPosition].tkinterCellIndex, fill=Object_Colour.Robot.value) # Put the current cell as object of type robot.
+            self.collided = False # Robot collided with object at time t.
+            self.master = master
+            self.cumulative_reward = 0
+            self.current_reward = 0
+            # Id's of robot actions
+            moveUpOne = 0
+            moveUpTwo = 1
+            moveDownOne = 2
+            moveDownTwo = 3
+            moveLeftOne = 4
+            moveLeftTwo = 5
+            moveRightOne = 6
+            moveRightTWo = 7
+            stay = 8
+            self.actions = [moveUpOne, moveUpTwo, moveDownOne, moveDownTwo, moveLeftOne, moveLeftTwo, moveRightOne, moveRightTWo]
+            ''' Robot estimated initial pose definition'''
+            if initial_pose_known == "Yes":
+                self.pos_xt_estimated = self.pos_xt
+                self.pos_zt_estimated = self.pos_zt
+                self.localized_believe = 100 # Believe in % over localization
+            else:
+                self.pos_xt_estimated = 0 # Estimated position of robot in x axes at time t using kalman filter.
+                self.pos_zt_estimated = 0 # Estimated position of robot in z axes at time t using kalman filter.
+                self.localized_believe = 0 # Believe in % over localization
+
+            self.pos_x_estimated = [self.pos_xt_estimated]  # Historical estimated position of robot in x axes.
+            self.pos_z_estimated = [self.pos_zt_estimated] # Historical estimated position of robot in z axes.
+
+            self.kalman = predictor() # Init kalman filter
+            
     '''Apply gaussian noise over encoder signal'''
     def apply_gaussian_noise_encoder(self, data):
         try:
