@@ -6,6 +6,8 @@ from tkinter import *
 from configparser import ConfigParser
 import pathlib
 
+# Main:
+
 # Get general configuration data
 config_path = pathlib.Path(__file__).parent.absolute() / "config.ini"
 config = ConfigParser()
