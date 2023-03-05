@@ -12,21 +12,6 @@ mapSize = config['map']['mapSize']
 
 class Cell:
 
-    def __init__(self,pos_x,pos_z,object,empty,indexTk):
-        self.pos_x = pos_x       
-        self.pos_z = pos_z
-        self.empty = empty
-        self.object = object
-        self.tkinterCellIndex = indexTk
-        self.colour = '#fff' # White
-        self.reward = self.calculate_reward()
-        self.border = self.check_if_border() 
-        self.border_edge = self.check_if_border_edge()
-        self.first_column = self.check_first_column()
-        self.last_column = self.check_last_column()
-        self.first_row = self.check_if_first_row()
-        self.lighting_condition = 0
-
     '''
     Constructor for a cell with no object. Empty white cell.
     '''
@@ -146,9 +131,11 @@ class Cell:
         if self.colour == Object_Colour.Fire.value:
             self.reward = -1
         if self.colour == '#fff': # Empty tile 
-            if self.lighting_condition >= 50:
-                self.reward = -0.04
-            elif self.lighting_condition < 50:
+            if self.lighting_condition == 100:
+                self.reward = -0.01
+            elif self.lighting_condition == 50:
+                self.reward = -0.08
+            elif self.lighting_condition == 0:
                 self.reward = -0.1 # If lighting isnt good, the reward is more negative.
 
         if self.colour == Object_Colour.Wall.value:

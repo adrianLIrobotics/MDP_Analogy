@@ -62,9 +62,11 @@ def restore_objects(filename):
 Get the variance according to the light of the cell.
 '''
 def get_variance_from_light_condition(light_cell_value):
-    if light_cell_value >= 50:
+    if light_cell_value == 100:
         return 0
-    if light_cell_value < 50:
+    if light_cell_value == 50:
+        return 0.1
+    if light_cell_value == 0:
         return 0.2
 
 '''

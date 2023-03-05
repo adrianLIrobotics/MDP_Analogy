@@ -44,6 +44,8 @@ class robotModel:
             else:
                 x,z = self.manual_robot_pose(int(self.initial_pose_x),int(self.initial_pose_z),gridMap)
 
+            self.num_steps_until_object_detected = 0
+            self.current_reward = 0
             self.gridMap = gridMap
             self.gaussian_variance_camera = float(config['robot']['camera_sensor_noise']) # Camera sensor robot noise.
             self.gaussian_variance_encoder = float(config['robot']['encoder_sensor_noise'])
@@ -78,7 +80,7 @@ class robotModel:
             self.collided = False # Robot collided with object at time t.
             self.master = master
             self.cumulative_reward = 0
-            self.current_reward = 0
+            
             # Id's of robot actions
             moveUpOne = 0
             moveUpTwo = 1
@@ -89,19 +91,14 @@ class robotModel:
             moveRightOne = 6
             moveRightTWo = 7
             stay = 8
+            
             self.actions = [moveUpOne, moveUpTwo, moveDownOne, moveDownTwo, moveLeftOne, moveLeftTwo, moveRightOne, moveRightTWo]
             ''' Robot estimated initial pose definition'''
             if initial_pose_known == "Yes":
-                self.pos_xt_estimated = self.pos_xt
-                self.pos_zt_estimated = self.pos_zt
+                self.pos_xt_kalman = self.pos_xt
+                self.pos_zt_kalman = self.pos_zt
+                self.pos_1d_kalman = utilities.get_state_from_pos([self.pos_zt,self.pos_xt])
                 self.localized_believe = 100 # Believe in % over localization
-            else:
-                self.pos_xt_estimated = 0 # Estimated position of robot in x axes at time t using kalman filter.
-                self.pos_zt_estimated = 0 # Estimated position of robot in z axes at time t using kalman filter.
-                self.localized_believe = 0 # Believe in % over localization
-
-            self.pos_x_estimated = [self.pos_xt_estimated]  # Historical estimated position of robot in x axes.
-            self.pos_z_estimated = [self.pos_zt_estimated] # Historical estimated position of robot in z axes.
 
             self.kalman = predictor() # Init kalman filter
             
@@ -117,21 +114,10 @@ class robotModel:
 
     '''Apply gaussian noise over camera signal'''
     def apply_gaussian_noise_camera(self, data):
+        if self.num_steps_until_object_detected <= 1: # No noise if only moved 1
+            self.current_reward += -0.01
+            return data
         position = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt)
-        try:
-            #print("Number of objects detected from camera: "+str(self.num_objects_detected()))
-            # Depending on the number of objects the camera detects, position output is better or worse.
-            if self.num_objects_detected() == 0:
-                self.gaussian_variance_camera = 0.6
-                self.current_reward += -0.1
-            elif self.num_objects_detected() == 1:
-                self.gaussian_variance_camera = 0.3 # 0.4
-                self.current_reward += -0.05
-            elif self.num_objects_detected() >= 2:
-                self.gaussian_variance_camera = 0
-                self.current_reward += -0.01
-        except:
-            pass
 
         # Check the lighing conditions of the cell the robot is in to calculate a proper variance over the gaussian normal.
         self.gaussian_variance_camera += utilities.get_variance_from_light_condition(self.gridMap.map[position].lighting_condition)
@@ -218,27 +204,26 @@ class robotModel:
         collidedPlusOnePosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt-1)
         if (num_steps == 1):
             newPosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt-1)
+            self.num_steps_until_object_detected +=1
         else:
             newPosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt-2)
+            self.num_steps_until_object_detected +=2
         
+        # Robot collided
         if (self.gridMap.map[newPosition].empty == False) | (newPosition < 0) | (self.gridMap.map[collidedPlusOnePosition].empty == False):
             self.collided = True
             if (num_steps == 1):
-                #self.cumulative_reward += -0.1
                 self.current_reward = -0.1
                 # If collided, robot position is the same
                 newPosition = oldPosition
             else:
                 # Collided act is worse if going faster
-                #self.cumulative_reward += -0.2
                 self.current_reward = -0.2
                 # If collided, robot position is the same
                 newPosition = oldPosition
-            #print("Collided: ",self.collided)
             self.master.writeTextBox("Robot collided!")
             # Check if robot can move at least one up.
             if ((self.gridMap.map[collidedPlusOnePosition].empty == True) and (self.gridMap.map[collidedPlusOnePosition].first_row)) or ((self.gridMap.map[collidedPlusOnePosition].empty == True) and not (self.gridMap.map[oldPosition].first_row)):
-                #print("Moving only 1...")
                 newPosition = collidedPlusOnePosition
                 # Remove robot from canvas actual position
                 self.gridMap.canvas.itemconfig(self.gridMap.map[oldPosition].tkinterCellIndex, fill='#fff')
@@ -248,15 +233,17 @@ class robotModel:
                 self.gridMap.canvas.itemconfig(self.gridMap.map[newPosition].tkinterCellIndex, fill=Object_Colour.Robot.value)
                 # Update robot internal pose
                 self.pos_zt -= 1
+
+        # Robot did not collide
         else:
             if (num_steps == 1):
-                if (self.gridMap.map[newPosition].reward == None):
+                if (self.gridMap.map[newPosition].reward == None): # Should never happend!
                     self.current_reward = -1
                 else:
                     self.current_reward = self.gridMap.map[newPosition].reward
                 self.pos_zt -= 1
             else:
-                if (self.gridMap.map[newPosition].reward == None):
+                if (self.gridMap.map[newPosition].reward == None): # Should never happend!
                     self.current_reward = -1
                 else:
                     self.current_reward = self.gridMap.map[newPosition].reward
@@ -279,12 +266,13 @@ class robotModel:
         # Update new cell with object type robot and old cell of type #fff
         self.gridMap.map[newPosition].object = self
         self.gridMap.map[newPosition].object.objectType = Object_Colour.Robot.name
-        #print("self.pos_zt " + str(self.pos_zt))
-        #print("self.pos_xt " + str(self.pos_xt))
         self.gridRobot1DPosition = utilities.get_state_from_pos([self.pos_zt,self.pos_xt])
         # Update history
         self.pos_x.append(self.pos_xt)
         self.pos_z.append(self.pos_zt)
+        # Reset num_steps_until_object_detected if object found after moved.
+        if (self.num_objects_detected() >=1):
+            self.num_steps_until_object_detected = 0
         # Update noisy history
         self.pos_x_noisy_encoder.append(self.apply_gaussian_noise_encoder(self.pos_xt))
         self.pos_z_noisy_encoder.append(self.apply_gaussian_noise_encoder(self.pos_zt))
@@ -293,8 +281,6 @@ class robotModel:
         '''Estimate new position using kalman filter'''
         z = array([[self.pos_x_noisy_camera[-1]],[self.pos_z_noisy_camera[-1]]])
         mu, cov = self.kalman.predict(z)
-        #print("self.pos_x_noisy_camera[-1] "+str(self.pos_x_noisy_camera[-1]))
-        #print("self.pos_z_noisy_camera[-1] "+str(self.pos_z_noisy_camera[-1]))
         
         # Update kalman signal history
         self.pos_xt_kalman =round(mu[0][0])
@@ -313,12 +299,14 @@ class robotModel:
 
         self.gridMap.map[oldPosition].colour = '#fff'
         self.gridMap.map[newPosition].colour = Object_Colour.Robot.value
-        # Update reward based on how fast robot is going and confidence de its position.
+        # Update reward based on how fast robot is going and confidence in its position.
         if (self.num_objects_detected() >= 2) and (num_steps == 2):
             self.current_reward += -0.01
         if (self.num_objects_detected() <= 1) and (num_steps == 2):
             self.current_reward += -0.1
         print("Current reward: "+str(self.current_reward))
+
+        
 
     '''
     Control command to move the robot in the down direction with
@@ -331,8 +319,10 @@ class robotModel:
         
         if (num_steps == 1):
             newPosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt+1)
+            self.num_steps_until_object_detected +=1
         else:
             newPosition = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt+2)
+            self.num_steps_until_object_detected +=2
 
         # Robot collided
         try:
@@ -410,6 +400,9 @@ class robotModel:
         # Update history
         self.pos_x.append(self.pos_xt)
         self.pos_z.append(self.pos_zt)
+        # Reset num_steps_until_object_detected if object found after moved.
+        if (self.num_objects_detected() >=1):
+            self.num_steps_until_object_detected = 0
         # Update noisy history
         self.pos_x_noisy_encoder.append(self.apply_gaussian_noise_encoder(self.pos_xt))
         self.pos_z_noisy_encoder.append(self.apply_gaussian_noise_encoder(self.pos_zt))
@@ -443,6 +436,7 @@ class robotModel:
             self.current_reward += -0.1
 
         print("Current reward: "+str(self.current_reward))
+        
 
     '''
     Control command to move the robot in the left direction with
@@ -455,8 +449,10 @@ class robotModel:
 
         if (num_steps == 1):
             newPosition = self.coordinateTranslationTo1D(self.pos_xt-1,self.pos_zt)
+            self.num_steps_until_object_detected +=1
         else:
             newPosition = self.coordinateTranslationTo1D(self.pos_xt-2,self.pos_zt)
+            self.num_steps_until_object_detected +=2
 
         # Robot collided
         try:
@@ -535,8 +531,10 @@ class robotModel:
         self.gridRobot1DPosition = utilities.get_state_from_pos([self.pos_zt,self.pos_xt])
         # Update history
         self.pos_x.append(self.pos_xt)
-        #print("self.pos_x h " +str(self.pos_x))
         self.pos_z.append(self.pos_zt)
+        # Reset num_steps_until_object_detected if object found after moved.
+        if (self.num_objects_detected() >=1):
+            self.num_steps_until_object_detected = 0
         # Update noisy history
         self.pos_x_noisy_encoder.append(self.apply_gaussian_noise_encoder(self.pos_xt))
         self.pos_z_noisy_encoder.append(self.apply_gaussian_noise_encoder(self.pos_zt))
@@ -570,6 +568,7 @@ class robotModel:
             self.current_reward += -0.1
 
         print("Current reward: "+str(self.current_reward))
+        
 
     '''
     Control command to move the robot in the right direction with
@@ -582,8 +581,10 @@ class robotModel:
 
         if (num_steps == 1):
             newPosition = self.coordinateTranslationTo1D(self.pos_xt+1,self.pos_zt)
+            self.num_steps_until_object_detected +=1
         else:
             newPosition = self.coordinateTranslationTo1D(self.pos_xt+2,self.pos_zt)
+            self.num_steps_until_object_detected +=2
 
         # Robot collided
         try:
@@ -664,6 +665,9 @@ class robotModel:
         # Update history
         self.pos_x.append(self.pos_xt)
         self.pos_z.append(self.pos_zt)
+        # Reset num_steps_until_object_detected if object found after moved.
+        if (self.num_objects_detected() >=1):
+            self.num_steps_until_object_detected = 0
         # Update noisy history
         self.pos_x_noisy_encoder.append(self.apply_gaussian_noise_encoder(self.pos_xt))
         self.pos_z_noisy_encoder.append(self.apply_gaussian_noise_encoder(self.pos_zt))
@@ -697,6 +701,7 @@ class robotModel:
             self.current_reward += -0.1
 
         print("Current reward: "+str(self.current_reward))
+        
 
     '''Get number of objects detected and check if goal found.'''
     def num_objects_detected(self):
@@ -715,7 +720,6 @@ class robotModel:
                     self.found_goal = True
                     self.master.writeTextBox("Goal found!")
             except:
-                #print("exception: ")
                 pass
         
         # Check down
@@ -751,7 +755,6 @@ class robotModel:
                     self.master.writeTextBox("Goal found!")
             except:
                 pass
-        #print("num_objects_detected: ",num_objects_detected)
         return num_objects_detected
 
 
@@ -831,6 +834,7 @@ class robotModel:
         self.master.updateYPlot(self.pos_z, self.pos_z_noisy_encoder, self.pos_z_noisy_camera, self.pos_z_kalman)
         
 
+    '''Not ready'''
     def amcl(self,map): 
         # Needs at least detecting two objects for localization. If not, robot lost.
         numberDetectedObjects = 0
