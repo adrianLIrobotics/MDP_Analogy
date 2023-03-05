@@ -128,11 +128,13 @@ class Map:
 
         for cell in self.map:
             if type(cell.object) == robotModel:
+                cell.lighting_condition = 100
                 pass
             if type(cell.object) == objectModel:
                 self.canvas.itemconfig(cell.tkinterCellIndex, fill=UNFILLED)
                 cell.empty = True
                 cell.object= None
+                cell.lighting_condition = 100
 
     """Load a map at init time"""
     def loadMapSilently(self):
@@ -223,6 +225,7 @@ class Map:
         self.clearMap()
         # Open the file and read the image, setting the cell colours as we go.
         with open(self.filename) as fi:
+            this_lighting_cell = ''
             for line in fi.readlines():
                 line = line.strip()
                 if line in colours:
@@ -233,23 +236,38 @@ class Map:
                 coords = line.split(',')
                 if not coords:
                     continue
+                if line in cell_lighting:
+                    
+                    this_lighting_cell = line
+                    print("this_lighting_cell "+str(this_lighting_cell))
+                    continue
                 for coord in coords:
                     i = _coords_to_index(coord.strip())
-                    self.canvas.itemconfig(self.map[i].tkinterCellIndex, fill=this_colour)
+                    try:
+                        self.canvas.itemconfig(self.map[i].tkinterCellIndex, fill=this_colour)
 
-                    # Attach object to the cell if it is not white
-                    if this_colour == Object_Colour.Wall.value:
-                        self.map[i].fill_cell(Object_Colour.Wall.name)
+                        # Attach object to the cell if it is not white
+                        if this_colour == Object_Colour.Wall.value:
+                            self.map[i].fill_cell(Object_Colour.Wall.name)
 
-                    if this_colour == Object_Colour.Fire.value:
-                        self.map[i].fill_cell(Object_Colour.Fire.name)
+                        if this_colour == Object_Colour.Fire.value:
+                            self.map[i].fill_cell(Object_Colour.Fire.name)
 
-                    if this_colour == Object_Colour.Water.value:
-                        self.map[i].fill_cell(Object_Colour.Water.name)
+                        if this_colour == Object_Colour.Water.value:
+                            self.map[i].fill_cell(Object_Colour.Water.name)
 
-                    if this_colour == Object_Colour.Goal.value:
-                        self.map[i].fill_cell(Object_Colour.Goal.name)
+                        if this_colour == Object_Colour.Goal.value:
+                            self.map[i].fill_cell(Object_Colour.Goal.name)
+                    except:
+                        pass
 
+                    if this_lighting_cell != '':
+                        self.map[i].change_lighing(int(this_lighting_cell))
+
+        # Add collider free property to cell with goal.
+        self.map[self.goal_1D_pose].empty = True
+        # Add reward to goal cell
+        self.map[self.goal_1D_pose].reward = 1000
 
     def _get_cell_coords(self, i):
         """Get the <letter><number> coordinates of the cell indexed at i."""
