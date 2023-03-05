@@ -46,6 +46,7 @@ class robotModel:
 
             self.num_steps_until_object_detected = 0
             self.current_reward = 0
+            self.first_step = True
             self.gridMap = gridMap
             self.gaussian_variance_camera = float(config['robot']['camera_sensor_noise']) # Camera sensor robot noise.
             self.gaussian_variance_encoder = float(config['robot']['encoder_sensor_noise'])
@@ -60,10 +61,10 @@ class robotModel:
             self.noisy_pos_zt_encoder = self.apply_gaussian_noise_encoder(self.pos_zt) # Noisy position in z axes at time t from encoder.
             self.pos_x_noisy_encoder = [self.apply_gaussian_noise_encoder(self.pos_xt)] # Noisy historical position in x axes from encoder.
             self.pos_z_noisy_encoder = [self.apply_gaussian_noise_encoder(self.pos_zt)] # Noisy historical position in z axes from encoder.
-            self.noisy_pos_xt_camera = self.apply_gaussian_noise_camera(self.pos_xt) # Noisy position in x axes at time t from camera sensor.
-            self.noisy_pos_zt_camera = self.apply_gaussian_noise_camera(self.pos_zt) # Noisy position in z axes at time t from camera sensor.
-            self.pos_x_noisy_camera = [self.apply_gaussian_noise_camera(self.pos_xt)] # Noisy historical position in x axes from camera sensor.
-            self.pos_z_noisy_camera = [self.apply_gaussian_noise_camera(self.pos_zt)] # Noisy historical position in z axes from camera sensor.
+            self.noisy_pos_xt_camera = self.apply_gaussian_noise_camera(self.pos_xt, -1) # Noisy position in x axes at time t from camera sensor.
+            self.noisy_pos_zt_camera = self.apply_gaussian_noise_camera(self.pos_zt, -1) # Noisy position in z axes at time t from camera sensor.
+            self.pos_x_noisy_camera = [self.apply_gaussian_noise_camera(self.pos_xt, -1)] # Noisy historical position in x axes from camera sensor.
+            self.pos_z_noisy_camera = [self.apply_gaussian_noise_camera(self.pos_zt, -1)] # Noisy historical position in z axes from camera sensor.
             self.pos_xt_kalman = 0
             self.pos_zt_kalman = 0
             self.pos_1d_kalman = 0
@@ -113,19 +114,47 @@ class robotModel:
             return noisy_data
 
     '''Apply gaussian noise over camera signal'''
-    def apply_gaussian_noise_camera(self, data):
-        if self.num_steps_until_object_detected <= 1: # No noise if only moved 1
-            self.current_reward += -0.01
-            return data
+    def apply_gaussian_noise_camera(self, data, num_steps):
         position = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt)
 
-        # Check the lighing conditions of the cell the robot is in to calculate a proper variance over the gaussian normal.
-        self.gaussian_variance_camera += utilities.get_variance_from_light_condition(self.gridMap.map[position].lighting_condition)
+        # 1) If it is the first step in the whole simulation, there will be no noise associated.
+        if (self.first_step == True):
+            if num_steps == 1:
+                self.current_reward += -0.02
+            if num_steps ==2:
+                self.current_reward += -0.01 # It is better to move more if you are confident of your location.
+            return data
+
+        # 2) If the robot detected 1 object and the lighting conditions are good, there will be no noise associated.
+        if ((self.num_objects_detected() >= 1) and (self.gridMap.map[position].lighting_condition == 100)): # No noise if only moved 1
+            print("funciona")
+            if num_steps == 1:
+                self.current_reward += -0.02
+            if num_steps ==2:
+                self.current_reward += -0.01 # It is better to move more if you are confident of your location.
+            return data
+        
+        # 3) Else:
+        # Check the lighting conditions of the cell the robot is in to calculate a proper variance over the gaussian normal.
+        result = utilities.get_variance_from_light_condition(self.gridMap.map[position].lighting_condition)
+
+        # Give reward depending on the lighing condition of the cell.
+        '''
+        # If you are lost, it does not matter if you move 1 or 2.
+        if result == 0:
+            self.current_reward += -0.025
+        if result == 0.1:
+            self.current_reward += -0.035
+        if result == 0.2:
+            self.current_reward += -0.045
+        '''
+
+        self.gaussian_variance_camera += result
         try:
             noisy_data = round(np.random.normal(data,self.gaussian_variance_camera,1)[0])
             return noisy_data
         except:
-            # Init noisy
+            # Init noisy - should never happend
             variance = 0.5 + utilities.get_variance_from_light_condition(self.gridMap.map[position].lighting_condition)
             noisy_data = round(np.random.normal(data,variance,1)[0])
             return noisy_data
@@ -276,15 +305,21 @@ class robotModel:
         # Update noisy history
         self.pos_x_noisy_encoder.append(self.apply_gaussian_noise_encoder(self.pos_xt))
         self.pos_z_noisy_encoder.append(self.apply_gaussian_noise_encoder(self.pos_zt))
-        self.pos_x_noisy_camera.append(self.apply_gaussian_noise_camera(self.pos_xt))
-        self.pos_z_noisy_camera.append(self.apply_gaussian_noise_camera(self.pos_zt))
-        '''Estimate new position using kalman filter'''
-        z = array([[self.pos_x_noisy_camera[-1]],[self.pos_z_noisy_camera[-1]]])
-        mu, cov = self.kalman.predict(z)
+        self.pos_x_noisy_camera.append(self.apply_gaussian_noise_camera(self.pos_xt, num_steps))
+        self.pos_z_noisy_camera.append(self.apply_gaussian_noise_camera(self.pos_zt, num_steps))
+
+        # If the noise pose and the real pose are the same, avoide kalman.
+        if (self.pos_xt == self.pos_x_noisy_camera[-1]) and (self.pos_zt == self.pos_z_noisy_camera[-1]):
+            self.pos_xt_kalman = self.pos_xt 
+            self.pos_zt_kalman = self.pos_zt
+        else:
+            '''Estimate new position using kalman filter'''
+            z = array([[self.pos_x_noisy_camera[-1]],[self.pos_z_noisy_camera[-1]]])
+            mu, cov = self.kalman.predict(z)
+            self.pos_xt_kalman =round(mu[0][0])
+            self.pos_zt_kalman = round(mu[2][0])
         
         # Update kalman signal history
-        self.pos_xt_kalman =round(mu[0][0])
-        self.pos_zt_kalman = round(mu[2][0])
         self.pos_1d_kalman = utilities.get_state_from_pos([self.pos_zt_kalman,self.pos_xt_kalman])
         self.pos_x_kalman.append(self.pos_xt_kalman)
         self.pos_z_kalman.append(self.pos_zt_kalman)
@@ -300,11 +335,14 @@ class robotModel:
         self.gridMap.map[oldPosition].colour = '#fff'
         self.gridMap.map[newPosition].colour = Object_Colour.Robot.value
         # Update reward based on how fast robot is going and confidence in its position.
+        '''
         if (self.num_objects_detected() >= 2) and (num_steps == 2):
             self.current_reward += -0.01
         if (self.num_objects_detected() <= 1) and (num_steps == 2):
             self.current_reward += -0.1
+        '''
         print("Current reward: "+str(self.current_reward))
+        self.first_step = False
 
         
 
@@ -406,16 +444,20 @@ class robotModel:
         # Update noisy history
         self.pos_x_noisy_encoder.append(self.apply_gaussian_noise_encoder(self.pos_xt))
         self.pos_z_noisy_encoder.append(self.apply_gaussian_noise_encoder(self.pos_zt))
-        self.pos_x_noisy_camera.append(self.apply_gaussian_noise_camera(self.pos_xt))
-        self.pos_z_noisy_camera.append(self.apply_gaussian_noise_camera(self.pos_zt))
-        '''Estimate new position using kalman filter'''
-        z = array([[self.pos_x_noisy_camera[-1]],[self.pos_z_noisy_camera[-1]]])
-        mu, cov = self.kalman.predict(z)
+        self.pos_x_noisy_camera.append(self.apply_gaussian_noise_camera(self.pos_xt, num_steps))
+        self.pos_z_noisy_camera.append(self.apply_gaussian_noise_camera(self.pos_zt, num_steps))
+        # If the noise pose and the real pose are the same, avoide kalman.
+        if (self.pos_xt == self.pos_x_noisy_camera[-1]) and (self.pos_zt == self.pos_z_noisy_camera[-1]):
+            self.pos_xt_kalman = self.pos_xt 
+            self.pos_zt_kalman = self.pos_zt
+        else:
+            '''Estimate new position using kalman filter'''
+            z = array([[self.pos_x_noisy_camera[-1]],[self.pos_z_noisy_camera[-1]]])
+            mu, cov = self.kalman.predict(z)
+            self.pos_xt_kalman =round(mu[0][0])
+            self.pos_zt_kalman = round(mu[2][0])
 
-        self.pos_xt_kalman =round(mu[0][0])
-        self.pos_zt_kalman = round(mu[2][0])
         self.pos_1d_kalman = utilities.get_state_from_pos([self.pos_zt_kalman,self.pos_xt_kalman])
-
         self.pos_x_kalman.append(self.pos_xt_kalman)
         self.pos_z_kalman.append(self.pos_zt_kalman)
         self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, newPosition, self.pos_xt, self.pos_1d_kalman, self.pos_xt_kalman, self.pos_zt_kalman)
@@ -429,13 +471,15 @@ class robotModel:
         self.gridMap.map[oldPosition].colour = '#fff'
         self.gridMap.map[newPosition].colour = Object_Colour.Robot.value
 
+        '''
         # Update reward based on how fast robot is going and confidence de its position.
         if (self.num_objects_detected() >= 2) and (num_steps == 2):
             self.current_reward += -0.01
         if (self.num_objects_detected() <= 1) and (num_steps == 2):
             self.current_reward += -0.1
-
+        '''
         print("Current reward: "+str(self.current_reward))
+        self.first_step = False
         
 
     '''
@@ -538,14 +582,19 @@ class robotModel:
         # Update noisy history
         self.pos_x_noisy_encoder.append(self.apply_gaussian_noise_encoder(self.pos_xt))
         self.pos_z_noisy_encoder.append(self.apply_gaussian_noise_encoder(self.pos_zt))
-        self.pos_x_noisy_camera.append(self.apply_gaussian_noise_camera(self.pos_xt))
-        self.pos_z_noisy_camera.append(self.apply_gaussian_noise_camera(self.pos_zt))
-        '''Estimate new position using kalman filter'''
-        z = array([[self.pos_x_noisy_camera[-1]],[self.pos_z_noisy_camera[-1]]])
-        mu, cov = self.kalman.predict(z)
+        self.pos_x_noisy_camera.append(self.apply_gaussian_noise_camera(self.pos_xt, num_steps))
+        self.pos_z_noisy_camera.append(self.apply_gaussian_noise_camera(self.pos_zt, num_steps))
+        # If the noise pose and the real pose are the same, avoide kalman.
+        if (self.pos_xt == self.pos_x_noisy_camera[-1]) and (self.pos_zt == self.pos_z_noisy_camera[-1]):
+            self.pos_xt_kalman = self.pos_xt 
+            self.pos_zt_kalman = self.pos_zt
+        else:
+            '''Estimate new position using kalman filter'''
+            z = array([[self.pos_x_noisy_camera[-1]],[self.pos_z_noisy_camera[-1]]])
+            mu, cov = self.kalman.predict(z)
+            self.pos_xt_kalman =round(mu[0][0])
+            self.pos_zt_kalman = round(mu[2][0])
 
-        self.pos_xt_kalman =round(mu[0][0])
-        self.pos_zt_kalman = round(mu[2][0])
         self.pos_1d_kalman = utilities.get_state_from_pos([self.pos_zt_kalman,self.pos_xt_kalman])
         self.pos_x_kalman.append(self.pos_xt_kalman)
         self.pos_z_kalman.append(self.pos_zt_kalman)
@@ -561,13 +610,15 @@ class robotModel:
         self.gridMap.map[oldPosition].colour = '#fff'
         self.gridMap.map[newPosition].colour = Object_Colour.Robot.value
 
+        '''
         # Update reward based on how fast robot is going and confidence de its position.
         if (self.num_objects_detected() >= 2) and (num_steps == 2):
             self.current_reward += -0.01
         if (self.num_objects_detected() <= 1) and (num_steps == 2):
             self.current_reward += -0.1
-
+        '''
         print("Current reward: "+str(self.current_reward))
+        self.first_step = False
         
 
     '''
@@ -671,14 +722,20 @@ class robotModel:
         # Update noisy history
         self.pos_x_noisy_encoder.append(self.apply_gaussian_noise_encoder(self.pos_xt))
         self.pos_z_noisy_encoder.append(self.apply_gaussian_noise_encoder(self.pos_zt))
-        self.pos_x_noisy_camera.append(self.apply_gaussian_noise_camera(self.pos_xt))
-        self.pos_z_noisy_camera.append(self.apply_gaussian_noise_camera(self.pos_zt))
+        self.pos_x_noisy_camera.append(self.apply_gaussian_noise_camera(self.pos_xt, num_steps))
+        self.pos_z_noisy_camera.append(self.apply_gaussian_noise_camera(self.pos_zt, num_steps))
 
-        '''Estimate new position using kalman filter'''
-        z = array([[self.pos_x_noisy_camera[-1]],[self.pos_z_noisy_camera[-1]]])
-        mu, cov = self.kalman.predict(z)
-        self.pos_xt_kalman =round(mu[0][0])
-        self.pos_zt_kalman = round(mu[2][0])
+        # If the noise pose and the real pose are the same, avoide kalman.
+        if (self.pos_xt == self.pos_x_noisy_camera[-1]) and (self.pos_zt == self.pos_z_noisy_camera[-1]):
+            self.pos_xt_kalman = self.pos_xt 
+            self.pos_zt_kalman = self.pos_zt
+        else:
+            '''Estimate new position using kalman filter'''
+            z = array([[self.pos_x_noisy_camera[-1]],[self.pos_z_noisy_camera[-1]]])
+            mu, cov = self.kalman.predict(z)
+            self.pos_xt_kalman =round(mu[0][0])
+            self.pos_zt_kalman = round(mu[2][0])
+            
         self.pos_1d_kalman = utilities.get_state_from_pos([self.pos_zt_kalman,self.pos_xt_kalman])
         self.pos_x_kalman.append(self.pos_xt_kalman)
         self.pos_z_kalman.append(self.pos_zt_kalman)
@@ -694,13 +751,15 @@ class robotModel:
         self.gridMap.map[oldPosition].colour = '#fff'
         self.gridMap.map[newPosition].colour = Object_Colour.Robot.value
 
+        '''
         # Update reward based on how fast robot is going and confidence de its position.
         if (self.num_objects_detected() >= 2) and (num_steps == 2):
             self.current_reward += -0.01
         if (self.num_objects_detected() <= 1) and (num_steps == 2):
             self.current_reward += -0.1
-
+        '''
         print("Current reward: "+str(self.current_reward))
+        self.first_step = False
         
 
     '''Get number of objects detected and check if goal found.'''
@@ -805,8 +864,8 @@ class robotModel:
 
         self.noisy_pos_xt_encoder = self.apply_gaussian_noise_encoder(self.pos_xt)
         self.noisy_pos_zt_encoder = self.apply_gaussian_noise_encoder(self.pos_zt)
-        self.noisy_pos_xt_camera = self.apply_gaussian_noise_camera(self.pos_xt)
-        self.noisy_pos_zt_camera = self.apply_gaussian_noise_camera(self.pos_zt)
+        self.noisy_pos_xt_camera = self.apply_gaussian_noise_camera(self.pos_xt, -1)
+        self.noisy_pos_zt_camera = self.apply_gaussian_noise_camera(self.pos_zt, -1)
 
         self.pos_x.clear()
         self.pos_z.clear()
@@ -832,6 +891,9 @@ class robotModel:
         self.master.update_control_panel(self.num_objects_detected(), self.pos_zt, self.gridRobot1DPosition, self.pos_xt, self.pos_1d_kalman, self.pos_xt_kalman, self.pos_zt_kalman)
         self.master.updateXPlot(self.pos_x, self.pos_x_noisy_encoder, self.pos_x_noisy_camera, self.pos_x_kalman)
         self.master.updateYPlot(self.pos_z, self.pos_z_noisy_encoder, self.pos_z_noisy_camera, self.pos_z_kalman)
+
+        self.first_step = True
+        self.num_steps_until_object_detected = 0
         
 
     '''Not ready'''
