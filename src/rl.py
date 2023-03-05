@@ -157,6 +157,8 @@ class reinforment_learning():
             tempRobot = robotModel(False,0) # Create a temporal robot
             tempRobot.pos_xt = x_pose_parsed
             tempRobot.pos_zt = z_pose_parsed
+            tempRobot.pos_xt_kalman = x_pose_parsed
+            tempRobot.pos_zt_kalman = z_pose_parsed
             return tempRobot
         
         def parser_actions_q(string_actions):

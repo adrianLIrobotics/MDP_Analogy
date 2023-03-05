@@ -123,12 +123,13 @@ class robotModel:
             # Depending on the number of objects the camera detects, position output is better or worse.
             if self.num_objects_detected() == 0:
                 self.gaussian_variance_camera = 0.6
+                self.current_reward += -0.1
             elif self.num_objects_detected() == 1:
                 self.gaussian_variance_camera = 0.3 # 0.4
-            elif self.num_objects_detected() == 2:
-                self.gaussian_variance_camera = 0.2
-            elif self.num_objects_detected() == 3: #more than 3
-                self.gaussian_variance_camera = 0.1
+                self.current_reward += -0.05
+            elif self.num_objects_detected() >= 2:
+                self.gaussian_variance_camera = 0
+                self.current_reward += -0.01
         except:
             pass
 
@@ -223,13 +224,13 @@ class robotModel:
         if (self.gridMap.map[newPosition].empty == False) | (newPosition < 0) | (self.gridMap.map[collidedPlusOnePosition].empty == False):
             self.collided = True
             if (num_steps == 1):
-                self.cumulative_reward += -0.1
+                #self.cumulative_reward += -0.1
                 self.current_reward = -0.1
                 # If collided, robot position is the same
                 newPosition = oldPosition
             else:
                 # Collided act is worse if going faster
-                self.cumulative_reward += -0.2
+                #self.cumulative_reward += -0.2
                 self.current_reward = -0.2
                 # If collided, robot position is the same
                 newPosition = oldPosition
@@ -249,13 +250,16 @@ class robotModel:
                 self.pos_zt -= 1
         else:
             if (num_steps == 1):
-                #print("Reward "+str(self.gridMap.map[newPosition].reward))# empty reward
-                self.cumulative_reward += self.gridMap.map[newPosition].reward
-                self.current_reward = self.gridMap.map[newPosition].reward
+                if (self.gridMap.map[newPosition].reward == None):
+                    self.current_reward = -1
+                else:
+                    self.current_reward = self.gridMap.map[newPosition].reward
                 self.pos_zt -= 1
             else:
-                self.cumulative_reward += self.gridMap.map[newPosition].reward / 2
-                self.current_reward = self.gridMap.map[newPosition].reward / 2
+                if (self.gridMap.map[newPosition].reward == None):
+                    self.current_reward = -1
+                else:
+                    self.current_reward = self.gridMap.map[newPosition].reward
                 self.pos_zt -= 2
 
             self.collided = False
@@ -309,6 +313,12 @@ class robotModel:
 
         self.gridMap.map[oldPosition].colour = '#fff'
         self.gridMap.map[newPosition].colour = Object_Colour.Robot.value
+        # Update reward based on how fast robot is going and confidence de its position.
+        if (self.num_objects_detected() >= 2) and (num_steps == 2):
+            self.current_reward += -0.01
+        if (self.num_objects_detected() <= 1) and (num_steps == 2):
+            self.current_reward += -0.1
+        print("Current reward: "+str(self.current_reward))
 
     '''
     Control command to move the robot in the down direction with
@@ -334,13 +344,13 @@ class robotModel:
             #print("Robot collided!")
             self.master.writeTextBox("Robot collided!")
             if (num_steps == 1):
-                self.cumulative_reward += -0.1
+                #self.cumulative_reward += -0.1
                 self.current_reward = -0.1
                 # If collided, robot position is the same
                 newPosition = oldPosition
             else:
                 # Collided act is worse if going faster
-                self.cumulative_reward += -0.2 
+                #self.cumulative_reward += -0.2 
                 self.current_reward = -0.2
                 # If collided, robot position is the same
                 newPosition = oldPosition
@@ -365,12 +375,16 @@ class robotModel:
         # Robot did not collide
         else:
             if (num_steps == 1):
-                self.cumulative_reward += self.gridMap.map[newPosition].reward
-                self.current_reward = self.gridMap.map[newPosition].reward
+                if (self.gridMap.map[newPosition].reward == None):
+                    self.current_reward = -1
+                else:
+                    self.current_reward = self.gridMap.map[newPosition].reward
                 self.pos_zt += 1
             else:
-                self.cumulative_reward += self.gridMap.map[newPosition].reward / 2
-                self.current_reward = self.gridMap.map[newPosition].reward / 2
+                if (self.gridMap.map[newPosition].reward == None):
+                    self.current_reward = -1
+                else:
+                    self.current_reward = self.gridMap.map[newPosition].reward
                 self.pos_zt += 2
 
             self.collided = False
@@ -422,6 +436,14 @@ class robotModel:
         self.gridMap.map[oldPosition].colour = '#fff'
         self.gridMap.map[newPosition].colour = Object_Colour.Robot.value
 
+        # Update reward based on how fast robot is going and confidence de its position.
+        if (self.num_objects_detected() >= 2) and (num_steps == 2):
+            self.current_reward += -0.01
+        if (self.num_objects_detected() <= 1) and (num_steps == 2):
+            self.current_reward += -0.1
+
+        print("Current reward: "+str(self.current_reward))
+
     '''
     Control command to move the robot in the left direction with
     parameter number of steps.
@@ -446,13 +468,13 @@ class robotModel:
             #print("Robot collided!")
             self.master.writeTextBox("Robot collided!")
             if (num_steps == 1):
-                self.cumulative_reward += -0.1
+                #self.cumulative_reward += -0.1
                 self.current_reward = -0.1
                 # If collided, robot position is the same
                 newPosition = oldPosition
             else:
                 # Collided act is worse if going faster
-                self.cumulative_reward += -0.2 
+                #self.cumulative_reward += -0.2 
                 self.current_reward = -0.2
                 # If collided, robot position is the same
                 newPosition = oldPosition
@@ -478,12 +500,16 @@ class robotModel:
         # Robot did not collide
         else:
             if (num_steps == 1):
-                self.cumulative_reward += self.gridMap.map[newPosition].reward
-                self.current_reward = self.gridMap.map[newPosition].reward
+                if (self.gridMap.map[newPosition].reward == None):
+                    self.current_reward = -1
+                else:
+                    self.current_reward = self.gridMap.map[newPosition].reward
                 self.pos_xt -= 1
             else:
-                self.cumulative_reward += self.gridMap.map[newPosition].reward / 2
-                self.current_reward = self.gridMap.map[newPosition].reward / 2
+                if (self.gridMap.map[newPosition].reward == None):
+                    self.current_reward = -1
+                else:
+                    self.current_reward = self.gridMap.map[newPosition].reward
                 self.pos_xt -= 2
 
             self.collided = False
@@ -537,6 +563,14 @@ class robotModel:
         self.gridMap.map[oldPosition].colour = '#fff'
         self.gridMap.map[newPosition].colour = Object_Colour.Robot.value
 
+        # Update reward based on how fast robot is going and confidence de its position.
+        if (self.num_objects_detected() >= 2) and (num_steps == 2):
+            self.current_reward += -0.01
+        if (self.num_objects_detected() <= 1) and (num_steps == 2):
+            self.current_reward += -0.1
+
+        print("Current reward: "+str(self.current_reward))
+
     '''
     Control command to move the robot in the right direction with
     parameter number of steps.
@@ -561,13 +595,13 @@ class robotModel:
             #print("Robot collided!")
             self.master.writeTextBox("Robot collided!")
             if (num_steps == 1):
-                self.cumulative_reward += -0.1
+                #self.cumulative_reward += -0.1
                 self.current_reward = -0.1
                 # If collided, robot position is the same
                 newPosition = oldPosition
             else:
                 # Collided act is worse if going faster
-                self.cumulative_reward += -0.2 
+                #self.cumulative_reward += -0.2 
                 self.current_reward = -0.2
                 # If collided, robot position is the same
                 newPosition = oldPosition
@@ -594,12 +628,16 @@ class robotModel:
         else:
             if (num_steps == 1):
                 print("Reward: "+str(self.gridMap.map[newPosition].reward))
-                self.cumulative_reward += self.gridMap.map[newPosition].reward
-                self.current_reward = self.gridMap.map[newPosition].reward
+                if (self.gridMap.map[newPosition].reward == None):
+                    self.current_reward = -1
+                else:
+                    self.current_reward = self.gridMap.map[newPosition].reward
                 self.pos_xt += 1
             else:
-                self.cumulative_reward += self.gridMap.map[newPosition].reward / 2
-                self.current_reward = self.gridMap.map[newPosition].reward / 2
+                if (self.gridMap.map[newPosition].reward == None):
+                    self.current_reward = -1
+                else:
+                    self.current_reward = self.gridMap.map[newPosition].reward
                 self.pos_xt += 2
 
             self.collided = False
@@ -651,6 +689,14 @@ class robotModel:
 
         self.gridMap.map[oldPosition].colour = '#fff'
         self.gridMap.map[newPosition].colour = Object_Colour.Robot.value
+
+        # Update reward based on how fast robot is going and confidence de its position.
+        if (self.num_objects_detected() >= 2) and (num_steps == 2):
+            self.current_reward += -0.01
+        if (self.num_objects_detected() <= 1) and (num_steps == 2):
+            self.current_reward += -0.1
+
+        print("Current reward: "+str(self.current_reward))
 
     '''Get number of objects detected and check if goal found.'''
     def num_objects_detected(self):

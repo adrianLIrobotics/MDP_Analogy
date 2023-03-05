@@ -20,6 +20,9 @@ goal_z = config['map']['goal_initil_pose_z']
 UNFILLED = '#fff'
 colours = (UNFILLED, 'red', 'green', 'blue', 'cyan', 'orange', 'yellow',
                'magenta', 'brown', 'black')
+
+cell_lighting = ('100','50','0')
+
 width=600
 height=600 
 pad=5
@@ -148,7 +151,9 @@ class Map:
         self.clearMap()
         # Open the file and read the image, setting the cell colours as we go.
         with open("maps/"+loadMap) as fi:
+            this_lighting_cell = ''
             for line in fi.readlines():
+                
                 line = line.strip()
                 if line in colours:
                     this_colour = line
@@ -158,22 +163,36 @@ class Map:
                 coords = line.split(',')
                 if not coords:
                     continue
+                if line in cell_lighting:
+                    
+                    this_lighting_cell = line
+                    print("this_lighting_cell "+str(this_lighting_cell))
+                    continue
                 for coord in coords:
                     i = _coords_to_index(coord.strip())
-                    self.canvas.itemconfig(self.map[i].tkinterCellIndex, fill=this_colour)
+                    print("2 this_lighting_cell "+str(this_lighting_cell))
+                    try:
+                        self.canvas.itemconfig(self.map[i].tkinterCellIndex, fill=this_colour)
+                        
+                        # Attach object to the cell if it is not white
+                        if this_colour == Object_Colour.Wall.value:
+                            self.map[i].fill_cell(Object_Colour.Wall.name)
 
-                    # Attach object to the cell if it is not white
-                    if this_colour == Object_Colour.Wall.value:
-                        self.map[i].fill_cell(Object_Colour.Wall.name)
+                        if this_colour == Object_Colour.Fire.value:
+                            self.map[i].fill_cell(Object_Colour.Fire.name)
 
-                    if this_colour == Object_Colour.Fire.value:
-                        self.map[i].fill_cell(Object_Colour.Fire.name)
+                        if this_colour == Object_Colour.Water.value:
+                            self.map[i].fill_cell(Object_Colour.Water.name)
 
-                    if this_colour == Object_Colour.Water.value:
-                        self.map[i].fill_cell(Object_Colour.Water.name)
+                        if this_colour == Object_Colour.Goal.value:
+                            self.map[i].fill_cell(Object_Colour.Goal.name)
+                    except:
+                        pass
 
-                    if this_colour == Object_Colour.Goal.value:
-                        self.map[i].fill_cell(Object_Colour.Goal.name)
+                    if this_lighting_cell != '':
+                        self.map[i].change_lighing(int(this_lighting_cell))
+                        #self.map[i].completelly_empty_cell()
+                        #self.canvas.itemconfig(self.map[i].tkinterCellIndex, fill='#fff')
 
         # Add collider free property to cell with goal.
         self.map[self.goal_1D_pose].empty = True

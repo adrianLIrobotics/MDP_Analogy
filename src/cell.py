@@ -130,15 +130,27 @@ class Cell:
         self.object = objectTemp
         self.reward = self.calculate_reward()
 
+    def change_lighing(self, light):
+        self.lighting_condition = light
+
     def empty_cell(self):
         self.empty = True
         self.colour = '#fff'
+
+    def completelly_empty_cell(self):
+        self.empty = True
+        self.colour = '#fff'
+        self.object = None
 
     def calculate_reward(self):
         if self.colour == Object_Colour.Fire.value:
             self.reward = -1
         if self.colour == '#fff': # Empty tile 
-            self.reward = -0.04
+            if self.lighting_condition >= 50:
+                self.reward = -0.04
+            elif self.lighting_condition < 50:
+                self.reward = -0.1 # If lighting isnt good, the reward is more negative.
+
         if self.colour == Object_Colour.Wall.value:
             self.reward = -0.1
         if self.colour == Object_Colour.Goal.value:

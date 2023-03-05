@@ -2,6 +2,7 @@ class state_model:
 
     def __init__(self,gridMap,robot):
         self.grid = gridMap
+        #self.robotPose = [robot.pos_xt_kalman, robot.pos_zt_kalman]
         self.robotPose = [robot.pos_xt, robot.pos_zt]
         #self.localized_robot_believe = robot.localized_believe
         
