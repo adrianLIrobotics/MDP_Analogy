@@ -175,7 +175,7 @@ class Map:
                     print("2 this_lighting_cell "+str(this_lighting_cell))
                     try:
                         self.canvas.itemconfig(self.map[i].tkinterCellIndex, fill=this_colour)
-                        
+
                         # Attach object to the cell if it is not white
                         if this_colour == Object_Colour.Wall.value:
                             self.map[i].fill_cell(Object_Colour.Wall.name)
@@ -188,13 +188,19 @@ class Map:
 
                         if this_colour == Object_Colour.Goal.value:
                             self.map[i].fill_cell(Object_Colour.Goal.name)
-                    except:
-                        pass
+
+                    except Exception as e:
+                        print(e)
 
                     if this_lighting_cell != '':
+                        # self.map[i].change_lighing(int(this_lighting_cell))
                         self.map[i].change_lighing(int(this_lighting_cell))
-                        #self.map[i].completelly_empty_cell()
-                        #self.canvas.itemconfig(self.map[i].tkinterCellIndex, fill='#fff')
+                        #self.map[i].update_reward() # Update reward of white cells
+
+                    #self.map[i].update_reward()
+        # Update reward of map
+        for x in range(0,self.mapSize**2):
+            self.map[x].update_reward()
 
         # Add collider free property to cell with goal.
         self.map[self.goal_1D_pose].empty = True

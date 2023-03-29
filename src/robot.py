@@ -15,10 +15,6 @@ from object import objectModel
 
 class robotModel:
 
-    def __init__(self):
-        self.pos_xt = 0
-        self.pos_zt = 0
-
     def __init__(self,localized,mapSize,gridMap=None,master=None):
 
         if (master == None):
@@ -127,7 +123,6 @@ class robotModel:
 
         # 2) If the robot detected 1 object and the lighting conditions are good, there will be no noise associated.
         if ((self.num_objects_detected() >= 1) and (self.gridMap.map[position].lighting_condition == 100)): # No noise if only moved 1
-            print("funciona")
             if num_steps == 1:
                 self.current_reward += -0.02
             if num_steps ==2:
@@ -139,7 +134,7 @@ class robotModel:
         result = utilities.get_variance_from_light_condition(self.gridMap.map[position].lighting_condition)
 
         # Give reward depending on the lighing condition of the cell.
-        '''
+        
         # If you are lost, it does not matter if you move 1 or 2.
         if result == 0:
             self.current_reward += -0.025
@@ -147,14 +142,13 @@ class robotModel:
             self.current_reward += -0.035
         if result == 0.2:
             self.current_reward += -0.045
-        '''
 
         self.gaussian_variance_camera += result
         try:
             noisy_data = round(np.random.normal(data,self.gaussian_variance_camera,1)[0])
             return noisy_data
         except:
-            # Init noisy - should never happend
+            # Init noisy - should never happen
             variance = 0.5 + utilities.get_variance_from_light_condition(self.gridMap.map[position].lighting_condition)
             noisy_data = round(np.random.normal(data,variance,1)[0])
             return noisy_data
@@ -735,7 +729,7 @@ class robotModel:
             mu, cov = self.kalman.predict(z)
             self.pos_xt_kalman =round(mu[0][0])
             self.pos_zt_kalman = round(mu[2][0])
-            
+
         self.pos_1d_kalman = utilities.get_state_from_pos([self.pos_zt_kalman,self.pos_xt_kalman])
         self.pos_x_kalman.append(self.pos_xt_kalman)
         self.pos_z_kalman.append(self.pos_zt_kalman)

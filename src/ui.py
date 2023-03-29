@@ -94,6 +94,9 @@ class GridApp:
         self.writeTextBox("colour: "+str(self.gridMap.map[i].colour))
         print("lighting_condition", self.gridMap.map[i].lighting_condition)
         self.writeTextBox("lighting_condition: "+str(self.gridMap.map[i].lighting_condition))
+        print("Cell reward", self.gridMap.map[i].reward)
+        self.writeTextBox("Cell reward: "+str(self.gridMap.map[i].reward))
+        
         print("Cell empty", self.gridMap.map[i].empty)
         self.writeTextBox("Cell empty: "+str(self.gridMap.map[i].empty))
         try:
@@ -101,6 +104,7 @@ class GridApp:
             self.writeTextBox("Object type: "+str(self.gridMap.map[i].object.objectType))
         except:
             pass
+        
         #Show q values:
         #State(grid=grid, car_pos=[1, 1])
         print("Getting map: ")

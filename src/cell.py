@@ -20,7 +20,7 @@ class Cell:
         self.pos_z = pos_z
         self.empty = empty
         self.object = None
-        self.reward = -0.04
+        self.reward = -0.02 # 
         self.colour = '#fff' # By default the cell is white -none object Cell constructor-
         self.tkinterCellIndex = indexTk
         self.border = self.check_if_border() # If None --> no border tile
@@ -117,6 +117,9 @@ class Cell:
 
     def change_lighing(self, light):
         self.lighting_condition = light
+
+    def change_reward(self,temp_reward):
+        self.reward = temp_reward
 
     def empty_cell(self):
         self.empty = True
