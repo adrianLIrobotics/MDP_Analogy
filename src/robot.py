@@ -113,7 +113,7 @@ class robotModel:
     def apply_gaussian_noise_camera(self, data, num_steps):
         position = self.coordinateTranslationTo1D(self.pos_xt,self.pos_zt)
 
-        # 1) If it is the first step in the whole simulation, there will be no noise associated.
+        # 1) If it is the first step in the whole simulation, there will be no noise associated. (maybe the first 2?)
         if (self.first_step == True):
             if num_steps == 1:
                 self.current_reward += -0.02
