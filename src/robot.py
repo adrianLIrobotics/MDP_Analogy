@@ -154,7 +154,7 @@ class robotModel:
         while(pos_allowed):
             # Random number from all possible grid positions 
             val = utilities.get_state_from_pos((x,z))
-            print(gridMap.map[val].empty)
+#            print(gridMap.map[val].empty)
             if (gridMap.map[val].empty):
                 gridMap.map[val].empty = False
                 gridMap.map[val].colour = Object_Colour.Robot.value

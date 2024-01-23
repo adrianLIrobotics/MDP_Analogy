@@ -51,15 +51,18 @@ class Map:
                 cell = Cell(ix,iy,True,rect)
                 self.map.append(cell)#gridMap.map.append(rect)
         
-         # Load a custom map at initialization.
+        # Load a custom map at initialization.
+        
         if loadMap != '':
             try:
                 self.loadMapSilently()
             except Exception as e:
                 print(e)
-
+        
+        
         # Spawn random goal if no map is provided at init time.
-        if loadMap == '':
+        if loadMap.strip() == '':
+            print("spawn_random_goal")
             self.spawn_random_goal(self.mapSize,self)
 
         # Create random map if config.ini establishes that.
