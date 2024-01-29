@@ -74,7 +74,7 @@ print(Q)
 
 # Encontrar el mejor camino desde el estado inicial al estado objetivo
 
-current_state = 4
+current_state = 0
 path = [current_state]
 
 while current_state != 5:
