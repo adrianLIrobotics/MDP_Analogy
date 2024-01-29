@@ -1,17 +1,29 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+from mpl_toolkits import mplot3d
+from matplotlib.lines import Line2D
+
 
 # Definir parámetros
 num_states = 6
 num_actions = 2
 learning_rate = 0.9
 discount_factor = 0.9
-exploration_prob = 0.2
-num_episodes = 1000
+exploration_prob = 0.02
+num_episodes = 10
 
 # Inicializar la matriz Q con ceros
-Q = np.zeros((num_states, num_actions))
+# Q = np.zeros((num_states, num_actions))
+
+
+Q = np.array([[0.0, 1000.0],
+              [0.0, 1000.0],
+              [0.0, 1000.0],
+              [0.0, 1000.0],
+              [0.0, 1000.0],
+              [0.0, 1000.0]])
+
 
 # Definir la función de selección de acción
 def select_action(state):
@@ -25,6 +37,9 @@ episode_list = []
 total_reward_list = []
 q_value_changes = {state: [] for state in range(num_states)}
 
+# Inicializar una lista para almacenar las acciones tomadas
+actions_taken = []
+
 # Simular episodios
 last_episode_with_q_change = 0  # Variable para almacenar el último episodio con cambio en los valores Q
 last_q_change_episode = 0  # Variable para almacenar el episodio del último Q que deja de cambiar
@@ -35,6 +50,7 @@ for episode in range(num_episodes):
 
     while current_state != 5:
         action = select_action(current_state)
+        actions_taken.append(action)
 
         # Simular la transición al nuevo estado
         next_state = current_state + (1 if action == 1 else -1)
@@ -131,6 +147,46 @@ plt.legend()
 plt.show()
 
 
+# Generar la superficie 3D de los valores Q
+'''
+fig = plt.figure(figsize=(12, 8))
+ax = fig.add_subplot(111, projection='3d')
+
+for state in range(num_states):
+    X = np.arange(num_episodes)
+    Y = np.arange(num_actions)
+    X, Y = np.meshgrid(X, Y)
+    Z = np.array(q_value_changes[state])[:, :num_episodes]
+
+    ax.plot_trisurf(X.flatten(), Y.flatten(), Z.flatten(), cmap='viridis', alpha=0.7, label=f'Q_value_{state}_Action_0')
+
+ax.set_xlabel('Episode')
+ax.set_ylabel('Action')
+ax.set_zlabel('Q value')
+ax.set_title('3D Surface Plot of Q values for each state and action')
+
+# Crear leyenda con color específico (puedes ajustar el color según tu preferencia)
+ax.legend(handles=[Line2D([0], [0], color='blue', label='Q_value_0_Action_0')])
+
+plt.show()
+'''
+
+# Remapear las acciones a etiquetas más descriptivas
+action_labels = {0: '-1', 1: '+1'}
+
+# Generar el histograma de acciones tomadas con etiquetas descriptivas
+plt.figure(figsize=(8, 6))
+hist, bins, _ = plt.hist(actions_taken, bins=np.arange(num_actions + 1) - 0.5, align='mid', rwidth=0.8, color='skyblue', edgecolor='black')
+plt.xticks(range(num_actions), [action_labels[i] for i in range(num_actions)])
+plt.xlabel('Action')
+plt.ylabel('Frequency')
+plt.title('Histogram of Actions Taken during Training')
+
+# Agregar etiquetas a las barras del histograma
+for i in range(len(hist)):
+    plt.text(bins[i], hist[i], action_labels[i], ha='left', va='bottom', fontsize=8)
+
+plt.show()
 
 # Imprimir la matriz Q
 print("\nMatriz Q:")
@@ -146,6 +202,15 @@ while current_state != 5:
     next_state = max(0, min(next_state, num_states - 1))
     path.append(next_state)
     current_state = next_state
+
+# Visualizar el camino óptimo aprendido
+plt.figure(figsize=(8, 6))
+plt.plot(path, marker='o', linestyle='-', color='b')
+plt.xlabel('State')
+plt.ylabel('Optimal Path')
+plt.title('Learned Optimal Path from Initial to Goal State')
+plt.xticks(range(num_states))
+plt.show()
 
 print("Mejor camino:", path[1:])
 print("last_q_change_episode: "+str(last_q_change_episode))
