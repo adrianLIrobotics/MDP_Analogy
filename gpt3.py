@@ -8,21 +8,39 @@ from matplotlib.lines import Line2D
 # Definir parámetros
 num_states = 6
 num_actions = 2
-learning_rate = 0.9
+learning_rate = 1 # 0.9 #0.9 # 0.9
 discount_factor = 0.9
-exploration_prob = 0.02
-num_episodes = 10
+exploration_prob = 0.9
+num_episodes =1000  # 10 
 
 # Inicializar la matriz Q con ceros
-# Q = np.zeros((num_states, num_actions))
+#Q = np.zeros((num_states, num_actions))
 
+'''
+Q = np.array([[0.0, 1.0],
+              [0.0, 1.0],
+              [0.0, 1.0],
+              [0.0, 1.0],
+              [0.0, 1.0],
+              [0.0, 1.0]])
+'''
 
+'''
 Q = np.array([[0.0, 1000.0],
               [0.0, 1000.0],
               [0.0, 1000.0],
               [0.0, 1000.0],
               [0.0, 1000.0],
               [0.0, 1000.0]])
+'''
+
+
+Q = np.array([[1.0, 0.0],
+              [1.0, 0.0],
+              [1.0, 0.0],
+              [1.0, 0.0],
+              [1.0, 0.0],
+              [1.0, 0.0]])
 
 
 # Definir la función de selección de acción
@@ -136,16 +154,19 @@ average_rewards_per_episode = np.convolve(total_reward_list, np.ones(10)/10, mod
 average_total_reward = np.mean(total_reward_list)
 
 # Generar el gráfico con la curva de recompensas totales, la media por episodio y la media total
-plt.figure(figsize=(12, 8))
-plt.plot(episode_list, total_reward_list, label='Total Reward')
-plt.plot(episode_list[:-9], average_rewards_per_episode, label='Average Reward per Episode (Window Size=10)', linestyle='--', color='red')
-plt.axhline(y=average_total_reward, color='green', linestyle='-.', label=f'Average Total Reward: {average_total_reward:.2f}')
-plt.xlabel('Episode')
-plt.ylabel('Reward')
-plt.title('Total reward per episode with Average Reward')
-plt.legend()
-plt.show()
+try:
+    plt.figure(figsize=(12, 8))
+    plt.plot(episode_list, total_reward_list, label='Total Reward')
+    plt.plot(episode_list[:-9], average_rewards_per_episode, label='Average Reward per Episode (Window Size=10)', linestyle='--', color='red')
+    plt.axhline(y=average_total_reward, color='green', linestyle='-.', label=f'Average Total Reward: {average_total_reward:.2f}')
+    plt.xlabel('Episode')
+    plt.ylabel('Reward')
+    plt.title('Total reward per episode with Average Reward')
+    plt.legend()
+    plt.show()
 
+except: 
+    pass
 
 # Generar la superficie 3D de los valores Q
 '''
